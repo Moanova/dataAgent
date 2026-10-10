@@ -76,7 +76,16 @@ Tests isolés, sans réseau. La couche HTTP est simulée.
 | TU-27 | Nom de fichier divergent du nom déclaré | échec au démarrage | Bloquant (CA-8) |
 | TU-28 | Contrat JSON absent du chemin déclaré | échec au démarrage, aucun outil partiellement chargé | Bloquant (CA-8) |
 
-| TU-29 | Fichier ZIP (format zip, mime application/zip) | fichier_autre_format, persistance locale, chemin valide | Bloquant (CA-13) |
+### 3.7 Journalisation (`structlog`)
+
+| Id | Cas de test | Résultat attendu | Blocage |
+|---|---|---|---|
+| TU-29 | Log au format JSON avec `id_execution` | Fichier `logs/dataAgent_<id>.log` contient un JSON valide avec `timestamp`, `event`, `id_execution` | Bloquant (CA-2) |
+| TU-30 | Contexte dynamique (`bind_context`) | Les métadonnées ajoutées via `bind_context` apparaissent dans les logs | Bloquant (CA-2) |
+| TU-31 | Écriture dans le fichier de logs | Le fichier est créé et contient les logs attendus | Bloquant (CA-2) |
+| TU-32 | Niveaux de log (`DEBUG`, `INFO`, `ERROR`) | Les logs respectent les niveaux demandés (ex : `DEBUG` n'apparaît pas en `INFO`) | Avertissement (CA-2) |
+
+| TU-33 | Fichier ZIP (format zip, mime application/zip) | fichier_autre_format, persistance locale, chemin valide | Bloquant (CA-13) |
 | TU-30 | Fichier GeoJSON (format geojson, mime application/geo+json) | fichier_autre_format, persistance locale, chemin valide | Bloquant (CA-13) |
 | TU-31 | Fichier JSON (format json, mime application/json) | fichier_autre_format, persistance locale, chemin valide | Bloquant (CA-13) |
 | TU-32 | Fichier SHP (format shp, mime application/octet-stream) | fichier_autre_format, persistance locale, chemin valide | Bloquant (CA-13) |
@@ -99,6 +108,14 @@ Composants assemblés, réseau simulé, sans agent.
 | TI-10 | Vérification systématique des invariants de la documentation : chaque invariant des fichiers docs/*.md couvert par une assertion | tous les invariants vérifiés | Bloquant |
 | TI-11 | Téléchargement d'un fichier ZIP | Fichier téléchargé, chemin valide, statut succes | Bloquant (CA-13) |
 | TI-12 | Téléchargement d'un fichier GeoJSON | Fichier téléchargé, chemin valide, statut succes | Bloquant (CA-13) |
+
+### 5.1 Journalisation (`structlog`)
+
+| Id | Cas de test | Résultat attendu | Blocage |
+|---|---|---|---|
+| TI-13 | Appel à `rechercher_jeux` | Logs générés avec `mots_cles`, `tri`, `limite` | Bloquant (CA-2) |
+| TI-14 | Succès de `rechercher_jeux` | Log avec `total_trouves`, `jeux_retournes`, `exclus_licence` | Bloquant (CA-2) |
+| TI-15 | Échec HTTP dans `rechercher_jeux` | Log d'erreur avec `url`, `status_code`, `suggestion` | Bloquant (CA-2) |
 
 ## 5. Niveau 3 — Tests de bout en bout (TB)
 

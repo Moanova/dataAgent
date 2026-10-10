@@ -18,7 +18,6 @@ dataAgent/
 │
 ├── docs/                  # Documentation globale
 │   ├── README.md           # Présentation du projet (ce fichier)
-│   └── CONTRIBUTING.md     # Guide de contribution (optionnel)
 │
 ├── specs/                 # Spécifications techniques
 │   ├── contracts/          # Contrats JSON des outils
@@ -114,14 +113,5 @@ Le suivi des tâches est disponible dans [`dev/kanban.md`](dev/kanban.md).
 
 ---
 
-## 🤝 Contribuer
-*(Section optionnelle, à compléter si tu veux ouvrir le projet à des contributeurs.)*
-- Ouvre une **issue** pour discuter des évolutions.
-- Soumets une **pull request** pour proposer des modifications.
-
----
-
 ## 📄 Licence
-*(À définir selon tes préférences.)*
-Exemple :
 Ce projet est sous licence **MIT**.

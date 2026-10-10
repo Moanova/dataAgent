@@ -11,9 +11,6 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **dat
 ## 📌 À faire
 
 ### 1. Initialisation du projet
-- [X] **T1.1** : Créer la structure des dossiers (`src/`, `tests/`, `src/contracts/`, `src/core/`, `src/utils/`). *(Terminé le 10/10/2026)*
-- [ ] **T1.2** : Configurer le fichier `.env` avec les variables d'environnement (ex : `DATA_GOUV_API_URL`).
-- [ ] **T1.3** : Initialiser le logging avec `structlog` (`src/utils/logging.py`).
 
 ---
 
@@ -92,14 +89,11 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **dat
 ---
 
 ## 🚧 En cours
-*(Aucune tâche en cours pour le moment)*
-
----
-
-## 🔍 En revue
-*(Aucune tâche en revue pour le moment)*
+- [ ] **T6.1** : Configurer `structlog` pour tracer les appels et les erreurs (intégration en cours).
 
 ---
 
 ## ✅ Terminé
 - [X] **T1.1** : Créer la structure des dossiers (`src/`, `tests/`, `src/contracts/`, `src/core/`, `src/utils/`). *(Terminé le 10/10/2026)*
+- [X] **T1.2** : Configurer le fichier `.env` avec les variables d'environnement (ex : `DATA_GOUV_API_URL`). *(Terminé le 10/10/2026)*
+- [X] **T1.3** : Initialiser le logging avec `structlog` (`src/utils/logging.py`). *(Terminé le 10/10/2026)*
