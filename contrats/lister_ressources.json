@@ -1,0 +1,60 @@
+{
+  "type": "function",
+  "function": {
+    "name": "lister_ressources",
+    "description": "Liste les ressources (fichiers) d'un jeu de données avec leurs métadonnées : identifiant, titre, format, taille, URL, disponibilité via l'API tabulaire. Utiliser l'identifiant du jeu retourné par rechercher_jeux.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id_jeu": { "type": "string" }
+      },
+      "required": ["id_jeu"]
+    },
+    "returns": {
+      "type": "object",
+      "properties": {
+        "statut": {
+          "type": "string",
+          "enum": ["succes", "jeu_introuvable"],
+          "description": "Code de statut de l'opération."
+        },
+        "message": {
+          "type": "string",
+          "description": "Message d'erreur en cas d'échec, vide sinon."
+        },
+        "donnees": {
+          "type": "object",
+          "properties": {
+            "ressources": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "titre": { "type": "string" },
+                  "format": { "type": "string" },
+                  "taille_octets": { "type": ["integer", "null"] },
+                  "classe": {
+                    "type": "string",
+                    "enum": ["fichier_tabulaire", "fichier_autre_format", "page_web", "api_distante", "indetermine"]
+                  },
+                  "api_tabulaire": { "type": "boolean" },
+                  "heberge_sur_plateforme": { "type": "boolean" },
+                  "url": { "type": "string" }
+                },
+                "required": ["id", "titre", "format", "classe", "api_tabulaire", "heberge_sur_plateforme", "url"]
+              }
+            },
+            "indetermination": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Identifiants des ressources non classées automatiquement."
+            }
+          },
+          "required": ["ressources", "indetermination"]
+        }
+      },
+      "required": ["statut", "message", "donnees"]
+    }
+  }
+}

@@ -1,0 +1,33 @@
+## Fichier : telecharger_brut.md
+
+# Outil telecharger_brut
+
+## Intention
+
+Acquérir une ressource non indexée par l'API tabulaire dans son état brut (voie 2), vers le stockage local. Cette fonction écrit sur le disque : elle doit être réservée aux ressources sélectionnées, pas employée en exploration.
+
+## Sémantique des arguments
+
+- `id_ressource` (obligatoire) : identifiant issu de `lister_ressources`. La fonction ne prend pas d'URL : l'URL est résolue par le code à partir des métadonnées enregistrées lors de l'inventaire.
+
+## Retour en succès
+
+`donnees.chemin_local` : chemin relatif du fichier acquis. `donnees.format` : format de la ressource. La licence est incluse afin que les obligations d'attribution suivent le fichier jusqu'à la visualisation.
+
+## Comportements d'échec
+
+- `ressource_introuvable` : l'identifiant n'a jamais été vu par `lister_ressources au cours du flux courant. Reprendre par l'inventaire.
+- `echec_technique` : le serveur d'origine refuse l'accès (blocage des agents, statut HTTP d'erreur, expiration). Le code consigne l'entrée au registre des sources inaccessibles avec le motif `serveur_origine_bloque`. `donnees.suggestion` vaut `fichier_heberge_exterieurement` : aucune relance immédiate n'est utile ; la source doit figurer dans la synthèse finale (A4) avec proposition d'alternative (jeu équivalent hébergé sur la plateforme).
+
+## Exemple de flux
+
+Appel : `{"id_ressource": "71ff1335-..."}`
+
+Réponse (échec) : `{"statut": "echec_technique", "message": "serveur_origine_bloque", "donnees": {"suggestion": "fichier_heberge_exterieurement"}}`
+
+Réponse (succès) : `{"statut": "succes", "donnees": {"chemin_local": "donnees/71ff1335-....csv", "format": "csv"}}`
+
+## Invariants
+
+- Un échec de cette fonction ne provoque jamais la perte des autres acquisitions : chaque téléchargement est indépendant.
+- Le registre est alimenté même en cas d'échec : une source inaccessible doit toujours être tracée.

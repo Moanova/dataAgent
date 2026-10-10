@@ -1,0 +1,30 @@
+{
+  "manifeste_version": "1.0",
+  "compatibilite_api_mistral": "function-calling-v1",
+  "outils": [
+    {
+      "nom": "rechercher_jeux",
+      "fichier": "rechercher_jeux.json",
+      "version": "1.0.0",
+      "changelog": "Version initiale du contrat."
+    },
+    {
+      "nom": "lister_ressources",
+      "fichier": "lister_ressources.json",
+      "version": "1.0.0",
+      "changelog": "Version initiale du contrat."
+    },
+    {
+      "nom": "interroger_ressource",
+      "fichier": "interroger_ressource.json",
+      "version": "1.0.0",
+      "changelog": "Version initiale du contrat."
+    },
+    {
+      "nom": "telecharger_brut",
+      "fichier": "telecharger_brut.json",
+      "version": "1.0.0",
+      "changelog": "Version initiale du contrat."
+    }
+  ]
+}

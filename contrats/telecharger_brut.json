@@ -1,0 +1,51 @@
+{
+  "type": "function",
+  "function": {
+    "name": "telecharger_brut",
+    "description": "Télécharge une ressource non indexée par l'API tabulaire vers le stockage local, puis retourne les métadonnées du fichier acquis. En cas d'échec (blocage serveur, fichier absent), consigne l'échec au registre des sources inaccessibles et retourne le motif.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id_ressource": { "type": "string" }
+      },
+      "required": ["id_ressource"]
+    },
+    "returns": {
+      "type": "object",
+      "properties": {
+        "statut": {
+          "type": "string",
+          "enum": ["succes", "ressource_introuvable", "echec_technique"],
+          "description": "Code de statut de l'opération."
+        },
+        "message": {
+          "type": "string",
+          "description": "Message d'erreur en cas d'échec, vide sinon."
+        },
+        "donnees": {
+          "type": "object",
+          "properties": {
+            "chemin_local": {
+              "type": "string",
+              "description": "Chemin relatif du fichier téléchargé."
+            },
+            "format": {
+              "type": "string",
+              "description": "Format du fichier téléchargé."
+            },
+            "licence": {
+              "type": "string",
+              "description": "Licence du jeu de données."
+            },
+            "suggestion": {
+              "type": ["string", "null"],
+              "description": "Suggestion en cas d'échec (ex : 'fichier_heberge_exterieurement')."
+            }
+          },
+          "required": ["chemin_local", "format", "licence"]
+        }
+      },
+      "required": ["statut", "message", "donnees"]
+    }
+  }
+}

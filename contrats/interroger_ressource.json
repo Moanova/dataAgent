@@ -1,0 +1,90 @@
+{
+  "type": "function",
+  "function": {
+    "name": "interroger_ressource",
+    "description": "Extrait des données tabulaires d'une ressource indexée par l'API tabulaire. Permet la pagination, le filtrage par colonne et le tri. Ne fonctionne que si api_tabulaire est vrai dans lister_ressources ; sinon retourne le code ressource_non_indexee.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "id_ressource": { "type": "string" },
+        "page": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1,
+          "description": "Numéro de page (défaut : 1)."
+        },
+        "taille_page": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 20,
+          "description": "Nombre d'éléments par page (défaut : 20, max : 100)."
+        },
+        "filtre": {
+          "type": "object",
+          "properties": {
+            "colonne": { "type": "string" },
+            "valeur": { "type": "string" },
+            "operateur": {
+              "type": "string",
+              "enum": ["exact", "contient", "inferieur", "superieur", "strictement_inferieur", "strictement_superieur"],
+              "default": "exact"
+            }
+          },
+          "required": ["colonne", "valeur"]
+        },
+        "tri": {
+          "type": "object",
+          "properties": {
+            "colonne": { "type": "string" },
+            "ordre": { "type": "string", "enum": ["croissant", "decroissant"] }
+          }
+        }
+      },
+      "required": ["id_ressource"]
+    },
+    "returns": {
+      "type": "object",
+      "properties": {
+        "statut": {
+          "type": "string",
+          "enum": ["succes", "erreur_parametres", "ressource_non_indexee", "echec_technique"],
+          "description": "Code de statut de l'opération."
+        },
+        "message": {
+          "type": "string",
+          "description": "Message d'erreur en cas d'échec, vide sinon."
+        },
+        "donnees": {
+          "type": "object",
+          "properties": {
+            "total_lignes": {
+              "type": "integer",
+              "description": "Nombre total de lignes de la ressource."
+            },
+            "colonnes": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Schéma détecté (noms des colonnes)."
+            },
+            "lignes": {
+              "type": "array",
+              "items": { "type": "object" },
+              "description": "Page courante de données."
+            },
+            "page": {
+              "type": "integer",
+              "description": "Numéro de la page retournée."
+            },
+            "recommandation": {
+              "type": ["string", "null"],
+              "description": "Recommandation pour les volumes élevés (ex : 'volume_eleve_telechargement_brut_suggere')."
+            }
+          },
+          "required": ["total_lignes", "colonnes", "lignes", "page"]
+        }
+      },
+      "required": ["statut", "message", "donnees"]
+    }
+  }
+}

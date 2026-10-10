@@ -1,0 +1,38 @@
+flowchart TD
+    subgraph AG["Étapes agentiques (agents Mistral)"]
+        direction TB
+        A1[Reformulation du thème utilisateur\nen requêtes de recherche efficaces]
+        A2[Sélection des jeux d'intérêt\nlecture des descriptions,\névaluation de la pertinence]
+        A3[Classification des ressources ambiguën\nlorsque les métadonnées ne suffisent pas]
+        A4[Synthèse du registre des échecs\net proposition d'alternatives]
+    end
+
+    subgraph ALG["Étapes algorithmiques (code Python local)"]
+        direction TB
+        B1[Exécution des requêtes de recherche\nAPI data.gouv.fr]
+        B2[Filtre de licence\nexploitation, attribution, redistribution]
+        B3[Inventaire des ressources\net classification par défaut\nformat, type MIME]
+        B4[Sonde de disponibilité\nAPI tabulaire, URL brute]
+        B5["Voie 1: extraction via API tabulaire\npagination, filtrage, tri"]
+        B6["Voie 2: téléchargement brut"]
+        B7[Normalisation\nschéma, encodage, types]
+        B8[Registre des sources inaccessibles\nécriture, motifs, alternatives]
+    end
+
+    U[Thème fourni par l'utilisateur] --> A1
+    A1 -. "appelle l'outil: rechercher_jeux" .-> B1
+    B1 --> A2
+    A2 -->|jeux retenus| B2
+    B2 -->|licence incompatible| B8
+    B2 --> B3
+    B3 -->|ambiguïté| A3
+    A3 -. "appelle l'outil: lister_ressources" .-> B3
+    B3 --> B4
+    B4 -->|indexée et volume compatible| B5
+    B4 -->|non indexée, URL accessible| B6
+    B4 -->|"échec technique (blocage serveur)"| B8
+    B5 --> B7
+    B6 --> B7
+    B7 --> P[(Données normalisées\nvers la partie 2:\nanalyse et visualisation)]
+    B8 --> A4
+    A4 --> R[Rapport à l'utilisateur:\nsources inaccessibles,\nmotifs, alternatives]

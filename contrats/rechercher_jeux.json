@@ -1,0 +1,79 @@
+{
+  "type": "function",
+  "function": {
+    "name": "rechercher_jeux",
+    "description": "Recherche des jeux de données sur data.gouv.fr par mots-clés. La recherche applique une logique ET : utiliser des termes spécifiques et courts. Retourne une liste résumée de jeux avec leur identifiant, titre, organisation, licence, date de mise à jour et nombre de ressources.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "mots_cles": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Mots-clés de la recherche, combinés en logique ET."
+        },
+        "tri": {
+          "type": "string",
+          "enum": ["pertinence", "recent", "vues", "reutilisations"],
+          "description": "Ordre de tri des résultats."
+        },
+        "fenetre_maj": {
+          "type": "string",
+          "enum": ["toutes", "30_jours", "12_mois", "3_ans"],
+          "description": "Restriction temporelle sur la dernière mise à jour."
+        },
+        "limite": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20,
+          "description": "Nombre maximum de jeux retournés (défaut : 10)."
+        }
+      },
+      "required": ["mots_cles"]
+    },
+    "returns": {
+      "type": "object",
+      "properties": {
+        "statut": {
+          "type": "string",
+          "enum": ["succes", "erreur_parametres", "echec_technique"],
+          "description": "Code de statut de l'opération."
+        },
+        "message": {
+          "type": "string",
+          "description": "Message d'erreur en cas d'échec, vide sinon."
+        },
+        "donnees": {
+          "type": "object",
+          "properties": {
+            "total_trouves": {
+              "type": "integer",
+              "description": "Nombre total de jeux correspondant à la requête."
+            },
+            "jeux": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "titre": { "type": "string" },
+                  "organisation": { "type": "string" },
+                  "licence": { "type": "string" },
+                  "derniere_maj": { "type": "string" },
+                  "nb_ressources": { "type": "integer" },
+                  "url": { "type": "string" }
+                },
+                "required": ["id", "titre", "organisation", "licence", "derniere_maj", "nb_ressources", "url"]
+              }
+            },
+            "exclus_licence": {
+              "type": "integer",
+              "description": "Nombre de jeux écartés par le filtre de licence."
+            }
+          },
+          "required": ["total_trouves", "jeux", "exclus_licence"]
+        }
+      },
+      "required": ["statut", "message", "donnees"]
+    }
+  }
+}
