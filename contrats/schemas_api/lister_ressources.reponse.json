@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openDataAgent:schemas_api/lister_ressources.reponse",
+  "title": "Reponse de l'API data.gouv.fr /api/2/datasets/{id}/",
+  "description": "Schema de validation du detail d'un jeu de donnees (inventaire des ressources), charge utile brute retournee par l'API avant tout traitement.",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string", "description": "Identifiant unique du jeu de donnees." },
+    "title": { "type": "string", "description": "Titre du jeu de donnees." },
+    "slug": { "type": "string", "description": "Slug du jeu de donnees." },
+    "url": { "type": "string", "description": "URL de la fiche du jeu sur data.gouv.fr." },
+    "created_at": { "type": "string", "description": "Date de creation (ISO 8601)." },
+    "last_modified": { "type": "string", "description": "Date de derniere modification (ISO 8601)." },
+    "license": {
+      "type": ["object", "null"],
+      "properties": {
+        "id": { "type": "string", "description": "Identifiant de la licence (ex : etalab-2.0)." }
+      },
+      "required": ["id"],
+      "additionalProperties": true
+    },
+    "organization": {
+      "type": ["object", "null"],
+      "properties": {
+        "name": { "type": "string", "description": "Nom de l'organisation." }
+      },
+      "required": ["name"],
+      "additionalProperties": true
+    },
+    "resources": {
+      "type": "array",
+      "description": "Inventaire complet des ressources du jeu.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "Identifiant unique de la ressource." },
+          "title": { "type": "string", "description": "Titre de la ressource." },
+          "url": { "type": "string", "description": "URL de telechargement de la ressource." },
+          "format": { "type": ["string", "null"], "description": "Format declare de la ressource." },
+          "mime": { "type": ["string", "null"], "description": "Type MIME de la ressource." },
+          "description": { "type": ["string", "null"], "description": "Description de la ressource." },
+          "filesize": { "type": ["integer", "null"], "description": "Taille du fichier en octets, null si inconnue." },
+          "created_at": { "type": ["string", "null"], "description": "Date de creation de la ressource (ISO 8601)." },
+          "last_modified": { "type": ["string", "null"], "description": "Date de derniere modification (ISO 8601)." }
+        },
+        "required": ["id", "title", "url"],
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": ["id", "title", "resources"],
+  "additionalProperties": true
+}

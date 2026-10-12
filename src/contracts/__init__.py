@@ -43,6 +43,12 @@ from src.contracts.telecharger_brut import (
     TelechargerBrutInput,
     TelechargerBrutOutput,
 )
+from src.contracts.validation_api import (
+    ResultatValidation,
+    SCHEMAS_CONNUS,
+    valider_json_brut,
+    valider_reponse_api,
+)
 
 __all__ = [
     # Base
@@ -70,4 +76,9 @@ __all__ = [
     # telecharger_brut
     "TelechargerBrutInput",
     "TelechargerBrutOutput",
+    # validation des reponses API (T2.2)
+    "ResultatValidation",
+    "SCHEMAS_CONNUS",
+    "valider_json_brut",
+    "valider_reponse_api",
 ]

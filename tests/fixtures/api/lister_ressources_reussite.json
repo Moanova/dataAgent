@@ -1,0 +1,34 @@
+{
+  "id": "5f0dab7bc589016d73af66bd",
+  "title": "Comptes des administrations publiques",
+  "slug": "comptes-des-administrations-publiques",
+  "url": "https://www.data.gouv.fr/fr/datasets/comptes-des-administrations-publiques/",
+  "created_at": "2020-07-15T09:21:35.147000+00:00",
+  "last_modified": "2026-09-30T16:42:11.000000+00:00",
+  "license": { "id": "etalab-2.0" },
+  "organization": { "name": "Ministere de l'Economie et des Finances" },
+  "resources": [
+    {
+      "id": "ca8c1d46-2a01-4b5c-9f3f-1a2b3c4d5e6f",
+      "title": "budget-fr-indicateurs.csv",
+      "url": "https://static.data.gouv.fr/resources/budget-fr-indicateurs.csv",
+      "format": "csv",
+      "mime": "text/csv",
+      "description": "Indicateurs budgetaires par theme.",
+      "filesize": 45231,
+      "created_at": "2026-09-30T16:42:11.000000+00:00",
+      "last_modified": "2026-09-30T16:42:11.000000+00:00"
+    },
+    {
+      "id": "d9e2f3a4-5b6c-7d8e-9f0a-1b2c3d4e5f6a",
+      "title": "comptes-administrations.zip",
+      "url": "https://static.data.gouv.fr/resources/comptes-administrations.zip",
+      "format": "zip",
+      "mime": "application/zip",
+      "description": null,
+      "filesize": null,
+      "created_at": null,
+      "last_modified": null
+    }
+  ]
+}

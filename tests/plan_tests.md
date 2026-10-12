@@ -90,6 +90,17 @@ Tests isolés, sans réseau. La couche HTTP est simulée.
 | TU-31 | Fichier JSON (format json, mime application/json) | fichier_autre_format, persistance locale, chemin valide | Bloquant (CA-13) |
 | TU-32 | Fichier SHP (format shp, mime application/octet-stream) | fichier_autre_format, persistance locale, chemin valide | Bloquant (CA-13) |
 | TU-33 | Fichier PDF (format pdf, mime application/pdf) | fichier_autre_format, persistance locale, chemin valide | Bloquant (CA-13) |
+
+### 3.8 Validation des reponses API (`jsonschema`, T2.2)
+
+| Id | Cas de test | Résultat attendu | Blocage |
+|---|---|---|---|
+| TU-34 | Réponse réelle de recherche de jeux (fixture simulant `/api/2/datasets/search/`) | validation réussie | Bloquant (CA-2) |
+| TU-35 | Réponse avec champ obligatoire absent (`total`, `id`) | échec, erreurs listées avec chemin, pas d'exception | Bloquant (CA-2) |
+| TU-36 | Réponse avec type inattendu (chaîne au lieu d'un entier) | échec avec chemin de l'erreur (JSON pointer) | Bloquant (CA-2) |
+| TU-37 | Charge utile vide / JSON invalide / racine non objet / outil inconnu | échec propre avec statut `echec_technique`, sans exception | Bloquant (CA-2, CA-5) |
+| TU-38 | Réponse réelle d'inventaire de ressources (fixture simulant `/api/2/datasets/{id}/`) | validation réussie | Bloquant (CA-2) |
+
 ## 4. Niveau 2 — Tests d'intégration (TI)
 
 Composants assemblés, réseau simulé, sans agent.

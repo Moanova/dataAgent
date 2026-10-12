@@ -5,6 +5,43 @@ Il est mis à jour automatiquement à la fin de chaque session et relu au début
 
 ---
 
+## **Séance du 12/10/2026 — partie 2 (T2.2)**
+
+### **Contexte**
+- **Objectif** : Implémentation de la tâche T2.2 (validation des réponses de l'API data.gouv.fr avec `jsonschema`).
+- **Contrainte** : pas de commit ni push à la demande du concepteur ; tests réseau (TB) et agentiques (TA) non exécutables dans la sandbox (réseau sortant bloqué) — non passés et documentés comme tels.
+
+### **Actions réalisées**
+1. **Plan T2.2** validé par le concepteur (schémas de réponses API + module de validation + tests TU-34..38 + documentation).
+2. **Schémas de réponses API** (`contrats/schemas_api/`) :
+   - `rechercher_jeux.reponse.json` (recherche `/api/2/datasets/search/`), `lister_ressources.reponse.json` (détail `/api/2/datasets/{id}/`).
+   - Draft 2020-12, `additionalProperties: true`, champs optionnels typés null.
+3. **Module de validation** (`src/contracts/validation_api.py`) :
+   - `valider_reponse_api()`, `valider_json_brut()`, `charger_schema()`, `ResultatValidation` (valide/erreurs/statut) ; échec propre systématique (jamais d'exception), erreurs avec chemin JSON pointer.
+   - Exports ajoutés à `src/contracts/__init__.py`.
+4. **Fixtures et tests** :
+   - Fixtures dans `tests/fixtures/api/` (réponses simulées conformes à l'API v2).
+   - `tests/unit/test_validation_api.py` : TU-34..TU-38 + 2 tests annexes = 10 tests.
+   - Section 3.8 ajoutée à `tests/plan_tests.md`.
+5. **Documentation** : `docs/tasks/T2.2_validation_jsonschema.md` (statut des tests TB/TA explicitement non passés), kanban T2.2 → Terminé.
+
+### **Décisions**
+- Séparation stricte des schémas de réponses API (`contrats/schemas_api/`) et des contrats d'outils (source de vérité Mistral).
+- Échec propre systématique : tout écart (données non conformes, outil inconnu, schéma illisible) → `echec_technique` sans exception.
+- `mistralai` 3.1.0 est disponible dans la sandbox mais les appels réels à l'API restent bloqués (réseau) — TB-04 et TA restent à passer en local.
+
+### **Tests**
+- **Résultat : 68/68 PASSED** (`tests/unit/` = 58 existants + 10 nouveaux T2.2).
+- **Non passés (documentés)** : TB-01..05 (marqueur réseau) et TA-01..05 (agentiques) — non exécutables dans la sandbox, à passer côté poste local lors de la validation d'itération.
+
+### **Blocages**
+- Aucun. Nota : 1 itération de test nécessaire (assertion TU-35 corrigée : chemin JSON de la racine = `/` et non `/total`).
+
+### **Environnement sandbox**
+- `jsonschema` 4.26.0, `pydantic` 2.13.5, `pytest` 9.1.1, `mistralai` 3.1.0 installés ; réseau sortant bloqué.
+
+---
+
 ## **Séance du 12/10/2026**
 
 ### **Contexte**

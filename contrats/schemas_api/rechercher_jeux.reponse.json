@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openDataAgent:schemas_api/rechercher_jeux.reponse",
+  "title": "Reponse de l'API data.gouv.fr /api/2/datasets/search/",
+  "description": "Schema de validation de la charge utile brute retournee par l'API de recherche de jeux de donnees, avant tout traitement.",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "array",
+      "description": "Liste des jeux de donnees retournes pour la page courante.",
+      "items": { "$ref": "#/$defs/jeu" }
+    },
+    "total": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Nombre total de jeux correspondant a la requete."
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Numero de la page courante."
+    },
+    "next_page": {
+      "type": ["integer", "null"],
+      "description": "Numero de la page suivante, null si derniere page."
+    },
+    "previous_page": {
+      "type": ["integer", "null"],
+      "description": "Numero de la page precedente, null si premiere page."
+    }
+  },
+  "required": ["data", "total"],
+  "additionalProperties": true,
+  "$defs": {
+    "licence": {
+      "type": ["object", "null"],
+      "properties": {
+        "id": { "type": "string", "description": "Identifiant de la licence (ex : etalab-2.0)." }
+      },
+      "required": ["id"],
+      "additionalProperties": true
+    },
+    "organisation": {
+      "type": ["object", "null"],
+      "properties": {
+        "name": { "type": "string", "description": "Nom de l'organisation." }
+      },
+      "required": ["name"],
+      "additionalProperties": true
+    },
+    "ressource": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Identifiant unique de la ressource." },
+        "title": { "type": "string", "description": "Titre de la ressource." },
+        "url": { "type": "string", "description": "URL de telechargement de la ressource." },
+        "format": { "type": ["string", "null"], "description": "Format declare de la ressource." },
+        "mime": { "type": ["string", "null"], "description": "Type MIME de la ressource." },
+        "filesize": { "type": ["integer", "null"], "description": "Taille du fichier en octets, null si inconnue." }
+      },
+      "required": ["id", "title", "url"],
+      "additionalProperties": true
+    },
+    "jeu": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Identifiant unique du jeu de donnees." },
+        "title": { "type": "string", "description": "Titre du jeu de donnees." },
+        "slug": { "type": "string", "description": "Slug du jeu de donnees." },
+        "url": { "type": "string", "description": "URL de la fiche du jeu sur data.gouv.fr." },
+        "created_at": { "type": "string", "description": "Date de creation (ISO 8601)." },
+        "last_modified": { "type": "string", "description": "Date de derniere modification (ISO 8601)." },
+        "license": { "$ref": "#/$defs/licence" },
+        "organization": { "$ref": "#/$defs/organisation" },
+        "resources": {
+          "type": "array",
+          "description": "Ressources associees au jeu.",
+          "items": { "$ref": "#/$defs/ressource" }
+        }
+      },
+      "required": ["id", "title", "resources"],
+      "additionalProperties": true
+    }
+  }
+}
