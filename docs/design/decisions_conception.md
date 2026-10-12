@@ -1,6 +1,6 @@
 # Journal des décisions de conception
 
-Ce document recense les décisions prises lors de la conception du projet **dataAgent**, ainsi que leur justification, leur date de prise de décision et leur impact sur les artefacts du projet.
+Ce document recense les décisions prises lors de la conception du projet **openDataAgent**, ainsi que leur justification, leur date de prise de décision et leur impact sur les artefacts du projet.
 
 ---
 
@@ -18,7 +18,7 @@ Utiliser le fichier [`docs/conception.mmd`](conception.mmd) pour représenter le
 - Il décrit également les **interactions** entre l'agent et le code, ainsi que les **points de décision** (ex : filtre de licence, classification des ressources).
 
 ### Impact
-- Référencé dans [`ARCHITECTURE.md`](ARCHITECTURE.md).
+- Référencé dans [`architecture.md`](architecture.md).
 - Aucun ajout ou modification nécessaire.
 
 ---
@@ -28,7 +28,7 @@ Utiliser le fichier [`docs/conception.mmd`](conception.mmd) pour représenter le
 #### Décision
 Adopter l'arborescence suivante pour le stockage des fichiers téléchargés :
 ```
-dataAgent/
+openDataAgent/
 ├── data/
 │   ├── raw/                  # Fichiers bruts téléchargés
 │   │   ├── <id_execution>/   # Identifiant unique par exécution (ex : 20261010_143022_a1b2c3)
@@ -51,7 +51,7 @@ dataAgent/
 - **Persistance** : Le registre (`registry.json`) est stocké dans `data/` pour être conservé entre les exécutions.
 
 ### Impact
-- Documenté dans [`STOCKAGE.md`](STOCKAGE.md).
+- Documenté dans [`stockage.md`](stockage.md).
 
 ---
 
@@ -90,7 +90,7 @@ Utiliser l'`id_execution` et l'`id_ressource` pour éviter les conflits de noms 
 - **Traçabilité** : Permet de retrouver l'origine d'un fichier.
 
 ### Impact
-- Documenté dans [`STOCKAGE.md`](STOCKAGE.md).
+- Documenté dans [`stockage.md`](stockage.md).
 
 ---
 
@@ -108,7 +108,7 @@ Ajouter des tests pour valider le traitement des formats non tabulaires (ZIP, Ge
 - **Robustesse** : Valider le traitement des formats complexes.
 
 ### Impact
-- Ajout des tests dans [`planTest.md`](planTest.md).
+- Ajout des tests dans [`plan_test.md`](plan_test.md).
 
 ---
 
@@ -138,14 +138,14 @@ Le projet s'exécute :
 - **Flexibilité** : Adapté à un usage personnel ou en ligne.
 
 ### Impact
-- Documenté dans [`ARCHITECTURE.md`](ARCHITECTURE.md).
+- Documenté dans [`architecture.md`](architecture.md).
 
 ---
 
 ### 8. Journalisation des décisions
 
 #### Décision
-Créer ce fichier (`DECISIONS_CONCEPTION.md`) pour journaliser les décisions de conception.
+Créer ce fichier (`decisions_conception.md`) pour journaliser les décisions de conception.
 
 ### Justification
 - **Traçabilité** : Conserver une trace des choix de conception et de leur justification.

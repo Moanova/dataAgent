@@ -6,7 +6,7 @@ Ce document décrit l'organisation du **stockage des fichiers téléchargés** d
 ## 2. Arborescence
 Les fichiers sont stockés dans le répertoire `data/` avec la structure suivante :
 ```
-dataAgent/
+openDataAgent/
 ├── data/
 │   ├── raw/                  # Fichiers bruts téléchargés
 │   │   ├── <id_execution>/   # Identifiant unique par exécution (ex : 20261010_143022_a1b2c3)
@@ -38,7 +38,7 @@ dataAgent/
 
 ### 3.3. Exemple concret
 ```
-dataAgent/
+openDataAgent/
 ├── data/
 │   ├── raw/
 │   │   ├── 20261010_143022_a1b2c3/
@@ -62,4 +62,3 @@ dataAgent/
 
 ## 6. Améliorations futures
 - Ajout d'un **mécanisme de nettoyage automatique** pour les anciennes exécutions.
-- Support pour le **stockage distant** (ex : S3, Google Drive).

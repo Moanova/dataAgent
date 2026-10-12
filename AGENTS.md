@@ -1,6 +1,6 @@
 # Guide pour les Agents (AGENTS.md)
 
-Ce fichier décrit la **méthode de travail** à suivre pour contribuer au projet **dataAgent**.
+Ce fichier décrit la **méthode de travail** à suivre pour contribuer au projet **openDataAgent**.
 Il est automatiquement chargé à chaque séance, mais **aucune action structurante n'est déclenchée sans demande explicite** de l'utilisateur.
 
 ---
@@ -8,11 +8,15 @@ Il est automatiquement chargé à chaque séance, mais **aucune action structura
 ## **1. Reprise de contexte à chaque séance**
 ### **Étapes automatiques (sans demande utilisateur)**
 À chaque début de séance, l'agent **recharge automatiquement** les fichiers clés suivants pour reprendre le contexte :
-1. **`SESSIONS.md`** : Pour prendre connaissance des **actions, décisions et blocages** des séances précédentes.
-2. **`dev/kanban.md`** : Pour prendre connaissance du tableau des tâches.
-3. **`plan_tests.md`** : Pour prendre connaissance des tests associés aux tâches.
-4. **`ARCHITECTURE.md` et `DECISIONS_CONCEPTION.md`** : Pour prendre connaissance du contexte technique du projet.
-5. **`docs/architecture/*.md`** : Pour prendre connaissance des contrats et des invariants.
+1. **`docs/design/conception.md`** pour reprendre connaissance du schéma de conception du projet.
+2. **`docs/specs/architecture.md`** pour reprende connaissance de l'architecture technique du projet.
+3. **`docs/design/decisions_conception.md`** : pour reprendre connaissance des choix de conception du projet.
+4. **`docs/architecture/*.md`** : pour reprendre connaissance des contrats et des invariants.
+5. **`tests/plan_tests.md`** : pour reprendre connaissance des tests associés aux tâches.
+6. **`docs/test/acceptation.md`** : pour reprendre connaissance des critères d'acceptation des réalisations du projet.
+7. **`SESSIONS.md`** : pour reprendre connaissance des **actions, décisions et blocages** des séances précédentes.
+8. **`dev/kanban.md`** : pour reprendre connaissance du tableau des tâches.
+
 
 ### **Étapes à suivre (sur demande uniquement)**
 1. **Vérifier les derniers commits** (si modifications hors session).
@@ -29,6 +33,7 @@ Il est automatiquement chargé à chaque séance, mais **aucune action structura
 ---
 
 ## **2. Workflow par tâche**
+
 ### **Étape 1 : Choix de la tâche (Kanban)**
 - **Action** : Identifier **uniquement la tâche explicitement demandée par l'utilisateur** dans `kanban.md` et la déplacer dans le bon paragraphe ("À faire", "En cours", "Terminé").
   - *L'agent ne choisit **jamais** automatiquement une tâche prioritaire, mais peut proposer une évaluation des priorités si l'utilisateur le demande.*
@@ -48,8 +53,8 @@ Il est automatiquement chargé à chaque séance, mais **aucune action structura
 - **Actions** :
   1. Lire les spécifications associées à la tâche dans les sources suivantes :
      - `docs/architecture/<nom_contrat>.md` (ex : `rechercher_jeux.md`).
-     - `DECISIONS_CONCEPTION.md` (pour les choix techniques).
-     - `plan_tests.md` (pour les tests associés).
+     - `docs/design/decisions_conception.md` (pour les choix techniques).
+     - `tests/plan_tests.md` (pour les tests associés).
      - `SESSIONS.md` (pour les décisions passées).
   2. Établir un **plan détaillé** avec :
      - Sous-tâches (ex : "Créer le schéma Pydantic pour `mots_cles`").
@@ -82,9 +87,10 @@ Il est automatiquement chargé à chaque séance, mais **aucune action structura
        ```
   2. **Itérer en cas d’échec** :
      - **1ère tentative** : Corriger directement.
-     - **2ème tentative** : Relire le fichier et vérifier les hypothèses.
-     - **3ème tentative** : **Arrêter** et documenter le blocage.
-- **Règle d'arrêt** : Si un test échoue **3 fois**, créer une entrée dans [`BLOCKERS.md`](BLOCKERS.md) et passer à une autre tâche.
+     - **2ème tentative** : vérifier les hypothèses et corriger.
+     - **3ème tentative** : relire la documentation, vérifier les hypothèses et corriger.
+     - **4ème tentative** : **Arrêter** et documenter le blocage.
+- **Règle d'arrêt** : Si un test échoue à la quatrième tentative, créer une entrée dans [`BLOCKERS.md`](BLOCKERS.md) et passer à une autre tâche.
 - **Exemple de demande** :
   ```markdown
   Peux-tu lancer les tests pour la tâche T2.1 et corriger les erreurs si nécessaire ?
@@ -94,8 +100,8 @@ Il est automatiquement chargé à chaque séance, mais **aucune action structura
 
 ### **Étape 5 : Validation (sur demande)**
 - **Actions** :
-  1. Valider que tous les tests passent.
-  2. Mettre à jour `kanban.md` (déplacer la tâche en **✅ Terminé**).
+  1. Valider que tous les tests passent et que les critères d'acceptation sont respectés.
+  2. Mettre à jour `dev/kanban.md` (déplacer la tâche en **✅ Terminé**).
   3. Commiter les changements avec un message explicite.
 - **Exemple de demande** :
   ```markdown
@@ -169,10 +175,10 @@ Les actions suivantes peuvent être demandées en séance **sans être référen
 ---
 
 ## **5. Résumé des fichiers clés**
-| Fichier                  | Rôle                                                                                     |
-|--------------------------|------------------------------------------------------------------------------------------|
-| `SESSIONS.md`             | Journal des **actions, décisions et blocages** par séance. Utilisé pour la reprise de contexte. |
-| `dev/kanban.md`          | Suivi des tâches (À faire → En cours → Terminé).                                         |
-| `plan_tests.md`          | Plan de tests (TU, TI, TB) et couverture des critères d'acceptabilité.                   |
-| `docs/tasks/`            | Suivi détaillé par tâche (optionnel).                                                    |
-| `BLOCKERS.md`            | Liste des **blocages non résolus** (documentés après 3 échecs de test).                  |
+| Fichier                  | Rôle                                                                                            |
+|--------------------------|-------------------------------------------------------------------------------------------------|
+| `SESSIONS.md`            | Journal des **actions, décisions et blocages** par séance. Utilisé pour la reprise de contexte. |
+| `dev/kanban.md`          | Suivi des tâches (À faire → En cours → Terminé).                                                |
+| `tests/plan_tests.md`    | Plan de tests (TU, TI, TB) et couverture des critères d'acceptabilité.                          |
+| `docs/tasks/`            | Suivi détaillé par tâche (optionnel).                                                           |
+| `BLOCKERS.md`            | Liste des **blocages non résolus** (documentés après 4 échecs de test).                         |

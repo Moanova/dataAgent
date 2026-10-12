@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Module de configuration du logging pour dataAgent.
+Module de configuration du logging pour openDataAgent.
 Utilise `structlog` pour produire des logs structurés au format JSON.
 """
 
@@ -41,7 +41,7 @@ def configure_logging(id_execution: Optional[str] = None) -> None:
     os.makedirs("logs", exist_ok=True)
     
     # Ouvrir le fichier de logs en mode append
-    _log_file = open(f"logs/dataAgent_{id_execution}.log", "a", encoding="utf-8")
+    _log_file = open(f"logs/openDataAgent_{id_execution}.log", "a", encoding="utf-8")
     
     # Configuration des processors pour structlog
     shared_processors = [
@@ -87,7 +87,7 @@ def get_logger(name: str) -> structlog.stdlib.BoundLogger:
     Retourne un logger configuré pour le module spécifié.
     
     Args:
-        name (str): Nom du module (ex : "dataAgent.core.search").
+        name (str): Nom du module (ex : "openDataAgent.core.search").
     
     Returns:
         structlog.stdlib.BoundLogger: Logger configuré.

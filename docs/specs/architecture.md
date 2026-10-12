@@ -1,7 +1,7 @@
-# Architecture du projet dataAgent
+# Architecture du projet openDataAgent
 
 ## 1. Objet
-Ce document décrit l'architecture technique du projet **dataAgent**, conçu pour l'acquisition de données depuis **data.gouv.fr** via des agents Mistral.
+Ce document décrit l'architecture technique du projet **openDataAgent**, conçu pour l'acquisition de données depuis **data.gouv.fr** via des agents Mistral.
 
 ## 2. Diagramme des flux
 Le diagramme des flux est disponible dans [`docs/conception.mmd`](docs/conception.mmd).
@@ -17,7 +17,7 @@ Il couvre :
 | **Code Python** | Exécution des appels HTTP, filtre de licence, normalisation, persistance. | Répertoire racine du projet. |
 | **Contrats** | Schémas JSON des fonctions exposées aux agents. | `contrats/` |
 | **Documentation** | Description sémantique des contrats et critères d'acceptabilité. | `docs/` |
-| **Stockage** | Fichiers téléchargés et registre des sources inaccessibles. | `data/` (voir [`STOCKAGE.md`](STOCKAGE.md)). |
+| **Stockage** | Fichiers téléchargés et registre des sources inaccessibles. | `data/` (voir [`stockage.md`](stockage.md)). |
 
 ## 4. Dépendances
 Les dépendances seront définies lors de la première itération d'implémentation.
@@ -33,7 +33,7 @@ Le projet s'exécute :
 
 ## 6. Sécurité
 Les données de **data.gouv.fr** étant publiques, aucune mesure de sécurité spécifique n'est requise pour le chiffrement ou les listes blanches.
-Voir [`REGISTRE.md`](REGISTRE.md) pour la gestion des sources inaccessibles.
+Voir [`registre.md`](registre.md) pour la gestion des sources inaccessibles.
 
 ## 7. Améliorations futures
 - Ajout d'un mécanisme de **réessai intelligent** pour les échecs techniques.

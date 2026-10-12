@@ -22,7 +22,7 @@ def cleanup_logs():
         _log_file = None
     
     # Nettoyage après les tests
-    log_files = [f for f in os.listdir("logs") if f.startswith("dataAgent_test_")]
+    log_files = [f for f in os.listdir("logs") if f.startswith("openDataAgent_test_")]
     for log_file in log_files:
         try:
             os.remove(os.path.join("logs", log_file))
@@ -36,7 +36,7 @@ def test_log_format_json(cleanup_logs):
     log_to_file("Test event", key="value")
     
     # Vérifier que le fichier de logs existe et contient un JSON valide
-    log_file_path = "logs/dataAgent_test_json.log"
+    log_file_path = "logs/openDataAgent_test_json.log"
     assert os.path.exists(log_file_path), "Le fichier de logs n'a pas été créé"
     
     with open(log_file_path, "r", encoding="utf-8") as f:
@@ -55,7 +55,7 @@ def test_bind_context():
     log_to_file("Test context")
     
     # Vérifier que les métadonnées sont bien dans le log
-    log_file_path = "logs/dataAgent_test_context.log"
+    log_file_path = "logs/openDataAgent_test_context.log"
     with open(log_file_path, "r", encoding="utf-8") as f:
         log_entry = json.loads(f.readline())
         assert log_entry["id_execution"] == "test_context"
@@ -69,7 +69,7 @@ def test_log_to_file_creation():
     log_to_file("Test file creation", test_key="test_value")
     
     # Vérifier que le fichier existe et contient le log
-    log_file_path = "logs/dataAgent_test_file_creation.log"
+    log_file_path = "logs/openDataAgent_test_file_creation.log"
     assert os.path.exists(log_file_path), "Le fichier de logs n'a pas été créé"
     
     with open(log_file_path, "r", encoding="utf-8") as f:
@@ -86,7 +86,7 @@ def test_log_levels():
     log_to_file("Test info level")
     
     # Vérifier que le log est bien écrit
-    log_file_path = "logs/dataAgent_test_log_levels.log"
+    log_file_path = "logs/openDataAgent_test_log_levels.log"
     with open(log_file_path, "r", encoding="utf-8") as f:
         log_entry = json.loads(f.readline())
         assert log_entry["event"] == "Test info level"

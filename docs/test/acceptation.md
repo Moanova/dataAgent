@@ -113,22 +113,22 @@ Les critères fonctionnels dérivent directement de la documentation des contrat
 
 ## 4. Synthèse
 
-| Critère | Nature | Blocage | Tests |
-|---|---|---|---|
-| CA-1 | Fonctionnel | Bloquant | TU-01 à TU-04, TI-08 |
-| CA-2 | Fonctionnel | Bloquant | TU-21 à TU-24, TI-07, TI-08, TA-03 |
-| CA-3 | Fonctionnel | Bloquant | TI-01, TI-02, TI-06, TA-01, TA-02 |
-| CA-4 | Fonctionnel | Bloquant | TI-03, TI-05, TB-02 |
-| CA-5 | Fonctionnel | Bloquant | TU-12, TU-17 à TU-20, TI-04 |
-| CA-6 | Fonctionnel | Bloquant | TU-05 à TU-11 |
-| CA-7 | Fonctionnel | Bloquant | TU-19, TU-20, TI-07, TB-05 |
-| CA-8 | Fonctionnel | Bloquant | TU-25 à TU-28, TC-01 à TC-05 |
-| CA-9 | Fonctionnel | Bloquant | TB-01 à TB-03, TB-05 |
-| CA-10 | Non fonctionnel | Avertissement | TA-04, TB-04 |
-| CA-11 | Non fonctionnel | Avertissement | TA-05 |
-| CA-12 | Non fonctionnel | Avertissement | TB-01 à TB-03 |
-| CA-13 | Non fonctionnel | Mixte | TU-07, TI-05 |
-| CA-14 | Procédural | Revue | TC-05 |
+| Critère | Nature          | Blocage       | Tests                              |
+|---------|-----------------|---------------|------------------------------------|
+| CA-1    | Fonctionnel     | Bloquant      | TU-01 à TU-04, TI-08               |
+| CA-2    | Fonctionnel     | Bloquant      | TU-21 à TU-24, TI-07, TI-08, TA-03 |
+| CA-3    | Fonctionnel     | Bloquant      | TI-01, TI-02, TI-06, TA-01, TA-02  |
+| CA-4    | Fonctionnel     | Bloquant      | TI-03, TI-05, TB-02                |
+| CA-5    | Fonctionnel     | Bloquant      | TU-12, TU-17 à TU-20, TI-04        |
+| CA-6    | Fonctionnel     | Bloquant      | TU-05 à TU-11                      |
+| CA-7    | Fonctionnel     | Bloquant      | TU-19, TU-20, TI-07, TB-05         |
+| CA-8    | Fonctionnel     | Bloquant      | TU-25 à TU-28, TC-01 à TC-05       |
+| CA-9    | Fonctionnel     | Bloquant      | TB-01 à TB-03, TB-05               |
+| CA-10   | Non fonctionnel | Avertissement | TA-04, TB-04                       |
+| CA-11   | Non fonctionnel | Avertissement | TA-05                              |
+| CA-12   | Non fonctionnel | Avertissement | TB-01 à TB-03                      |
+| CA-13   | Non fonctionnel | Mixte         | TU-07, TI-05                       |
+| CA-14   | Procédural      | Revue         | TC-05                              |
 
 ## 5. Règles d'application
 

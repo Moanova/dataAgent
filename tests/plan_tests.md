@@ -80,7 +80,7 @@ Tests isolés, sans réseau. La couche HTTP est simulée.
 
 | Id | Cas de test | Résultat attendu | Blocage |
 |---|---|---|---|
-| TU-29 | Log au format JSON avec `id_execution` | Fichier `logs/dataAgent_<id>.log` contient un JSON valide avec `timestamp`, `event`, `id_execution` | Bloquant (CA-2) |
+| TU-29 | Log au format JSON avec `id_execution` | Fichier `logs/openDataAgent_<id>.log` contient un JSON valide avec `timestamp`, `event`, `id_execution` | Bloquant (CA-2) |
 | TU-30 | Contexte dynamique (`bind_context`) | Les métadonnées ajoutées via `bind_context` apparaissent dans les logs | Bloquant (CA-2) |
 | TU-31 | Écriture dans le fichier de logs | Le fichier est créé et contient les logs attendus | Bloquant (CA-2) |
 | TU-32 | Niveaux de log (`DEBUG`, `INFO`, `ERROR`) | Les logs respectent les niveaux demandés (ex : `DEBUG` n'apparaît pas en `INFO`) | Avertissement (CA-2) |

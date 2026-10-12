@@ -8,7 +8,7 @@ import requests
 from src.utils.logging import get_logger, bind_context, log_to_file
 
 # Initialiser le logger pour ce module
-logger = get_logger("dataAgent.core.search")
+logger = get_logger("openDataAgent.core.search")
 
 
 def rechercher_jeux(

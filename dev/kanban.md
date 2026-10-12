@@ -1,6 +1,6 @@
-# Kanban du projet dataAgent
+# Kanban du projet openDataAgent
 
-Ce document suit l'avancement des tâches pour l'implémentation du projet **dataAgent**. Il est organisé en **4 colonnes** :
+Ce document suit l'avancement des tâches pour l'implémentation du projet **openDataAgent**. Il est organisé en **4 colonnes** :
 - **📌 À faire** : Tâches non commencées.
 - **🚧 En cours** : Tâches en cours d'implémentation.
 - **🔍 En revue** : Tâches prêtes pour une revue ou des tests.

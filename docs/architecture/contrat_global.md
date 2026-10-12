@@ -44,15 +44,15 @@ Aucune fonction ne lève d'exception vers l'agent. Toute défaillance est exprim
 
 ## Codes de statut
 
-| Code | Signification | Action attendue de l'agent |
-|---|---|---|
-| `succes` | Opération réussie. | Exploiter `donnees`. |
-| `erreur_parametres` | Arguments invalides ou manquants. | Corriger les arguments et réessayer. |
-| `jeu_introuvable` | Identifiant de jeu inconnu ou inaccessible. | Ne pas réessayer avec le même identifiant ; reprendre à `rechercher_jeux`. |
-| `ressource_introuvable` | Identifiant de ressource jamais vu par `lister_ressources`. | Appeler `lister_ressources` sur le jeu concerné. |
-| `ressource_non_indexee` | Ressource absente de l'API tabulaire. | Basculer sur `telecharger_brut`. |
-| `licence_refusee` | Licence du jeu incompatible avec la politique. | Exclure la source ; ne pas tenter d'accès direct. |
-| `echec_technique` | Échec réseau, blocage serveur, expiration. | Selon le champ `donnees.suggestion` : réessayer, basculer, ou abandonner. |
+| Code                    | Signification                                               | Action attendue de l'agent                                                 |
+|-------------------------|-------------------------------------------------------------|----------------------------------------------------------------------------|
+| `succes`                | Opération réussie.                                          | Exploiter `donnees`.                                                       |
+| `erreur_parametres`     | Arguments invalides ou manquants.                           | Corriger les arguments et réessayer.                                       |
+| `jeu_introuvable`       | Identifiant de jeu inconnu ou inaccessible.                 | Ne pas réessayer avec le même identifiant ; reprendre à `rechercher_jeux`. |
+| `ressource_introuvable` | Identifiant de ressource jamais vu par `lister_ressources`. | Appeler `lister_ressources` sur le jeu concerné.                           |
+| `ressource_non_indexee` | Ressource absente de l'API tabulaire.                       | Basculer sur `telecharger_brut`.                                           |
+| `licence_refusee`       | Licence du jeu incompatible avec la politique.              | Exclure la source ; ne pas tenter d'accès direct.                          |
+| `echec_technique`       | Échec réseau, blocage serveur, expiration.                  | Selon le champ `donnees.suggestion` : réessayer, basculer, ou abandonner.  |
 
 ## Conventions transversales
 

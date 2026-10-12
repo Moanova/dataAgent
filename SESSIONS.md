@@ -1,6 +1,6 @@
 # Journal des Séances (SESSIONS.md)
 
-Ce fichier documente les **actions clés** et **décisions** prises lors des séances de travail sur le projet **dataAgent**.
+Ce fichier documente les **actions clés** et **décisions** prises lors des séances de travail sur le projet **openDataAgent**.
 Il est mis à jour automatiquement à la fin de chaque session et relu au début de la suivante pour reprendre le contexte.
 
 ---
@@ -16,7 +16,7 @@ Il est mis à jour automatiquement à la fin de chaque session et relu au début
      - Configuration de `structlog` pour produire des logs **au format JSON**.
      - Ajout des champs obligatoires : `timestamp`, `event`, `id_execution`, `logger`.
      - Gestion des métadonnées dynamiques via `bind_context()`.
-     - Écriture des logs dans `logs/dataAgent_<id_execution>.log`.
+     - Écriture des logs dans `logs/openDataAgent_<id_execution>.log`.
    - Intégration dans `src/core/search.py` pour logger les appels, succès et erreurs.
 
 2. **Tests unitaires** :
@@ -39,7 +39,7 @@ Il est mis à jour automatiquement à la fin de chaque session et relu au début
    - Automatisation du rechargement des fichiers clés (`kanban.md`, `plan_tests.md`, etc.).
 
 ### **Décisions**
-- **Format des logs** : JSON pour les fichiers (`logs/dataAgent_<id_execution>.log`), clé-valeur pour la console.
+- **Format des logs** : JSON pour les fichiers (`logs/openDataAgent_<id_execution>.log`), clé-valeur pour la console.
 - **Champs obligatoires** : `timestamp`, `event`, `id_execution`, `logger`.
 - **Métadonnées dynamiques** : Utilisation de `bind_context()` pour ajouter des champs comme `id_jeu` ou `id_ressource`.
 - **Gestion des erreurs** : Les erreurs d'écriture dans les fichiers de logs sont gérées silencieusement.
