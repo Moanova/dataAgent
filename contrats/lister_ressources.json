@@ -6,7 +6,7 @@
     "parameters": {
       "type": "object",
       "properties": {
-        "id_jeu": { "type": "string" }
+        "id_jeu": { "type": "string", "description": "Identifiant du jeu de données, issu de rechercher_jeux." }
       },
       "required": ["id_jeu"]
     },
@@ -27,6 +27,7 @@
           "properties": {
             "ressources": {
               "type": "array",
+              "description": "Inventaire des ressources du jeu avec classification (identifiant, titre, format, taille, classe, disponibilité API tabulaire, hébergement plateforme, URL).",
               "items": {
                 "type": "object",
                 "properties": {

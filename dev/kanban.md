@@ -15,11 +15,6 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 ---
 
 ### 2. Implémentation des contrats
-- [ ] **T2.1** : Créer les schémas Pydantic pour les contrats (`src/contracts/`).
-  - [ ] `rechercher_jeux.py` (schéma des entrées/sorties).
-  - [ ] `lister_ressources.py`.
-  - [ ] `interroger_ressource.py`.
-  - [ ] `telecharger_brut.py`.
 - [ ] **T2.2** : Valider les schémas avec `jsonschema` pour les réponses de l'API data.gouv.fr.
 
 ---
@@ -97,3 +92,4 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 - [X] **T1.1** : Créer la structure des dossiers (`src/`, `tests/`, `src/contracts/`, `src/core/`, `src/utils/`). *(Terminé le 10/10/2026)*
 - [X] **T1.2** : Configurer le fichier `.env` avec les variables d'environnement (ex : `DATA_GOUV_API_URL`). *(Terminé le 10/10/2026)*
 - [X] **T1.3** : Initialiser le logging avec `structlog` (`src/utils/logging.py`). *(Terminé le 10/10/2026)*
+- [X] **T2.1** : Créer les schémas Pydantic pour les contrats (`src/contracts/`). *(Terminé le 12/10/2026)*

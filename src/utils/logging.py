@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+# ---------------------------------------------------------------------
+# Application  : openDataAgent
+# Script       : logging.py
+# Version      : 1
+# Date         : 12-10-2026
+# Design       : TSC
+# Build        : Mistral Vibe
+# ---------------------------------------------------------------------
 """
 Module de configuration du logging pour openDataAgent.
 Utilise `structlog` pour produire des logs structurés au format JSON.

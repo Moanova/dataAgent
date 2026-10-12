@@ -6,7 +6,7 @@
     "parameters": {
       "type": "object",
       "properties": {
-        "id_ressource": { "type": "string" },
+        "id_ressource": { "type": "string", "description": "Identifiant de la ressource, issu de lister_ressources." },
         "page": {
           "type": "integer",
           "minimum": 1,
@@ -22,22 +22,25 @@
         },
         "filtre": {
           "type": "object",
+          "description": "Filtre optionnel sur une colonne (une colonne a la fois).",
           "properties": {
-            "colonne": { "type": "string" },
-            "valeur": { "type": "string" },
+            "colonne": { "type": "string", "description": "Nom de la colonne a filtrer." },
+            "valeur": { "type": "string", "description": "Valeur de comparaison." },
             "operateur": {
               "type": "string",
               "enum": ["exact", "contient", "inferieur", "superieur", "strictement_inferieur", "strictement_superieur"],
-              "default": "exact"
+              "default": "exact",
+              "description": "Operateur de comparaison (defaut : exact)."
             }
           },
           "required": ["colonne", "valeur"]
         },
         "tri": {
           "type": "object",
+          "description": "Tri optionnel sur une colonne.",
           "properties": {
-            "colonne": { "type": "string" },
-            "ordre": { "type": "string", "enum": ["croissant", "decroissant"] }
+            "colonne": { "type": "string", "description": "Nom de la colonne a trier." },
+            "ordre": { "type": "string", "enum": ["croissant", "decroissant"], "description": "Ordre de tri (croissant ou decroissant)." }
           }
         }
       },

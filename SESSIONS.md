@@ -5,6 +5,52 @@ Il est mis à jour automatiquement à la fin de chaque session et relu au début
 
 ---
 
+## **Séance du 12/10/2026**
+
+### **Contexte**
+- **Objectif** : Renommage du projet (dataAgent → openDataAgent), ajout des en-têtes standard, puis implémentation de la tâche T2.1 (schémas Pydantic pour les contrats).
+- **Tâches réalisées** : T2.1 (schémas Pydantic).
+
+### **Actions réalisées**
+
+1. **Renommage et en-têtes** :
+   - Vérification qu'aucune référence à `dataAgent` ne persiste dans le code.
+   - Ajout de l'en-tête standard (Application / Script / Version / Date / Design / Build) à `src/core/search.py` et `src/utils/logging.py`.
+
+2. **Implémentation de T2.1 — Schémas Pydantic** :
+   - Création de `src/contracts/base.py` : `StatutEnum` (7 codes), `ClasseRessource` (5 valeurs), `ReponseBase`, `JeuResume`, `RessourceResume`, et `valider_coherence_contrat()`.
+   - Création de `src/contracts/rechercher_jeux.py` : `TriRecherche`, `FenetreMaj`, `RechercherJeuxInput` (mots_cles, tri, fenetre_maj, limite 1-20), `RechercherJeuxOutput`.
+   - Création de `src/contracts/lister_ressources.py` : `ListerRessourcesInput` (id_jeu), `ListerRessourcesOutput` (ressources, indetermination).
+   - Création de `src/contracts/interroger_ressource.py` : `OperateurFiltre`, `OrdreTri`, `FiltreColonne`, `TriColonne`, `InterrogerRessourceInput` (pagination 1-100, filtre, tri), `InterrogerRessourceOutput`.
+   - Création de `src/contracts/telecharger_brut.py` : `TelechargerBrutInput` (id_ressource), `TelechargerBrutOutput` (chemin_local, format, licence, suggestion).
+   - Création de `src/contracts/__init__.py` : exports publics de tous les modèles.
+
+3. **Tests** :
+   - Création de `tests/unit/test_contracts.py` avec 53 tests couvrant TU-25 à TU-28, TC-01 à TC-05, et la validation des modèles Pydantic (bornes, défauts, champs obligatoires).
+   - **Résultat : 53/53 tests PASSED** + 5 tests existants toujours PASSED = **58/58 au total**.
+
+4. **Corrections des contrats JSON** (détectées par TC-04) :
+   - Ajout des descriptions manquantes dans `contrats/lister_ressources.json` (`id_jeu`, `donnees.ressources`).
+   - Ajout des descriptions manquantes dans `contrats/interroger_ressource.json` (`id_ressource`, `filtre` + sous-propriétés, `tri` + sous-propriétés).
+   - Ajout des descriptions manquantes dans `contrats/telecharger_brut.json` (`id_ressource`).
+   - Ajout des descriptions manquantes dans `contrats/rechercher_jeux.json` (`donnees.jeux`).
+
+5. **Documentation** :
+   - Création de `docs/tasks/T2.1_schemas_pydantic.md` (suivi de tâche, nom sans caractères spéciaux).
+   - Mise à jour de `dev/kanban.md` : T2.1 déplacée en **✅ Terminé**.
+
+### **Décisions**
+- **Pydantic v2** : Utilisation de l'API Pydantic 2.14.1 (`model_fields`, `Field`, `BaseModel`).
+- **Enums `str, Enum`** : Héritage mixte pour compatibilité JSON (sérialisation en string).
+- **Miroir fidèle JSON ↔ Pydantic** : Les modèles Pydantic reflètent exactement les contrats JSON (champs, types, enums, bornes, obligatoires).
+- **Validation de cohérence** : Fonction `valider_coherence_contrat()` dans `base.py` pour détecter toute divergence JSON ↔ Pydantic.
+- **Nommage sans caractères spéciaux** : Fichier de suivi `T2.1_schemas_pydantic.md` (sans accent) pour éviter les problèmes de versionnement/récupération.
+
+### **Blocages**
+- Aucun.
+
+---
+
 ## **Séance du 10/10/2026**
 ### **Contexte**
 - **Objectif** : Finaliser la tâche T1.3 (logging avec `structlog`) et préparer l'intégration du logging dans les autres modules.

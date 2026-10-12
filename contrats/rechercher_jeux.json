@@ -51,6 +51,7 @@
             },
             "jeux": {
               "type": "array",
+              "description": "Liste resumée des jeux de données (identifiant, titre, organisation, licence, date de mise à jour, nombre de ressources, URL).",
               "items": {
                 "type": "object",
                 "properties": {

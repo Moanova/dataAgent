@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+# ---------------------------------------------------------------------
+# Application  : openDataAgent
+# Script       : search.py
+# Version      : 1
+# Date         : 12-10-2026
+# Design       : TSC
+# Build        : Mistral Vibe
+# ---------------------------------------------------------------------
 """
 Module pour la recherche de jeux de données sur data.gouv.fr.
 """

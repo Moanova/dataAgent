@@ -6,7 +6,7 @@
     "parameters": {
       "type": "object",
       "properties": {
-        "id_ressource": { "type": "string" }
+        "id_ressource": { "type": "string", "description": "Identifiant de la ressource, issu de lister_ressources." }
       },
       "required": ["id_ressource"]
     },
