@@ -26,9 +26,6 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 #### 3.2. Inventaire des ressources (`lister_ressources`)
 
 #### 3.3. Interrogation des ressources (`interroger_ressource`)
-- [ ] **T3.3.1** : Implémenter l'appel à l'API tabulaire (`src/core/query.py`).
-- [ ] **T3.3.2** : Gérer la pagination, le filtrage et le tri.
-- [ ] **T3.3.3** : Retourner une recommandation pour les volumes élevés.
 
 #### 3.4. Téléchargement brut (`telecharger_brut`)
 
@@ -85,6 +82,11 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 ---
 
 ## ✅ Terminé
+
+- [X] **T3.3.2** : Gérer la pagination, le filtrage et le tri. *(Termine le 13/10/2026 - traductions livrees avec T3.3.1 ; consolide : page_suivante (contrat v1.1.0), erreur actionnable colonne inexistante)*
+- [X] **T3.3.3** : Retourner une recommandation pour les volumes élevés. *(Termine le 13/10/2026 - livree avec T3.3.1, revue formelle conclurante : seuil 5000 configurable, TI-09 en trois volets)*
+
+- [X] **T3.3.1** : Implémenter l'appel à l'API tabulaire (`src/core/query.py`). *(Termine le 13/10/2026 - API sondée en réel au préalable, détection api_tabulaire incluse, max taille_page 50, validé en réel : films CNC avec filtre et tri)*
 
 - [X] **T3.4.3** : Gérer les échecs techniques et consigner dans le registre. *(Termine le 13/10/2026 - TI-08 passe, motif serveur_origine_bloque statu quo, organisation reportee)*
 

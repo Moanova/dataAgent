@@ -17,9 +17,9 @@ refuser tout identifiant jamais delivre par la chaine.
 from typing import Any, Dict, Optional
 
 from src.utils.logging import get_logger, bind_context, log_to_file
-from src.utils.http import lister_ressources_api
 from src.utils.registry import RegistreSourcesInaccessibles
 from src.core.classification import classer_ressource
+from src.utils.http import lister_ressources_api, est_indexee_api_tabulaire
 
 logger = get_logger("openDataAgent.core.resources")
 
@@ -55,8 +55,10 @@ def _normaliser_ressource(ressource: Dict[str, Any]) -> Dict[str, Any]:
         "format": ressource.get("format"),
         "taille_octets": ressource.get("filesize"),
         "classe": classe,
-        # Detection API tabulaire : T3.3.x ; provisoirement faux.
-        "api_tabulaire": False,
+        # Detection API tabulaire (T3.3.1) : ping /resources/{rid}/ ;
+        # seulement pour les fichiers tabulaires (les autres ne sont
+        # jamais interrogeables), echec reseau -> non indexee (sur).
+        "api_tabulaire": classe == "fichier_tabulaire" and est_indexee_api_tabulaire(ressource["id"]),
         # v1 : filetype "file" = heberge sur la plateforme, "remote" sinon.
         "heberge_sur_plateforme": ressource.get("filetype") == "file",
         "url": ressource["url"],

@@ -28,6 +28,8 @@ URL_RECHERCHE = "https://www.data.gouv.fr/api/1/datasets/"
 def url_jeu(id_jeu: str) -> str:
     return f"https://www.data.gouv.fr/api/1/datasets/{id_jeu}/"
 URL_FICHIER = "https://exemple.org/donnees/budget.csv"
+def ping_tabulaire(id_ressource: str) -> str:
+    return f"https://tabular-api.data.gouv.fr/api/resources/{id_ressource}/"
 
 
 @pytest.fixture
@@ -84,6 +86,7 @@ def test_ti08_flux_complet_exclusion_et_echec(registre, tmp_path, monkeypatch):
             {"id": "res-telecharge", "title": "Budget", "url": URL_FICHIER, "format": "csv", "mime": "text/csv", "filesize": 10}
         ],
     }
+    responses.add(responses.GET, ping_tabulaire("res-telecharge"), json={"links": []}, status=200)
     responses.add(responses.GET, url_jeu("jeu-ouvert"), json=reponse_inventaire, status=200)
 
     inventaire = lister_ressources("jeu-ouvert", registre=registre)
@@ -132,6 +135,7 @@ def test_flux_complet_telechargement_reussi(registre, tmp_path, monkeypatch):
     recherche = rechercher_jeux(["budget"], registre=registre)
     assert recherche["donnees"]["jeux"][0]["id"] == "jeu-ok"
 
+    responses.add(responses.GET, ping_tabulaire("res-ok"), json={"links": []}, status=200)
     responses.add(responses.GET, url_jeu("jeu-ok"), json={
         "id": "jeu-ok",
         "title": "Jeu OK",
@@ -169,6 +173,7 @@ def test_entree_exclusion_non_alteree_par_echec(registre, tmp_path, monkeypatch)
     avant = registre.rapport_pour_agent()["sources_inaccessibles"][0]
 
     # Un echec de telechargement sur une autre source n'altere pas l'entree existante
+    responses.add(responses.GET, ping_tabulaire("res-autre"), json={"links": []}, status=200)
     responses.add(responses.GET, url_jeu("jeu-autre"), json={
         "id": "jeu-autre",
         "title": "Jeu autre",

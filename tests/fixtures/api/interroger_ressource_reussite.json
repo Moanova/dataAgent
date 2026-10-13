@@ -1,0 +1,51 @@
+{
+  "data": [
+    {
+      "__id": 1,
+      "Titre": "À bout de nerfs",
+      "Réalisation": "Pierre Seguin",
+      "Production": "Gem Productions",
+      "Format": "Court-métrage",
+      "Date": "1988",
+      "Nationalité": "France",
+      "N° de visa": "67623",
+      "Décision": "Tout public",
+      "Localisation du dossier visa": "Archives nationales"
+    },
+    {
+      "__id": 2,
+      "Titre": "About love Tokyo. Ai ni tsuite Tokyo",
+      "Réalisation": "Mitsuo Yanagimachi",
+      "Production": "Seisaku Iinkai",
+      "Format": "Long-métrage",
+      "Date": "1993",
+      "Nationalité": "Japon",
+      "N° de visa": "81776",
+      "Décision": "Tout public",
+      "Localisation du dossier visa": "Archives nationales"
+    },
+    {
+      "__id": 3,
+      "Titre": "A ay",
+      "Réalisation": "Reha Erdem",
+      "Production": "Images et Caméras - Métis Productions",
+      "Format": "Long-métrage",
+      "Date": "1991",
+      "Nationalité": "Turquie - France",
+      "N° de visa": "71420",
+      "Décision": "Tout public",
+      "Localisation du dossier visa": "Archives nationales"
+    }
+  ],
+  "links": {
+    "profile": "...",
+    "swagger": "...",
+    "next": "...",
+    "prev": null
+  },
+  "meta": {
+    "page": 1,
+    "page_size": 3,
+    "total": 95764
+  }
+}

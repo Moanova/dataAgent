@@ -34,6 +34,7 @@ REPERTOIRE_SCHEMAS = Path(__file__).resolve().parents[2] / "contrats" / "schemas
 SCHEMAS_CONNUS: Dict[str, str] = {
     "rechercher_jeux": "rechercher_jeux.reponse.json",
     "lister_ressources": "lister_ressources.reponse.json",
+    "interroger_ressource": "interroger_ressource.reponse.json",
 }
 
 

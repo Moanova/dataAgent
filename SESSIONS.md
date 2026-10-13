@@ -5,6 +5,44 @@ Il est mis à jour automatiquement à la fin de chaque session et relu au début
 
 ---
 
+## **Séance du 13/10/2026 — parties 1 à 4 (T3.1.x à T3.3.x, T4.1/T4.2, T6.1)**
+
+### **Contexte**
+- **Objectif initial** : référencer les tests du plan dans `tests/unit/`, puis implémenter les fonctions de base (sections 3.1 à 3.4), la CLI (T4.1/T4.2 périmètre search) et clore la section 3.3 (objectif de fin de séance : atteint).
+- **Contrainte levée** : contrairement aux séances précédentes, la sandbox a pu joindre data.gouv.fr en réel — TB-01 validé depuis la sandbox, fixtures réelles capturées, API tabulaire sondée avant implémentation.
+
+### **Actions réalisées**
+1. **Référencement des tests** (68 → commit `00cc036`) : chaque test de `tests/unit/` porte en commentaire sa référence `tests/plan_tests.md` (TU-xx/TC-xx) ou la mention « Test annexe ».
+2. **T3.1.1 à T3.1.4** (commit `e4f1227`) : client HTTP (`src/utils/http.py`, reprises 429/502/503, 404→`jeu_introuvable`, zéro exception), filtre de licence (`src/core/licence.py`), registre persistant (`src/utils/registry.py`), flux complet `rechercher_jeux`.
+3. **Réalignement API v1** (même commit) : le projet était incohérent (docs v1, code v2). Choix du concepteur : rester en v1. Vérifié en réel (`license` chaîne, `lov2`, `sort=-views`, `page`) ; schémas jsonschema, fixtures, docs et politique de licence alignés (acceptées : lov2, fr-lo, odc-odbl, cc-by, cc-by-sa, cc-zero, other-open).
+4. **T4.1/T4.2 périmètre search** (commit `5e05d31`) : CLI Typer (`src/main.py`), commande `search` ; bug Typer mode commande unique corrigé par `@app.callback()`. TB-01 validé en réel.
+5. **T3.1.5 pagination** (commit `512b893`) : écart de conception détecté (l'agent ne pouvait pas paginer) — contrat v1.1.0 (`page`, `page_courante`, `page_suivante`).
+6. **T3.2.1 à T3.2.3** (commit `2eb2811`) : inventaire (`src/core/resources.py`, inventaire en mémoire = invariant « métadonnées enregistrées »), classificateur (`src/core/classification.py`, listes fermées, ordre HTML > api_distante > tabulaire > autre > indetermine), indéterminations (sémantique actée : contradictoire tranché par priorité, inconnu seul → indetermine ; autoportance A3). Ajout section 5.3 (T5.3.1..4 intégration agentique) au kanban.
+7. **T3.4.1 à T3.4.3** (commit `0cfa8d6`) : téléchargement en flux avec écriture atomique (TI-07), stockage conforme `stockage.md` (collisions par suffixe numérique), échecs→registre (`serveur_origine_bloque`), inventaire enrichi (id_jeu, organisation, licence). TI-08 : premier test de chaîne complète. Validé en réel : CSV 4,3 Mo via API Insee.
+8. **T3.3.1 à T3.3.3** (commit de fin de séance) : API tabulaire **sondée en réel avant implémentation** (tabular-api.data.gouv.fr, opérateurs, tri, pagination max 50 — le contrat disait 100, corrigé). Deux URLs de base (catalogue + tabulaire). Détection `api_tabulaire` par ping (fin de l'état transitoire). Colonnes par première ligne, repli `profile/`. Recommandation volume (T3.3.3, seuil 5000 configurable). T3.3.2 : `page_suivante` (contrat v1.1.0), erreur actionnable colonne inexistante (l'API répond 500 « Database error », message propagé). Validé en réel : films CNC avec filtre + tri.
+9. **Kanban fiabilisé** : correctifs sections 4 (commandes search/list cochées), 5.1 (T5.1.1/T5.1.2 terminées avec les T3.x, chemins unit/), 6 (T6.1 terminée, T6.2 partielle).
+
+### **Décisions**
+- **API v1** retenue ; le coût observé était celui de réparer la divergence docs/code, pas celui de la v1. Préparation d'une éventuelle bascule v2 : extraire un adaptateur (plan esquissé, non retenu pour l'instant — le projet pourrait prendre d'autres directions, ex. nouvelles sources).
+- **Ordre de priorité du classificateur** (validé avec le concepteur) : HTML > api_distante > fichier_tabulaire > fichier_autre_format > indetermine ; liste fermée des formats ; licence absente/inconnue → refusée.
+- **Recherche par format** : l'API v1 le permet (vérifié : q=test 134, format=csv 30, format=geojson 1) — piste d'évolution annotée pour A1, ne remplace pas la classification (format déclaré non fiable).
+- **Architecture agentique clarifiée** : les étapes A1-A4 ne sont pas du code appelé depuis `main` ; l'humain via CLI joue A1/A2 en mode manuel, l'agent Mistral (créé par code : prompt système, modèle, destruction — T5.3.1..4) les tiendra dans la boucle de conversation ; l'exécution des `tool_calls` reste dans le code Python (l'API Mistral n'exécute jamais les fonctions).
+- **`api_tabulaire`** : fait vérifiable par HTTP (ping 200/404) → responsabilité du code ; l'agent lit le champ (confirmé par `contrat_global` : « le code exécute : tous les appels HTTP »).
+- **Motif registre pour échec technique** : `serveur_origine_bloque` statu quo, statut HTTP dans `detail`.
+
+### **Tests**
+- **Résultat final : 179/179 PASSED** en 22 s (`tests/unit/`).
+- **Validés en réel depuis la sandbox** : TB-01 (recherche « dette publique », tri vues, jeu Insee présent, licence lov2, exclusion consignée) ; inventaire réel jeu Insee ; téléchargement réel CSV 4,3 Mo API Insee ; interrogation réelle API tabulaire (films CNC, filtre + tri).
+- **TB-05 partiellement contourné** : l'API Insee a répondu 200 (pas de refus) — le cas refus reste couvert par TI-07 en simulation ; à re-tester en local.
+
+### **Blocages**
+- Aucun. Nota : la détection `api_tabulaire` a initialement ralenti la suite de tests (pings réseau réels non mockés, 64 s) — corrigé par mocks systématiques (22 s).
+
+### **Environnement sandbox**
+- Accès réseau sortant **fonctionnel** vers data.gouv.fr et tabular-api.data.gouv.fr (lever du blocage des séances précédentes) ; `responses`, `typer` installés.
+
+---
+
 ## **Séance du 12/10/2026 — partie 2 (T2.2)**
 
 ### **Contexte**

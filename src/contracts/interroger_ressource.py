@@ -84,7 +84,7 @@ class InterrogerRessourceInput(BaseModel):
     taille_page: int = Field(
         default=20,
         ge=1,
-        le=100,
+        le=50,
         description="Nombre d'elements par page (defaut : 20, max : 100).",
     )
     filtre: FiltreColonne | None = Field(
@@ -108,6 +108,10 @@ class InterrogerRessourceOutput(BaseModel):
     colonnes: list[str] = Field(description="Schema detecte (noms des colonnes).")
     lignes: list[dict[str, Any]] = Field(description="Page courante de donnees.")
     page: int = Field(description="Numero de la page retournee.")
+    page_suivante: int | None = Field(
+        default=None,
+        description="Numero de la page suivante si elle existe, null sinon.",
+    )
     recommandation: str | None = Field(
         default=None,
         description="Recommandation pour les volumes eleves "

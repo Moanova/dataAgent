@@ -17,6 +17,8 @@ from pathlib import Path
 import pytest
 import responses
 
+from unittest.mock import patch
+
 from src.core.resources import inventaire, lister_ressources
 from src.utils.registry import RegistreSourcesInaccessibles
 
@@ -36,7 +38,8 @@ def registre(tmp_path) -> RegistreSourcesInaccessibles:
 
 
 @responses.activate
-def test_inventaire_complet(fixture_ressources, registre):
+@patch("src.core.resources.est_indexee_api_tabulaire", return_value=False)
+def test_inventaire_complet(mock_indexee, fixture_ressources, registre):
     # Réf. tests/plan_tests.md : TI-01 (chaîne recherche → inventaire → inventaire complet, métadonnées enregistrées)
     responses.add(responses.GET, URL_JEU, json=fixture_ressources, status=200)
 
@@ -58,7 +61,8 @@ def test_inventaire_complet(fixture_ressources, registre):
 
 
 @responses.activate
-def test_hebergement_plateforme_depuis_filetype(fixture_ressources, registre):
+@patch("src.core.resources.est_indexee_api_tabulaire", return_value=False)
+def test_hebergement_plateforme_depuis_filetype(mock_indexee, fixture_ressources, registre):
     # Test annexe : sans référence directe dans tests/plan_tests.md
     donnees = json.loads(json.dumps(fixture_ressources))
     donnees["resources"][0]["filetype"] = "file"
@@ -74,7 +78,8 @@ def test_hebergement_plateforme_depuis_filetype(fixture_ressources, registre):
 
 
 @responses.activate
-def test_indetermination_vide_apres_classification(fixture_ressources, registre):
+@patch("src.core.resources.est_indexee_api_tabulaire", return_value=False)
+def test_indetermination_vide_apres_classification(mock_indexee, fixture_ressources, registre):
     # Réf. tests/plan_tests.md : TU-05/TU-07 via le flux (ressources classées -> indetermination vide)
     responses.add(responses.GET, URL_JEU, json=fixture_ressources, status=200)
 
@@ -86,7 +91,8 @@ def test_indetermination_vide_apres_classification(fixture_ressources, registre)
 
 
 @responses.activate
-def test_ressource_inclassable_dans_indetermination(registre):
+@patch("src.core.resources.est_indexee_api_tabulaire", return_value=False)
+def test_ressource_inclassable_dans_indetermination(mock_indexee, registre):
     # Réf. tests/plan_tests.md : TU-10 (ressource inclassable -> remontée dans indetermination)
     reponse_api = {
         "id": "jeu-x",
@@ -112,7 +118,8 @@ def test_ressource_inclassable_dans_indetermination(registre):
 
 
 @responses.activate
-def test_coherence_inclusion_exclusion_indetermination(registre):
+@patch("src.core.resources.est_indexee_api_tabulaire", return_value=False)
+def test_coherence_inclusion_exclusion_indetermination(mock_indexee, registre):
     # Réf. tests/plan_tests.md : TU-10/TU-11 (invariants de cohérence de la réponse)
     reponse_api = {
         "id": "jeu-mixte",
@@ -144,7 +151,8 @@ def test_coherence_inclusion_exclusion_indetermination(registre):
 
 
 @responses.activate
-def test_indetermination_autoportante_pour_agent(registre):
+@patch("src.core.resources.est_indexee_api_tabulaire", return_value=False)
+def test_indetermination_autoportante_pour_agent(mock_indexee, registre):
     # Réf. tests/plan_tests.md : TU-11 (l'agent A3 dispose du titre et de l'URL sans appel d'outil supplémentaire)
     reponse_api = {
         "id": "jeu-a3",

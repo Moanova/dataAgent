@@ -403,8 +403,8 @@ class TestValidationModeles:
         with pytest.raises(ValidationError):
             InterrogerRessourceInput(id_ressource="abc", taille_page=0)
         with pytest.raises(ValidationError):
-            InterrogerRessourceInput(id_ressource="abc", taille_page=101)
-        InterrogerRessourceInput(id_ressource="abc", taille_page=100)
+            InterrogerRessourceInput(id_ressource="abc", taille_page=51)
+        InterrogerRessourceInput(id_ressource="abc", taille_page=50)
 
     def test_interroger_ressource_input_page_bornee(self):
         # Test annexe : sans référence directe dans tests/plan_tests.md

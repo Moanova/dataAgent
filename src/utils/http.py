@@ -33,6 +33,7 @@ load_dotenv()
 logger = get_logger("openDataAgent.utils.http")
 
 URL_BASE_DEFAUT = "https://www.data.gouv.fr/api/1/"
+URL_BASE_TABULAIRE_DEFAUT = "https://tabular-api.data.gouv.fr/api"
 DELAIS_TENTATIVES = (1, 2)
 STATUTS_TRANSITOIRES = {429, 502, 503}
 
@@ -66,13 +67,15 @@ def appel_api(
     url_base: Optional[str] = None,
     timeout: float = 10.0,
     nb_tentatives: int = 3,
+    statut_404: str = "jeu_introuvable",
 ) -> ResultatAppel:
-    """Effectue un appel GET vers l'API data.gouv.fr avec reprise sur echec transitoire.
+    """Effectue un appel GET vers une API data.gouv.fr avec reprise sur echec transitoire.
 
     Ne leve jamais d'exception : les echecs techniques (injoignable,
     expiration du delai, statut transitoire persistant) produisent un
     `ResultatAppel` de statut `echec_technique` ; un 404 produit le
-    statut `jeu_introuvable`.
+    statut `statut_404` (par defaut `jeu_introuvable`, ou
+    `ressource_non_indexee` pour l'API tabulaire).
     """
     base = url_base or os.environ.get("DATA_GOUV_API_URL", URL_BASE_DEFAUT)
     url = f"{base.rstrip('/')}/{chemin.lstrip('/')}"
@@ -94,7 +97,7 @@ def appel_api(
             return ResultatAppel(statut="echec_technique", erreur=str(exc))
 
         if reponse.status_code == 404:
-            return ResultatAppel(statut="jeu_introuvable", status_code=404)
+            return ResultatAppel(statut=statut_404, status_code=404)
 
         if reponse.status_code in STATUTS_TRANSITOIRES and tentative < nb_tentatives:
             log_to_file(
@@ -107,13 +110,27 @@ def appel_api(
             continue
 
         if reponse.status_code >= 400:
+            # Message d'erreur actionnable quand l'API en fournit un
+            # (ex : colonne de filtre inexistante -> detail.message).
+            detail_erreur = None
+            try:
+                corps = reponse.json()
+                erreurs = corps.get("errors") if isinstance(corps, dict) else None
+                if erreurs and isinstance(erreurs, list):
+                    detail = (erreurs[0] or {}).get("detail") or {}
+                    detail_erreur = detail.get("message") or (erreurs[0] or {}).get("title")
+                elif isinstance(corps, dict) and corps.get("message"):
+                    detail_erreur = corps["message"]
+            except ValueError:
+                detail_erreur = None
             log_to_file(
                 "Echec de l'appel HTTP a data.gouv.fr",
                 url=url,
                 status_code=reponse.status_code,
+                erreur=detail_erreur,
                 suggestion="Reessayer apres 30 secondes",
             )
-            return ResultatAppel(statut="echec_technique", status_code=reponse.status_code)
+            return ResultatAppel(statut="echec_technique", status_code=reponse.status_code, erreur=detail_erreur)
 
         try:
             donnees = reponse.json()
@@ -203,6 +220,88 @@ def lister_ressources_api(id_jeu: str, **kwargs: Any) -> ResultatAppel:
             erreur="Reponse d'inventaire invalide : " + " ; ".join(validation.erreurs),
         )
     return resultat
+
+
+def _base_tabulaire() -> str:
+    return os.environ.get("TABULAR_API_URL", URL_BASE_TABULAIRE_DEFAUT)
+
+
+def est_indexee_api_tabulaire(id_ressource: str, timeout: float = 5.0) -> bool:
+    """Detecte si une ressource est indexee par l'API tabulaire.
+
+    Simple ping GET /resources/{rid}/ : 200 = indexee, 404 ou echec =
+    non indexee. Ne leve jamais d'exception ; en cas d'echec reseau, la
+    ressource est reputee non indexee (comportement sur par defaut).
+    """
+    resultat = appel_api(
+        f"/resources/{id_ressource}/",
+        url_base=_base_tabulaire(),
+        timeout=timeout,
+        statut_404="ressource_non_indexee",
+    )
+    return resultat.reussi
+
+
+def interroger_ressource_api(
+    id_ressource: str,
+    page: int = 1,
+    taille_page: int = 20,
+    filtre: Optional[Dict[str, Any]] = None,
+    tri: Optional[Dict[str, Any]] = None,
+    **kwargs: Any,
+) -> ResultatAppel:
+    """Appelle l'endpoint /resources/{rid}/data/ de l'API tabulaire.
+
+    Traduit les arguments normalises vers les parametres de l'API
+    (operateurs de filtre, tri, pagination) et valide la reponse contre
+    le schema jsonschema de l'outil ; un 404 produit le statut
+    `ressource_non_indexee`.
+    """
+    from src.contracts.validation_api import valider_reponse_api
+
+    OPERATEURS_API = {
+        "exact": "exact",
+        "contient": "contains",
+        "inferieur": "less",
+        "superieur": "greater",
+        "strictement_inferieur": "strictly_less",
+        "strictement_superieur": "strictly_greater",
+    }
+
+    params = {"page": page, "page_size": taille_page}
+    if filtre:
+        params[f"{filtre['colonne']}__{OPERATEURS_API[filtre.get('operateur', 'exact')]}"] = filtre["valeur"]
+    if tri:
+        params[f"{tri['colonne']}__sort"] = "asc" if tri["ordre"] == "croissant" else "desc"
+
+    resultat = appel_api(
+        f"/resources/{id_ressource}/data/",
+        params=params,
+        url_base=_base_tabulaire(),
+        statut_404="ressource_non_indexee",
+        **kwargs,
+    )
+    if not resultat.reussi:
+        return resultat
+
+    validation = valider_reponse_api("interroger_ressource", resultat.donnees)
+    if not validation.valide:
+        return ResultatAppel(
+            statut="echec_technique",
+            status_code=resultat.status_code,
+            erreur="Reponse tabulaire invalide : " + " ; ".join(validation.erreurs),
+        )
+    return resultat
+
+
+def profil_ressource_api(id_ressource: str, **kwargs: Any) -> ResultatAppel:
+    """Appelle /resources/{rid}/profile/ (schema detecte, repli si data vide)."""
+    return appel_api(
+        f"/resources/{id_ressource}/profile/",
+        url_base=_base_tabulaire(),
+        statut_404="ressource_non_indexee",
+        **kwargs,
+    )
 
 
 def telecharger_fichier(

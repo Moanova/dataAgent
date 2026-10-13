@@ -6,7 +6,10 @@
     "parameters": {
       "type": "object",
       "properties": {
-        "id_ressource": { "type": "string", "description": "Identifiant de la ressource, issu de lister_ressources." },
+        "id_ressource": {
+          "type": "string",
+          "description": "Identifiant de la ressource, issu de lister_ressources."
+        },
         "page": {
           "type": "integer",
           "minimum": 1,
@@ -16,7 +19,7 @@
         "taille_page": {
           "type": "integer",
           "minimum": 1,
-          "maximum": 100,
+          "maximum": 50,
           "default": 20,
           "description": "Nombre d'éléments par page (défaut : 20, max : 100)."
         },
@@ -24,34 +27,67 @@
           "type": "object",
           "description": "Filtre optionnel sur une colonne (une colonne a la fois).",
           "properties": {
-            "colonne": { "type": "string", "description": "Nom de la colonne a filtrer." },
-            "valeur": { "type": "string", "description": "Valeur de comparaison." },
+            "colonne": {
+              "type": "string",
+              "description": "Nom de la colonne a filtrer."
+            },
+            "valeur": {
+              "type": "string",
+              "description": "Valeur de comparaison."
+            },
             "operateur": {
               "type": "string",
-              "enum": ["exact", "contient", "inferieur", "superieur", "strictement_inferieur", "strictement_superieur"],
+              "enum": [
+                "exact",
+                "contient",
+                "inferieur",
+                "superieur",
+                "strictement_inferieur",
+                "strictement_superieur"
+              ],
               "default": "exact",
               "description": "Operateur de comparaison (defaut : exact)."
             }
           },
-          "required": ["colonne", "valeur"]
+          "required": [
+            "colonne",
+            "valeur"
+          ]
         },
         "tri": {
           "type": "object",
           "description": "Tri optionnel sur une colonne.",
           "properties": {
-            "colonne": { "type": "string", "description": "Nom de la colonne a trier." },
-            "ordre": { "type": "string", "enum": ["croissant", "decroissant"], "description": "Ordre de tri (croissant ou decroissant)." }
+            "colonne": {
+              "type": "string",
+              "description": "Nom de la colonne a trier."
+            },
+            "ordre": {
+              "type": "string",
+              "enum": [
+                "croissant",
+                "decroissant"
+              ],
+              "description": "Ordre de tri (croissant ou decroissant)."
+            }
           }
         }
       },
-      "required": ["id_ressource"]
+      "required": [
+        "id_ressource"
+      ]
     },
     "returns": {
       "type": "object",
       "properties": {
         "statut": {
           "type": "string",
-          "enum": ["succes", "erreur_parametres", "ressource_non_indexee", "echec_technique"],
+          "enum": [
+            "succes",
+            "erreur_parametres",
+            "ressource_non_indexee",
+            "echec_technique"
+          ],
           "description": "Code de statut de l'opération."
         },
         "message": {
@@ -67,12 +103,16 @@
             },
             "colonnes": {
               "type": "array",
-              "items": { "type": "string" },
+              "items": {
+                "type": "string"
+              },
               "description": "Schéma détecté (noms des colonnes)."
             },
             "lignes": {
               "type": "array",
-              "items": { "type": "object" },
+              "items": {
+                "type": "object"
+              },
               "description": "Page courante de données."
             },
             "page": {
@@ -80,14 +120,33 @@
               "description": "Numéro de la page retournée."
             },
             "recommandation": {
-              "type": ["string", "null"],
+              "type": [
+                "string",
+                "null"
+              ],
               "description": "Recommandation pour les volumes élevés (ex : 'volume_eleve_telechargement_brut_suggere')."
+            },
+            "page_suivante": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "Numero de la page suivante si elle existe, null sinon. Paginer en incrementant page, a filtre et tri identiques."
             }
           },
-          "required": ["total_lignes", "colonnes", "lignes", "page"]
+          "required": [
+            "total_lignes",
+            "colonnes",
+            "lignes",
+            "page"
+          ]
         }
       },
-      "required": ["statut", "message", "donnees"]
+      "required": [
+        "statut",
+        "message",
+        "donnees"
+      ]
     }
   }
 }

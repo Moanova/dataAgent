@@ -14,6 +14,7 @@ peuple via un appel simule a lister_ressources (chaine TI-05).
 """
 import json
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 import responses
@@ -50,7 +51,7 @@ def inventaire_peuple(registre, tmp_path):
             }
         ],
     }
-    with responses.mock:
+    with patch("src.core.resources.est_indexee_api_tabulaire", return_value=False), responses.mock:
         responses.add(responses.GET, URL_JEU, json=reponse_api, status=200)
         lister_ressources("jeu-t", registre=registre)
     return reponse_api

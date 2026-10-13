@@ -21,6 +21,7 @@ import typer
 from src.core.search import rechercher_jeux
 from src.core.resources import lister_ressources
 from src.core.download import telecharger_brut
+from src.core.query import interroger_ressource
 from src.utils.logging import configure_logging
 
 app = typer.Typer(help="CLI openDataAgent : acquisition de donnees data.gouv.fr.")
@@ -147,6 +148,59 @@ def download(
         typer.echo(f"statut : {reponse['statut']}")
         typer.echo(f"fichier : {donnees['chemin_local']}")
         typer.echo(f"format : {donnees['format'] or 'inconnu'}  licence : {donnees['licence'] or 'inconnue'}")
+    else:
+        typer.secho(f"[{reponse['statut']}] {reponse['message']}", fg=typer.colors.RED, err=True)
+        if reponse["donnees"].get("suggestion"):
+            typer.secho(f"suggestion : {reponse['donnees']['suggestion']}", fg=typer.colors.YELLOW, err=True)
+
+    if reponse["statut"] in ("erreur_parametres", "ressource_introuvable"):
+        raise typer.Exit(code=2)
+    if reponse["statut"] != "succes":
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def query(
+    id_ressource: str = typer.Argument(..., help="Identifiant de la ressource, issu de l'inventaire."),
+    page: int = typer.Option(1, "--page", min=1, help="Page demandee."),
+    taille_page: int = typer.Option(20, "--taille-page", min=1, max=50, help="Lignes par page (max 50)."),
+    colonne: Optional[str] = typer.Option(None, "--filtre-colonne", help="Colonne du filtre."),
+    valeur: Optional[str] = typer.Option(None, "--filtre-valeur", help="Valeur du filtre."),
+    operateur: Optional[str] = typer.Option("exact", "--filtre-operateur", help="Operateur : exact, contient, inferieur, superieur, strictement_inferieur, strictement_superieur."),
+    tri_colonne: Optional[str] = typer.Option(None, "--tri-colonne", help="Colonne du tri."),
+    tri_ordre: Optional[str] = typer.Option("croissant", "--tri-ordre", help="Ordre : croissant ou decroissant."),
+    id_execution: Optional[str] = typer.Option(None, "--id-execution", help="Identifiant d'execution pour les traces."),
+    sortie_json: bool = typer.Option(False, "--json", help="Sortie JSON brute de la reponse normalisee."),
+) -> None:
+    """Interroge une ressource indexee par l'API tabulaire."""
+    identifiant = id_execution or _id_execution_auto()
+    configure_logging(id_execution=identifiant)
+
+    filtre = {"colonne": colonne, "valeur": valeur, "operateur": operateur} if colonne and valeur is not None else None
+    tri = {"colonne": tri_colonne, "ordre": tri_ordre} if tri_colonne else None
+
+    reponse = interroger_ressource(
+        id_ressource=id_ressource,
+        page=page,
+        taille_page=taille_page,
+        filtre=filtre,
+        tri=tri,
+        id_execution=identifiant,
+    )
+
+    if sortie_json:
+        import json
+        typer.echo(json.dumps(reponse, ensure_ascii=False, indent=2))
+    elif reponse["statut"] == "succes":
+        donnees = reponse["donnees"]
+        typer.echo(f"statut : {reponse['statut']}")
+        typer.echo(f"{donnees['total_lignes']} ligne(s), colonnes : {', '.join(donnees['colonnes']) or '(aucune)'}")
+        if donnees.get("recommandation"):
+            typer.secho(f"recommandation : {donnees['recommandation']}", fg=typer.colors.YELLOW)
+        for ligne in donnees["lignes"][:5]:
+            typer.echo(f"- {ligne}")
+        if len(donnees["lignes"]) > 5:
+            typer.echo(f"  ... ({len(donnees['lignes']) - 5} ligne(s) supplementaires)")
     else:
         typer.secho(f"[{reponse['statut']}] {reponse['message']}", fg=typer.colors.RED, err=True)
         if reponse["donnees"].get("suggestion"):

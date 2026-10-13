@@ -9,13 +9,13 @@ Extraire des données d'une ressource indexée par l'API tabulaire (voie 1). Uti
 ## Sémantique des arguments
 
 - `id_ressource` (obligatoire) : identifiant issu de `lister_ressources`.
-- `page`, `taille_page` : pagination, défaut 1 et 20, maximum 100.
+- `page`, `taille_page` : pagination, défaut 1 et 20, maximum 50 (limite de l'API tabulaire, vérifiée en réel).
 - `filtre` : objet à trois champs — `colonne`, `valeur`, `operateur` (`exact`, `contient`, `inferieur`, `superieur`, `strictement_inferieur`, `strictement_superieur`, défaut `exact`). Le filtrage s'applique à une colonne à la fois ; un filtrage multi-critères se fait par invocations successives.
 - `tri` : objet à deux champs — `colonne`, `ordre` (`croissant`, `decroissant`).
 
 ## Retour en succès
 
-`donnees.total_lignes` : nombre total de lignes de la ressource. `donnees.colonnes` : schéma détecté. `donnees.lignes` : page courante. `donnees.recommandation` : présent uniquement si `total_lignes` dépasse le seuil configurable (5000 par défaut), avec la valeur `volume_eleve_telechargement_brut_suggere` — l'agent peut alors décider de basculer sur `telecharger_brut`.
+`donnees.total_lignes` : nombre total de lignes de la ressource. `donnees.colonnes` : schéma détecté. `donnees.lignes` : page courante. `donnees.page` : numéro de la page courante. `donnees.page_suivante` : numéro de la page suivante si elle existe, null sinon — l'agent l'utilise pour paginer (tri et filtre identiques entre les pages d'une même extraction). `donnees.recommandation` : présent uniquement si `total_lignes` dépasse le seuil configurable (5000 par défaut), avec la valeur `volume_eleve_telechargement_brut_suggere` — l'agent peut alors décider de basculer sur `telecharger_brut`.
 
 ## Comportements d'échec
 
