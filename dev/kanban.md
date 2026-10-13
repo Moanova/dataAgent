@@ -40,12 +40,10 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 ---
 
 ### 4. Intégration et CLI
-- [ ] **T4.1** : Créer la CLI avec Typer (`src/main.py`).
   - [ ] Commande `search` : Appelle `rechercher_jeux`.
   - [ ] Commande `list` : Appelle `lister_ressources`.
   - [ ] Commande `query` : Appelle `interroger_ressource`.
   - [ ] Commande `download` : Appelle `telecharger_brut`.
-- [ ] **T4.2** : Configurer les arguments et options pour chaque commande.
 
 ---
 
@@ -80,16 +78,20 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 
 ## 🚧 En cours
 
-- [ ] **T3.1.2** : Appliquer le filtre de licence (`src/core/search.py`). *(Implémentation et tests unitaires terminés, en attente de validation)*
-- [ ] **T3.1.3** : Consigner les exclusions de licence dans le registre (`src/utils/registry.py`). *(Implémentation et tests unitaires terminés, en attente de validation)*
-- [ ] **T3.1.4** : Retourner les résultats au format normalisé (statut/message/données). *(Implémentation et tests unitaires terminés, en attente de validation)*
+- [ ] **T4.1** : Créer la CLI avec Typer (`src/main.py`). *(En cours — commande `search` livrée et testée ; `list`, `query`, `download` à venir avec T3.2/T3.3/T3.4)*
+- [ ] **T4.2** : Configurer les arguments et options pour chaque commande. *(En cours — périmètre `search` livré)*
 
-- [ ] **T3.1.1** : Implémenter l'appel HTTP à l'API data.gouv.fr (`src/utils/http.py`). *(Implémentation et tests unitaires terminés, en attente de validation)*
+
 - [ ] **T6.1** : Configurer `structlog` pour tracer les appels et les erreurs (intégration en cours).
 
 ---
 
 ## ✅ Terminé
+
+- [X] **T3.1.1** : Implémenter l'appel HTTP à l'API data.gouv.fr (`src/utils/http.py`). *(Terminé le 13/10/2026 — API v1, TB-01/TB-03 non passés dans la sandbox, à exécuter en local)*
+- [X] **T3.1.2** : Appliquer le filtre de licence (`src/core/search.py`). *(Terminé le 13/10/2026 — politique v1 : lov2, fr-lo, odc-odbl, cc-by, cc-by-sa, cc-zero, other-open)*
+- [X] **T3.1.3** : Consigner les exclusions de licence dans le registre (`src/utils/registry.py`). *(Terminé le 13/10/2026)*
+- [X] **T3.1.4** : Retourner les résultats au format normalisé (statut/message/données). *(Terminé le 13/10/2026)*
 - [X] **T1.1** : Créer la structure des dossiers (`src/`, `tests/`, `src/contracts/`, `src/core/`, `src/utils/`). *(Terminé le 10/10/2026)*
 - [X] **T1.2** : Configurer le fichier `.env` avec les variables d'environnement (ex : `DATA_GOUV_API_URL`). *(Terminé le 10/10/2026)*
 - [X] **T1.3** : Initialiser le logging avec `structlog` (`src/utils/logging.py`). *(Terminé le 10/10/2026)*
