@@ -94,6 +94,7 @@ def test_log_levels():
 
 @patch("src.utils.logging._log_file")
 def test_log_to_file_error_handling(mock_log_file):
+    # Test annexe : sans référence directe dans tests/plan_tests.md
     """Teste la gestion des erreurs lors de l'écriture dans le fichier de logs."""
     # Simuler un fichier ouvert
     mock_file = mock_open().return_value

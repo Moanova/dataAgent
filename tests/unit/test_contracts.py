@@ -329,6 +329,7 @@ class TestValidationModeles:
     # --- RechercherJeuxInput ---
 
     def test_rechercher_jeux_input_valide(self):
+        # Réf. tests/plan_tests.md : TU-13 (limite omise -> valeur par défaut 10)
         inp = RechercherJeuxInput(mots_cles=["dette", "publique"])
         assert inp.mots_cles == ["dette", "publique"]
         assert inp.tri == TriRecherche.PERTINENCE
@@ -336,14 +337,17 @@ class TestValidationModeles:
         assert inp.limite == 10
 
     def test_rechercher_jeux_input_mots_cles_obligatoires(self):
+        # Réf. tests/plan_tests.md : TU-12 (mots_cles vide -> erreur_parametres)
         with pytest.raises(ValidationError):
             RechercherJeuxInput()
 
     def test_rechercher_jeux_input_mots_cles_non_vide(self):
+        # Réf. tests/plan_tests.md : TU-12 (mots_cles vide -> erreur_parametres)
         with pytest.raises(ValidationError):
             RechercherJeuxInput(mots_cles=[])
 
     def test_rechercher_jeux_input_limite_bornees(self):
+        # Réf. tests/plan_tests.md : TU-14 (limite au-delà du maximum -> corrigée, pas d'exception)
         with pytest.raises(ValidationError):
             RechercherJeuxInput(mots_cles=["test"], limite=0)
         with pytest.raises(ValidationError):
@@ -353,22 +357,26 @@ class TestValidationModeles:
         RechercherJeuxInput(mots_cles=["test"], limite=20)
 
     def test_rechercher_jeux_input_tri_invalide(self):
+        # Réf. tests/plan_tests.md : TU-16 (tri invalide -> erreur_parametres)
         with pytest.raises(ValidationError):
             RechercherJeuxInput(mots_cles=["test"], tri="invalide")
 
     # --- ListerRessourcesInput ---
 
     def test_lister_ressources_input_valide(self):
+        # Test annexe : sans référence directe dans tests/plan_tests.md
         inp = ListerRessourcesInput(id_jeu="67660551c8588734a16a6a60")
         assert inp.id_jeu == "67660551c8588734a16a6a60"
 
     def test_lister_ressources_input_id_jeu_obligatoire(self):
+        # Test annexe : sans référence directe dans tests/plan_tests.md
         with pytest.raises(ValidationError):
             ListerRessourcesInput()
 
     # --- InterrogerRessourceInput ---
 
     def test_interroger_ressource_input_valide(self):
+        # Test annexe : sans référence directe dans tests/plan_tests.md
         inp = InterrogerRessourceInput(id_ressource="abc123")
         assert inp.id_ressource == "abc123"
         assert inp.page == 1
@@ -377,6 +385,7 @@ class TestValidationModeles:
         assert inp.tri is None
 
     def test_interroger_ressource_input_avec_filtre_et_tri(self):
+        # Réf. tests/plan_tests.md : TU-15 (tri et fenetre_maj valides -> traduction correcte)
         inp = InterrogerRessourceInput(
             id_ressource="abc123",
             page=2,
@@ -390,6 +399,7 @@ class TestValidationModeles:
         assert inp.tri.ordre == OrdreTri.DECROISSANT
 
     def test_interroger_ressource_input_taille_page_bornees(self):
+        # Test annexe : sans référence directe dans tests/plan_tests.md
         with pytest.raises(ValidationError):
             InterrogerRessourceInput(id_ressource="abc", taille_page=0)
         with pytest.raises(ValidationError):
@@ -397,22 +407,26 @@ class TestValidationModeles:
         InterrogerRessourceInput(id_ressource="abc", taille_page=100)
 
     def test_interroger_ressource_input_page_bornee(self):
+        # Test annexe : sans référence directe dans tests/plan_tests.md
         with pytest.raises(ValidationError):
             InterrogerRessourceInput(id_ressource="abc", page=0)
 
     # --- TelechargerBrutInput ---
 
     def test_telecharger_brut_input_valide(self):
+        # Test annexe : sans référence directe dans tests/plan_tests.md
         inp = TelechargerBrutInput(id_ressource="71ff1335")
         assert inp.id_ressource == "71ff1335"
 
     def test_telecharger_brut_input_id_ressource_obligatoire(self):
+        # Test annexe : sans référence directe dans tests/plan_tests.md
         with pytest.raises(ValidationError):
             TelechargerBrutInput()
 
     # --- Modeles de sortie ---
 
     def test_jeu_resume_valide(self):
+        # Test annexe : sans référence directe dans tests/plan_tests.md
         jeu = JeuResume(
             id="abc",
             titre="Titre",
@@ -426,6 +440,7 @@ class TestValidationModeles:
         assert jeu.nb_ressources == 2
 
     def test_ressource_resume_valide(self):
+        # Test annexe : sans référence directe dans tests/plan_tests.md
         res = RessourceResume(
             id="res1",
             titre="Fichier CSV",
@@ -439,12 +454,14 @@ class TestValidationModeles:
         assert res.taille_octets is None
 
     def test_reponse_base_defaut(self):
+        # Test annexe : sans référence directe dans tests/plan_tests.md
         rep = ReponseBase(statut=StatutEnum.SUCCES)
         assert rep.statut == StatutEnum.SUCCES
         assert rep.message == ""
         assert rep.donnees == {}
 
     def test_rechercher_jeux_output_valide(self):
+        # Test annexe : sans référence directe dans tests/plan_tests.md
         out = RechercherJeuxOutput(
             total_trouves=39,
             jeux=[],
@@ -454,10 +471,12 @@ class TestValidationModeles:
         assert out.exclus_licence == 3
 
     def test_lister_ressources_output_indetermination_defaut(self):
+        # Test annexe : sans référence directe dans tests/plan_tests.md
         out = ListerRessourcesOutput(ressources=[])
         assert out.indetermination == []
 
     def test_interroger_ressource_output_recommandation_optionnelle(self):
+        # Test annexe : sans référence directe dans tests/plan_tests.md
         out = InterrogerRessourceOutput(
             total_lignes=74,
             colonnes=["a", "b"],
@@ -467,6 +486,7 @@ class TestValidationModeles:
         assert out.recommandation is None
 
     def test_telecharger_brut_output_suggestion_optionnelle(self):
+        # Test annexe : sans référence directe dans tests/plan_tests.md
         out = TelechargerBrutOutput(
             chemin_local="donnees/fichier.csv",
             format="csv",
@@ -485,14 +505,17 @@ class TestValiderCoherenceContrat:
     @pytest.mark.parametrize("nom_outil", sorted(OUTILS_ATTENDUS))
     def test_coherence_parfaite(self, nom_outil):
         """Aucune divergence sur les contrats reels."""
+        # Réf. tests/plan_tests.md : TC-02 (introspection arguments JSON / signature Python)
         divergences = valider_coherence_contrat(nom_outil)
         assert divergences == [], f"Divergences pour '{nom_outil}' : {divergences}"
 
     def test_outil_inconnu(self):
+        # Test annexe : sans référence directe dans tests/plan_tests.md
         with pytest.raises(ValueError, match="Outil inconnu"):
             valider_coherence_contrat("outil_inexistant")
 
     def test_contrat_json_absent(self, contrats_temp):
+        # Réf. tests/plan_tests.md : TU-28 (contrat JSON absent -> échec au démarrage)
         (contrats_temp / "telecharger_brut.json").unlink()
         with pytest.raises(ValueError, match="Contrat JSON absent"):
             valider_coherence_contrat("telecharger_brut", repertoire_contrats=contrats_temp)

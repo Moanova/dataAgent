@@ -135,11 +135,13 @@ def test_tu38_reponse_reelle_ressources_valide(fixture_ressources):
 # ---------------------------------------------------------------------------
 
 def test_schemas_connus_fichiers_presents():
+    # Test annexe : sans référence directe dans tests/plan_tests.md
     for nom_fichier in SCHEMAS_CONNUS.values():
         assert (REPERTOIRE_SCHEMAS / nom_fichier).is_file()
 
 
 def test_schemas_valides_en_draft_2020_12():
+    # Test annexe : sans référence directe dans tests/plan_tests.md
     import jsonschema
 
     for nom_fichier in SCHEMAS_CONNUS.values():
