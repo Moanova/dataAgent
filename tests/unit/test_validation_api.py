@@ -11,7 +11,7 @@
 
 Couvre TU-34 a TU-38 du plan de tests. Tous sans reseau : les charges
 utiles proviennent de fixtures simulant des reponses reelles de
-l'API data.gouv.fr.
+l'API data.gouv.fr (v1).
 """
 import json
 from pathlib import Path

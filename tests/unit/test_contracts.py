@@ -431,7 +431,7 @@ class TestValidationModeles:
             id="abc",
             titre="Titre",
             organisation="Insee",
-            licence="etalab-2.0",
+            licence="lov2",
             derniere_maj="2026-01-15",
             nb_ressources=2,
             url="https://...",
@@ -490,7 +490,7 @@ class TestValidationModeles:
         out = TelechargerBrutOutput(
             chemin_local="donnees/fichier.csv",
             format="csv",
-            licence="etalab-2.0",
+            licence="lov2",
         )
         assert out.suggestion is None
 

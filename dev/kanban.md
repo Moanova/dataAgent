@@ -21,10 +21,6 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 ### 3. Implémentation des fonctions de base
 
 #### 3.1. Recherche de jeux (`rechercher_jeux`)
-- [ ] **T3.1.1** : Implémenter l'appel HTTP à l'API data.gouv.fr (`src/utils/http.py`).
-- [ ] **T3.1.2** : Appliquer le filtre de licence (`src/core/search.py`).
-- [ ] **T3.1.3** : Consigner les exclusions de licence dans le registre (`src/utils/registry.py`).
-- [ ] **T3.1.4** : Retourner les résultats au format normalisé (statut/message/données).
 
 #### 3.2. Inventaire des ressources (`lister_ressources`)
 - [ ] **T3.2.1** : Implémenter l'appel HTTP pour lister les ressources d'un jeu (`src/core/resources.py`).
@@ -83,6 +79,12 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 ---
 
 ## 🚧 En cours
+
+- [ ] **T3.1.2** : Appliquer le filtre de licence (`src/core/search.py`). *(Implémentation et tests unitaires terminés, en attente de validation)*
+- [ ] **T3.1.3** : Consigner les exclusions de licence dans le registre (`src/utils/registry.py`). *(Implémentation et tests unitaires terminés, en attente de validation)*
+- [ ] **T3.1.4** : Retourner les résultats au format normalisé (statut/message/données). *(Implémentation et tests unitaires terminés, en attente de validation)*
+
+- [ ] **T3.1.1** : Implémenter l'appel HTTP à l'API data.gouv.fr (`src/utils/http.py`). *(Implémentation et tests unitaires terminés, en attente de validation)*
 - [ ] **T6.1** : Configurer `structlog` pour tracer les appels et les erreurs (intégration en cours).
 
 ---

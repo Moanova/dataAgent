@@ -12,11 +12,15 @@ Module pour la recherche de jeux de données sur data.gouv.fr.
 """
 
 from typing import List, Dict, Any, Optional
-import requests
 from src.utils.logging import get_logger, bind_context, log_to_file
+from src.utils.http import rechercher_jeux_api
+from src.core.licence import licence_est_acceptable
+from src.utils.registry import RegistreSourcesInaccessibles
 
 # Initialiser le logger pour ce module
 logger = get_logger("openDataAgent.core.search")
+
+_registre_par_defaut = RegistreSourcesInaccessibles()
 
 
 def rechercher_jeux(
@@ -25,6 +29,7 @@ def rechercher_jeux(
     fenetre_maj: str = "toutes",
     limite: int = 10,
     id_execution: Optional[str] = None,
+    registre: Optional[RegistreSourcesInaccessibles] = None,
 ) -> Dict[str, Any]:
     """
     Recherche des jeux de données sur data.gouv.fr à partir de mots-clés.
@@ -35,10 +40,14 @@ def rechercher_jeux(
         fenetre_maj (str): Fenêtre de mise à jour (toutes, 30_jours, 12_mois, 3_ans).
         limite (int): Nombre maximum de jeux à retourner (défaut: 10, max: 20).
         id_execution (Optional[str]): Identifiant unique pour tracer l'exécution.
+        registre (Optional[RegistreSourcesInaccessibles]): Registre des sources
+            inaccessibles ; par défaut, l'instance globale sur data/registry.json.
     
     Returns:
         Dict[str, Any]: Résultat de la recherche au format normalisé.
     """
+    if registre is None:
+        registre = _registre_par_defaut
     # Mettre à jour le contexte de logging avec l'id_execution
     if id_execution:
         bind_context(id_execution=id_execution)
@@ -75,54 +84,74 @@ def rechercher_jeux(
             limite_demandee=limite,
         )
     
-    # Simulation d'un appel à l'API data.gouv.fr
+    # Appel reel a l'API data.gouv.fr via la couche HTTP (T3.1.1)
     try:
         # Log de début de l'appel HTTP (console + fichier)
         logger.debug("Appel HTTP à l'API data.gouv.fr")
         log_to_file("Appel HTTP à l'API data.gouv.fr")
-        
-        # Remplace cette partie par un vrai appel à l'API data.gouv.fr
-        # Exemple :
-        # response = requests.get(
-        #     "https://www.data.gouv.fr/api/1/datasets/",
-        #     params={
-        #         "q": " ".join(mots_cles),
-        #         "sort": tri,
-        #         "refine.created": fenetre_maj,
-        #         "page_size": limite,
-        #     },
-        # )
-        # response.raise_for_status()
-        # data = response.json()
-        
-        # Simulation de données pour le test
-        data = {
-            "total_count": 39,
-            "data": [
-                {
-                    "id": "67660551c8588734a16a6a60",
-                    "title": "Comptes des administrations publiques",
-                    "organization": {"name": "Insee"},
-                    "license": "etalab-2.0",
-                    "last_update": "2026-01-15",
-                    "resources": [{"id": "71ff1335"}],
-                    "page": "https://www.data.gouv.fr/fr/datasets/67660551c8588734a16a6a60/",
-                }
-            ],
-        }
-        
+
+        resultat = rechercher_jeux_api(
+            mots_cles=mots_cles,
+            tri=tri,
+            fenetre_maj=fenetre_maj,
+            limite=limite,
+        )
+
+        if not resultat.reussi:
+            # Log de l'erreur (console + fichier)
+            logger.error(
+                "Échec de l'appel HTTP à data.gouv.fr",
+                statut=resultat.statut,
+                erreur=resultat.erreur,
+                suggestion="Réessayer après 30 secondes",
+            )
+            log_to_file(
+                "Échec de l'appel HTTP à data.gouv.fr",
+                statut=resultat.statut,
+                erreur=resultat.erreur,
+                suggestion="Réessayer après 30 secondes",
+            )
+            return {
+                "statut": resultat.statut,
+                "message": f"Échec de l'appel à l'API data.gouv.fr : {resultat.erreur or resultat.statut}",
+                "donnees": {
+                    "suggestion": "réessayer",
+                },
+            }
+
+        data = resultat.donnees
+
+        # Filtre de licence avant tout retour (T3.1.2) et consignation
+        # des exclusions au registre (T3.1.3)
+        jeux_acceptes = []
+        exclus_licence = 0
+        for jeu in data["data"]:
+            licence = jeu.get("license")
+            if licence_est_acceptable(licence):
+                jeux_acceptes.append(jeu)
+            else:
+                exclus_licence += 1
+                registre.consigner_exclusion_juridique(
+                    id_jeu=jeu["id"],
+                    organisation=(jeu.get("organization") or {}).get("name", ""),
+                    licence=licence or "notspecified",
+                    url=jeu.get("page", ""),
+                )
+        if exclus_licence:
+            registre.sauvegarder()
+
         # Log du succès (console + fichier)
         logger.info(
             "Recherche terminée",
-            total_trouves=data["total_count"],
-            jeux_retournes=len(data["data"]),
-            exclus_licence=3,  # Simulé
+            total_trouves=data["total"],
+            jeux_retournes=len(jeux_acceptes),
+            exclus_licence=exclus_licence,
         )
         log_to_file(
             "Recherche terminée",
-            total_trouves=data["total_count"],
-            jeux_retournes=len(data["data"]),
-            exclus_licence=3,  # Simulé
+            total_trouves=data["total"],
+            jeux_retournes=len(jeux_acceptes),
+            exclus_licence=exclus_licence,
         )
         
         # Retour normalisé
@@ -130,44 +159,23 @@ def rechercher_jeux(
             "statut": "succes",
             "message": "",
             "donnees": {
-                "total_trouves": data["total_count"],
+                "total_trouves": data["total"],
                 "jeux": [
                     {
                         "id": jeu["id"],
                         "titre": jeu["title"],
-                        "organisation": jeu["organization"]["name"],
+                        "organisation": (jeu.get("organization") or {}).get("name", ""),
                         "licence": jeu["license"],
-                        "derniere_maj": jeu["last_update"],
+                        "derniere_maj": jeu.get("last_modified"),
                         "nb_ressources": len(jeu["resources"]),
-                        "url": jeu["page"],
+                        "url": jeu.get("page", ""),
                     }
-                    for jeu in data["data"]
+                    for jeu in jeux_acceptes
                 ],
-                "exclus_licence": 3,  # Simulé
+                "exclus_licence": exclus_licence,
             },
         }
         
-    except requests.exceptions.RequestException as e:
-        # Log de l'erreur HTTP (console + fichier)
-        logger.error(
-            "Échec de l'appel HTTP à data.gouv.fr",
-            url="https://www.data.gouv.fr/api/1/datasets/",
-            erreur=str(e),
-            suggestion="Réessayer après 30 secondes",
-        )
-        log_to_file(
-            "Échec de l'appel HTTP à data.gouv.fr",
-            url="https://www.data.gouv.fr/api/1/datasets/",
-            erreur=str(e),
-            suggestion="Réessayer après 30 secondes",
-        )
-        return {
-            "statut": "echec_technique",
-            "message": f"Échec de l'appel à l'API data.gouv.fr : {str(e)}",
-            "donnees": {
-                "suggestion": "réessayer",
-            },
-        }
     except Exception as e:
         # Log d'une erreur inattendue (console + fichier)
         logger.error(

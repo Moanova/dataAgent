@@ -51,7 +51,7 @@ Format :
       "motif": "serveur_origine_bloque",
       "id_jeu": "def456",
       "organisation": "Insee",
-      "licence": "etalab-2.0",
+      "licence": "lov2",
       "url": "https://api.insee.fr/...",
       "detail": "Statut HTTP 403"
     }

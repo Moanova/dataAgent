@@ -64,7 +64,7 @@ Aucune fonction ne lève d'exception vers l'agent. Toute défaillance est exprim
 
 ## Politique de licence
 
-Licences acceptées : `etalab-2.0`, `odc-odbl`, `cc-by`, `cc-by-sa`, `other-open`. Licences exclues : toute licence fermée, non spécifiée (`notspecified`) ou commerciale. Le filtre s'applique avant tout retour de résultats : un jeu exclu n'est jamais retourné par `rechercher_jeux`, mais il est consigné au registre avec le motif `licence_incompatible`. Cette règle est déterministe et ne fait pas l'objet d'une décision agentique.
+Licences acceptées : `lov2`, `fr-lo`, `odc-odbl`, `cc-by`, `cc-by-sa`, `cc-zero`, `other-open`. Licences exclues : toute licence fermée, non spécifiée (`notspecified`) ou commerciale. Le filtre s'applique avant tout retour de résultats : un jeu exclu n'est jamais retourné par `rechercher_jeux`, mais il est consigné au registre avec le motif `licence_incompatible`. Cette règle est déterministe et ne fait pas l'objet d'une décision agentique.
 
 ## Registre des sources inaccessibles
 
