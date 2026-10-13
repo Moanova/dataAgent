@@ -466,9 +466,13 @@ class TestValidationModeles:
             total_trouves=39,
             jeux=[],
             exclus_licence=3,
+            page_courante=1,
+            page_suivante=None,
         )
         assert out.total_trouves == 39
         assert out.exclus_licence == 3
+        assert out.page_courante == 1
+        assert out.page_suivante is None
 
     def test_lister_ressources_output_indetermination_defaut(self):
         # Test annexe : sans référence directe dans tests/plan_tests.md

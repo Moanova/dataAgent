@@ -12,10 +12,11 @@ Exécuter une recherche sur le catalogue data.gouv.fr à partir de mots-clés pr
 - `tri` : `pertinence` (défaut), `recent` (mise à jour décroissante), `vues` (audience décroissante), `reutilisations`.
 - `fenetre_maj` : restriction sur la date de dernière mise à jour : `toutes` (défaut), `30_jours`, `12_mois`, `3_ans`.
 - `limite` : nombre maximum de jeux retournés, défaut 10, maximum 20. Au-delà, paginer.
+- `page` : numéro de la page de résultats demandée, défaut 1. Chaque appel retourne une seule page ; l'agent pagine en rappelant l'outil avec le même `mots_cles`/`tri` et un `page` incrémenté, tant que la réponse l'y invite (présence d'une page suivante). Le tri doit rester identique entre les pages d'une même requête pour garantir la stabilité de la pagination.
 
 ## Retour en succès
 
-`donnees.total_trouves` : nombre total de jeux correspondant à la requête, indépendant de `limite`. `donnees.jeux` : liste résumée (identifiant, titre, organisation, licence, date de dernière mise à jour, nombre de ressources, URL de la fiche). `donnees.exclus_licence` : nombre de jeux écartés par le filtre de licence et consignés au registre.
+`donnees.total_trouves` : nombre total de jeux correspondant à la requête, indépendant de `limite` et de `page`. `donnees.page_courante` : numéro de la page retournée. `donnees.page_suivante` : numéro de la page suivante si elle existe, null sinon ; l'agent utilise ce champ pour décider de paginer. `donnees.jeux` : liste résumée (identifiant, titre, organisation, licence, date de dernière mise à jour, nombre de ressources, URL de la fiche). `donnees.exclus_licence` : nombre de jeux écartés par le filtre de licence et consignés au registre.
 
 ## Comportements d'échec
 

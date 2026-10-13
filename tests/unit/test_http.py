@@ -35,7 +35,7 @@ def test_succes_recherche_validee(fixture_recherche):
     # Réf. tests/plan_tests.md : TU-15 (tri et fenetre_maj valides -> traduction correcte vers les paramètres API)
     responses.add(responses.GET, URL_RECHERCHE, json=fixture_recherche, status=200)
 
-    resultat = rechercher_jeux_api(["dette", "publique"], tri="vues", fenetre_maj="12_mois", limite=10)
+    resultat = rechercher_jeux_api(["dette", "publique"], tri="vues", fenetre_maj="12_mois", limite=10, page=3)
 
     assert len(responses.calls) == 1
     requete = responses.calls[0].request
@@ -43,6 +43,7 @@ def test_succes_recherche_validee(fixture_recherche):
     assert "sort=-views" in requete.url
     assert "last_update_range=12_mois" in requete.url
     assert "page_size=10" in requete.url
+    assert "page=3" in requete.url
     assert resultat.reussi
     assert resultat.donnees["total"] == 1
 
@@ -120,6 +121,30 @@ def test_503_persistant_echec_technique():
 
     assert resultat.statut == "echec_technique"
     assert len(responses.calls) == 3
+
+
+@responses.activate
+def test_page_suivante_extraite_de_next_page(fixture_recherche):
+    # Réf. tests/plan_tests.md : TU-15 (pagination -> page_suivante extrait de l'URL next_page v1)
+    donnees = json.loads(json.dumps(fixture_recherche))
+    donnees["next_page"] = "https://www.data.gouv.fr/api/1/datasets/?q=dette&page=2&page_size=10"
+    responses.add(responses.GET, URL_RECHERCHE, json=donnees, status=200)
+
+    resultat = rechercher_jeux_api(["dette"])
+
+    assert resultat.donnees["page_suivante"] == 2
+
+
+@responses.activate
+def test_page_suivante_nulle_sans_next_page(fixture_recherche):
+    # Réf. tests/plan_tests.md : TU-15 (pagination -> page_suivante null si derniere page)
+    donnees = json.loads(json.dumps(fixture_recherche))
+    donnees["next_page"] = None
+    responses.add(responses.GET, URL_RECHERCHE, json=donnees, status=200)
+
+    resultat = rechercher_jeux_api(["dette"])
+
+    assert resultat.donnees["page_suivante"] is None
 
 
 @responses.activate

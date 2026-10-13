@@ -39,6 +39,8 @@ REPONSE_SUCCES = {
             }
         ],
         "exclus_licence": 1,
+        "page_courante": 2,
+        "page_suivante": None,
     },
 }
 
@@ -47,14 +49,16 @@ REPONSE_SUCCES = {
 def test_search_appel_coeur_avec_options(mock_recherche):
     # Réf. tests/plan_tests.md : TI-13 (appels logs avec mots_cles, tri, limite — via la CLI)
     mock_recherche.return_value = REPONSE_SUCCES
-    resultat = runner.invoke(app, ["search", "dette", "publique", "--tri", "vues", "--limite", "5"])
+    resultat = runner.invoke(app, ["search", "dette", "publique", "--tri", "vues", "--limite", "5", "--page", "2"])
     assert resultat.exit_code == 0
     mock_recherche.assert_called_once()
     kwargs = mock_recherche.call_args.kwargs
     assert kwargs["mots_cles"] == ["dette", "publique"]
     assert kwargs["tri"] == "vues"
     assert kwargs["limite"] == 5
+    assert kwargs["page"] == 2
     assert "Comptes des administrations publiques" in resultat.output
+    assert "page 2" in resultat.output
     assert "exclu(s) licence" in resultat.output
 
 

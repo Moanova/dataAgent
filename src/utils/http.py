@@ -132,6 +132,7 @@ def rechercher_jeux_api(
     tri: str = "pertinence",
     fenetre_maj: str = "toutes",
     limite: int = 10,
+    page: int = 1,
     **kwargs: Any,
 ) -> ResultatAppel:
     """Appelle l'endpoint de recherche /api/1/datasets/ (v1).
@@ -139,7 +140,11 @@ def rechercher_jeux_api(
     Traduit les arguments normalises vers les parametres de l'API et
     valide la reponse contre le schema jsonschema de l'outil (T2.2) ;
     une reponse invalide produit un echec propre sans exception.
+    Expose dans `donnees` la pagination normalisee `page_suivante`
+    (numero entier extrait de l'URL `next_page` de la v1, null si absente).
     """
+    from urllib.parse import urlparse, parse_qs
+
     from src.contracts.validation_api import valider_reponse_api
 
     TRIS_API = {"recent": "-last_update", "vues": "-views", "reutilisations": "-reuses"}
@@ -147,6 +152,7 @@ def rechercher_jeux_api(
     params = {
         "q": " ".join(mots_cles),
         "page_size": limite,
+        "page": page,
     }
     if tri != "pertinence":
         params["sort"] = TRIS_API[tri]
@@ -164,4 +170,12 @@ def rechercher_jeux_api(
             status_code=resultat.status_code,
             erreur="Reponse de recherche invalide : " + " ; ".join(validation.erreurs),
         )
+
+    next_page = resultat.donnees.get("next_page")
+    page_suivante = None
+    if next_page:
+        numero = parse_qs(urlparse(next_page).query).get("page")
+        if numero:
+            page_suivante = int(numero[0])
+    resultat.donnees["page_suivante"] = page_suivante
     return resultat

@@ -28,6 +28,7 @@ def rechercher_jeux(
     tri: str = "pertinence",
     fenetre_maj: str = "toutes",
     limite: int = 10,
+    page: int = 1,
     id_execution: Optional[str] = None,
     registre: Optional[RegistreSourcesInaccessibles] = None,
 ) -> Dict[str, Any]:
@@ -39,6 +40,7 @@ def rechercher_jeux(
         tri (str): Critère de tri (pertinence, recent, vues, reutilisations).
         fenetre_maj (str): Fenêtre de mise à jour (toutes, 30_jours, 12_mois, 3_ans).
         limite (int): Nombre maximum de jeux à retourner (défaut: 10, max: 20).
+        page (int): Numéro de la page de résultats demandée (défaut : 1).
         id_execution (Optional[str]): Identifiant unique pour tracer l'exécution.
         registre (Optional[RegistreSourcesInaccessibles]): Registre des sources
             inaccessibles ; par défaut, l'instance globale sur data/registry.json.
@@ -95,6 +97,7 @@ def rechercher_jeux(
             tri=tri,
             fenetre_maj=fenetre_maj,
             limite=limite,
+            page=page,
         )
 
         if not resultat.reussi:
@@ -173,6 +176,8 @@ def rechercher_jeux(
                     for jeu in jeux_acceptes
                 ],
                 "exclus_licence": exclus_licence,
+                "page_courante": page,
+                "page_suivante": data.get("page_suivante"),
             },
         }
         

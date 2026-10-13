@@ -37,8 +37,10 @@ def _afficher_recherche(reponse: dict) -> None:
         return
     donnees = reponse["donnees"]
     typer.echo(f"statut : {reponse['statut']}")
+    suite = f", page suivante : {donnees['page_suivante']}" if donnees.get("page_suivante") else ""
     typer.echo(f"{donnees['total_trouves']} jeu(x) correspondant(s), "
-               f"{len(donnees['jeux'])} retourne(s), {donnees['exclus_licence']} exclu(s) licence")
+               f"{len(donnees['jeux'])} retourne(s) (page {donnees['page_courante']}), "
+               f"{donnees['exclus_licence']} exclu(s) licence{suite}")
     for jeu in donnees["jeux"]:
         typer.echo(f"- {jeu['titre']}  [{jeu['licence']}]  {jeu['organisation']}")
         typer.echo(f"  id={jeu['id']}  maj={jeu['derniere_maj']}  {jeu['url']}")
@@ -55,6 +57,7 @@ def search(
     tri: str = typer.Option("pertinence", "--tri", help="Ordre de tri des resultats."),
     fenetre_maj: str = typer.Option("toutes", "--fenetre-maj", help="Restriction sur la derniere mise a jour."),
     limite: int = typer.Option(10, "--limite", min=1, max=20, help="Nombre maximum de jeux retournes."),
+    page: int = typer.Option(1, "--page", min=1, help="Numero de la page de resultats demandee."),
     id_execution: Optional[str] = typer.Option(None, "--id-execution", help="Identifiant d'execution pour les traces."),
     sortie_json: bool = typer.Option(False, "--json", help="Sortie JSON brute de la reponse normalisee."),
 ) -> None:
@@ -74,6 +77,7 @@ def search(
         tri=tri,
         fenetre_maj=fenetre_maj,
         limite=limite,
+        page=page,
         id_execution=identifiant,
     )
 

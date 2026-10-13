@@ -82,7 +82,7 @@ def test_filtre_licence_et_registre(registre):
         ],
         "total": 4,
         "page": 1,
-        "next_page": None,
+        "next_page": "https://www.data.gouv.fr/api/1/datasets/?q=dette&page=2&page_size=10",
         "previous_page": None,
     }
     responses.add(responses.GET, URL_RECHERCHE, json=reponse_api, status=200)
@@ -99,6 +99,42 @@ def test_filtre_licence_et_registre(registre):
     assert len(rapports) == 2
     motifs = {e["id_jeu"]: e["motif"] for e in rapports}
     assert motifs == {"ferme1": "licence_incompatible", "ferme2": "licence_incompatible"}
+
+
+@responses.activate
+def test_pagination_page_suivante_et_invariant(registre):
+    # Réf. tests/plan_tests.md : invariant (un jeu exclu n'est jamais retourné par une pagination ultérieure)
+    # + T3.1.5 (page_courante / page_suivante exposés)
+    page1 = {
+        "data": [_jeu("ferme1", "other-closed"), _jeu("ouvert1", "lov2")],
+        "total": 3,
+        "page": 1,
+        "next_page": "https://www.data.gouv.fr/api/1/datasets/?q=dette&page=2&page_size=2",
+        "previous_page": None,
+    }
+    page2 = {
+        "data": [_jeu("ferme2", "notspecified"), _jeu("ouvert3", "fr-lo")],
+        "total": 3,
+        "page": 2,
+        "next_page": None,
+        "previous_page": "https://www.data.gouv.fr/api/1/datasets/?q=dette&page=1&page_size=2",
+    }
+    responses.add(responses.GET, URL_RECHERCHE, json=page1, status=200)
+    responses.add(responses.GET, URL_RECHERCHE, json=page2, status=200)
+
+    premiere = rechercher_jeux(["dette"], limite=2, page=1, registre=registre)
+    assert premiere["donnees"]["page_courante"] == 1
+    assert premiere["donnees"]["page_suivante"] == 2
+    assert [j["id"] for j in premiere["donnees"]["jeux"]] == ["ouvert1"]
+
+    seconde = rechercher_jeux(["dette"], limite=2, page=2, registre=registre)
+    assert seconde["donnees"]["page_courante"] == 2
+    assert seconde["donnees"]["page_suivante"] is None
+    assert [j["id"] for j in seconde["donnees"]["jeux"]] == ["ouvert3"]
+
+    tous_les_ids = {j["id"] for r in (premiere, seconde) for j in r["donnees"]["jeux"]}
+    assert "ferme1" not in tous_les_ids and "ferme2" not in tous_les_ids
+    assert len(registre.rapport_pour_agent()["sources_inaccessibles"]) == 2
 
 
 @responses.activate

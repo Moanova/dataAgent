@@ -8,17 +8,29 @@
       "properties": {
         "mots_cles": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Mots-clés de la recherche, combinés en logique ET."
         },
         "tri": {
           "type": "string",
-          "enum": ["pertinence", "recent", "vues", "reutilisations"],
+          "enum": [
+            "pertinence",
+            "recent",
+            "vues",
+            "reutilisations"
+          ],
           "description": "Ordre de tri des résultats."
         },
         "fenetre_maj": {
           "type": "string",
-          "enum": ["toutes", "30_jours", "12_mois", "3_ans"],
+          "enum": [
+            "toutes",
+            "30_jours",
+            "12_mois",
+            "3_ans"
+          ],
           "description": "Restriction temporelle sur la dernière mise à jour."
         },
         "limite": {
@@ -26,16 +38,27 @@
           "minimum": 1,
           "maximum": 20,
           "description": "Nombre maximum de jeux retournés (défaut : 10)."
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Numero de la page de resultats demandee (defaut : 1). Paginer en incrementant page, a mots_cles et tri identiques."
         }
       },
-      "required": ["mots_cles"]
+      "required": [
+        "mots_cles"
+      ]
     },
     "returns": {
       "type": "object",
       "properties": {
         "statut": {
           "type": "string",
-          "enum": ["succes", "erreur_parametres", "echec_technique"],
+          "enum": [
+            "succes",
+            "erreur_parametres",
+            "echec_technique"
+          ],
           "description": "Code de statut de l'opération."
         },
         "message": {
@@ -55,26 +78,67 @@
               "items": {
                 "type": "object",
                 "properties": {
-                  "id": { "type": "string" },
-                  "titre": { "type": "string" },
-                  "organisation": { "type": "string" },
-                  "licence": { "type": "string" },
-                  "derniere_maj": { "type": "string" },
-                  "nb_ressources": { "type": "integer" },
-                  "url": { "type": "string" }
+                  "id": {
+                    "type": "string"
+                  },
+                  "titre": {
+                    "type": "string"
+                  },
+                  "organisation": {
+                    "type": "string"
+                  },
+                  "licence": {
+                    "type": "string"
+                  },
+                  "derniere_maj": {
+                    "type": "string"
+                  },
+                  "nb_ressources": {
+                    "type": "integer"
+                  },
+                  "url": {
+                    "type": "string"
+                  }
                 },
-                "required": ["id", "titre", "organisation", "licence", "derniere_maj", "nb_ressources", "url"]
+                "required": [
+                  "id",
+                  "titre",
+                  "organisation",
+                  "licence",
+                  "derniere_maj",
+                  "nb_ressources",
+                  "url"
+                ]
               }
             },
             "exclus_licence": {
               "type": "integer",
               "description": "Nombre de jeux écartés par le filtre de licence."
+            },
+            "page_courante": {
+              "type": "integer",
+              "description": "Numero de la page retournee."
+            },
+            "page_suivante": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "Numero de la page suivante si elle existe, null sinon."
             }
           },
-          "required": ["total_trouves", "jeux", "exclus_licence"]
+          "required": [
+            "total_trouves",
+            "jeux",
+            "exclus_licence"
+          ]
         }
       },
-      "required": ["statut", "message", "donnees"]
+      "required": [
+        "statut",
+        "message",
+        "donnees"
+      ]
     }
   }
 }

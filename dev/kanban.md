@@ -22,6 +22,7 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 
 #### 3.1. Recherche de jeux (`rechercher_jeux`)
 
+
 #### 3.2. Inventaire des ressources (`lister_ressources`)
 - [ ] **T3.2.1** : Implémenter l'appel HTTP pour lister les ressources d'un jeu (`src/core/resources.py`).
 - [ ] **T3.2.2** : Classifier les ressources (tabulaire, autre format, etc.).
@@ -87,6 +88,8 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 ---
 
 ## ✅ Terminé
+
+- [X] **T3.1.5** : Ajouter la pagination a `rechercher_jeux` (argument `page`, exposer `page_suivante`/`page_courante` dans la reponse) pour permettre a l'agent d'evaluer tous les jeux trouves. *(Termine le 13/10/2026 - contrat v1.1.0, valide en reel depuis la sandbox)*
 
 - [X] **T3.1.1** : Implémenter l'appel HTTP à l'API data.gouv.fr (`src/utils/http.py`). *(Terminé le 13/10/2026 — API v1, TB-01/TB-03 non passés dans la sandbox, à exécuter en local)*
 - [X] **T3.1.2** : Appliquer le filtre de licence (`src/core/search.py`). *(Terminé le 13/10/2026 — politique v1 : lov2, fr-lo, odc-odbl, cc-by, cc-by-sa, cc-zero, other-open)*

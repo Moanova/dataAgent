@@ -73,6 +73,11 @@ class RechercherJeuxInput(BaseModel):
         le=20,
         description="Nombre maximum de jeux retournes (defaut : 10, max : 20).",
     )
+    page: int = Field(
+        default=1,
+        ge=1,
+        description="Numero de la page de resultats demandee (defaut : 1).",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -85,3 +90,8 @@ class RechercherJeuxOutput(BaseModel):
     total_trouves: int = Field(description="Nombre total de jeux correspondant a la requete.")
     jeux: list[JeuResume] = Field(description="Liste resumee des jeux de donnees.")
     exclus_licence: int = Field(description="Nombre de jeux ecartes par le filtre de licence.")
+    page_courante: int = Field(description="Numero de la page retournee.")
+    page_suivante: int | None = Field(
+        default=None,
+        description="Numero de la page suivante si elle existe, null sinon.",
+    )
