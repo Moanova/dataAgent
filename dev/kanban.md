@@ -24,9 +24,6 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 
 
 #### 3.2. Inventaire des ressources (`lister_ressources`)
-- [ ] **T3.2.1** : Implémenter l'appel HTTP pour lister les ressources d'un jeu (`src/core/resources.py`).
-- [ ] **T3.2.2** : Classifier les ressources (tabulaire, autre format, etc.).
-- [ ] **T3.2.3** : Identifier les ressources ambiguës (`indetermination`).
 
 #### 3.3. Interrogation des ressources (`interroger_ressource`)
 - [ ] **T3.3.1** : Implémenter l'appel à l'API tabulaire (`src/core/query.py`).
@@ -61,6 +58,13 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 - [ ] **T5.2.1** : Tester le flux complet (recherche → inventaire → téléchargement).
 - [ ] **T5.2.2** : Valider la persistance du registre des sources inaccessibles.
 
+#### 5.3. Intégration agentique Mistral
+
+- [ ] **T5.3.1** : Créer (et détruire) l'agent Mistral : prompt système, choix du modèle, définition des outils (`scripts/agent.py`).
+- [ ] **T5.3.2** : Implémenter la boucle de conversation : envoi du message utilisateur, réception et exécution des `tool_calls` vers les fonctions du cœur, renvoi des résultats normalisés (`src/agent/boucle.py`).
+- [ ] **T5.3.3** : Journaliser les conversations (arguments, résultats, raisonnements) pour les tests TA et l'audit.
+- [ ] **T5.3.4** : Rédiger le prompt système : consignes de reformulation (A1), sélection (A2), tranchage des indéterminations (A3), synthèse du registre (A4), pagination et plafond d'invocations.
+
 ---
 
 ### 6. Logging et journalisation
@@ -88,6 +92,12 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 ---
 
 ## ✅ Terminé
+
+- [X] **T3.2.3** : Identifier les ressources ambiguës (`indetermination`). *(Termine le 13/10/2026 - semantique actee : contradictoire tranche par priorite, inconnu seulement -> indetermine ; autoportance A3 verrouillee)*
+
+- [X] **T3.2.2** : Classifier les ressources (tabulaire, autre format, etc.). *(Termine le 13/10/2026 - TU-05..11 passes, ordre HTML > API > tabulaire > autre, valide en reel depuis la sandbox)*
+
+- [X] **T3.2.1** : Implémenter l'appel HTTP pour lister les ressources d'un jeu (`src/core/resources.py`). *(Termine le 13/10/2026 - inventaire valide en reel depuis la sandbox, classification T3.2.2 restant a livrer)*
 
 - [X] **T3.1.5** : Ajouter la pagination a `rechercher_jeux` (argument `page`, exposer `page_suivante`/`page_courante` dans la reponse) pour permettre a l'agent d'evaluer tous les jeux trouves. *(Termine le 13/10/2026 - contrat v1.1.0, valide en reel depuis la sandbox)*
 

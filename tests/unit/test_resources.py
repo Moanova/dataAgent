@@ -1,0 +1,193 @@
+# -*- coding: utf-8 -*-
+# ---------------------------------------------------------------------
+# Application  : openDataAgent
+# Script       : test_resources.py
+# Version      : 1
+# Date         : 13-10-2026
+# Design       : TSC
+# Build        : Mistral Vibe
+# ---------------------------------------------------------------------
+"""Tests unitaires de l'inventaire des ressources (src/core/resources.py, T3.2.1).
+
+Sans reseau (`responses`), reponses simulees a partir de la fixture reelle.
+"""
+import json
+from pathlib import Path
+
+import pytest
+import responses
+
+from src.core.resources import inventaire, lister_ressources
+from src.utils.registry import RegistreSourcesInaccessibles
+
+REPERTOIRE_FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "api"
+URL_JEU = "https://www.data.gouv.fr/api/1/datasets/67660551c8588734a16a6a60/"
+
+
+@pytest.fixture
+def fixture_ressources() -> dict:
+    with open(REPERTOIRE_FIXTURES / "lister_ressources_reussite.json", encoding="utf-8") as flux:
+        return json.load(flux)
+
+
+@pytest.fixture
+def registre(tmp_path) -> RegistreSourcesInaccessibles:
+    return RegistreSourcesInaccessibles(chemin=tmp_path / "registry.json")
+
+
+@responses.activate
+def test_inventaire_complet(fixture_ressources, registre):
+    # Réf. tests/plan_tests.md : TI-01 (chaîne recherche → inventaire → inventaire complet, métadonnées enregistrées)
+    responses.add(responses.GET, URL_JEU, json=fixture_ressources, status=200)
+
+    reponse = lister_ressources("67660551c8588734a16a6a60", registre=registre)
+
+    assert reponse["statut"] == "succes"
+    ressources = reponse["donnees"]["ressources"]
+    assert len(ressources) == len(fixture_ressources["resources"])
+    premiere = ressources[0]
+    assert premiere["id"] == fixture_ressources["resources"][0]["id"]
+    assert premiere["titre"] == fixture_ressources["resources"][0]["title"]
+    assert premiere["url"] == fixture_ressources["resources"][0]["url"]
+    assert premiere["taille_octets"] == fixture_ressources["resources"][0]["filesize"]
+    # Classification T3.2.2 : la fixture (format csv, mime text/csv) est tabulaire
+    assert premiere["classe"] == "fichier_tabulaire"
+    assert premiere["api_tabulaire"] is False
+    # Metadonnees enregistrees dans l'inventaire (invariant du contrat)
+    assert premiere["id"] in inventaire()
+
+
+@responses.activate
+def test_hebergement_plateforme_depuis_filetype(fixture_ressources, registre):
+    # Test annexe : sans référence directe dans tests/plan_tests.md
+    donnees = json.loads(json.dumps(fixture_ressources))
+    donnees["resources"][0]["filetype"] = "file"
+    donnees["resources"][1]["filetype"] = "remote" if len(donnees["resources"]) > 1 else None
+    responses.add(responses.GET, URL_JEU, json=donnees, status=200)
+
+    reponse = lister_ressources("67660551c8588734a16a6a60", registre=registre)
+
+    ressources = reponse["donnees"]["ressources"]
+    assert ressources[0]["heberge_sur_plateforme"] is True
+    if len(ressources) > 1:
+        assert ressources[1]["heberge_sur_plateforme"] is False
+
+
+@responses.activate
+def test_indetermination_vide_apres_classification(fixture_ressources, registre):
+    # Réf. tests/plan_tests.md : TU-05/TU-07 via le flux (ressources classées -> indetermination vide)
+    responses.add(responses.GET, URL_JEU, json=fixture_ressources, status=200)
+
+    reponse = lister_ressources("67660551c8588734a16a6a60", registre=registre)
+
+    assert reponse["donnees"]["indetermination"] == []
+    classes = {r["classe"] for r in reponse["donnees"]["ressources"]}
+    assert "indetermine" not in classes
+
+
+@responses.activate
+def test_ressource_inclassable_dans_indetermination(registre):
+    # Réf. tests/plan_tests.md : TU-10 (ressource inclassable -> remontée dans indetermination)
+    reponse_api = {
+        "id": "jeu-x",
+        "title": "Jeu X",
+        "resources": [
+            {
+                "id": "res-inconnue",
+                "title": "Fichier mystere",
+                "url": "https://exemple.fr/donnees",
+                "format": "docx",
+                "mime": None,
+                "filesize": 100,
+            }
+        ],
+    }
+    responses.add(responses.GET, "https://www.data.gouv.fr/api/1/datasets/jeu-x/", json=reponse_api, status=200)
+
+    reponse = lister_ressources("jeu-x", registre=registre)
+
+    ressources = reponse["donnees"]["ressources"]
+    assert ressources[0]["classe"] == "indetermine"
+    assert reponse["donnees"]["indetermination"] == ["res-inconnue"]
+
+
+@responses.activate
+def test_coherence_inclusion_exclusion_indetermination(registre):
+    # Réf. tests/plan_tests.md : TU-10/TU-11 (invariants de cohérence de la réponse)
+    reponse_api = {
+        "id": "jeu-mixte",
+        "title": "Jeu mixte",
+        "resources": [
+            {"id": "res-csv", "title": "Donnees CSV", "url": "https://exemple.fr/d.csv", "format": "csv", "mime": "text/csv", "filesize": 10},
+            {"id": "res-mystere", "title": "Fichier mystere", "url": "https://exemple.fr/donnees", "format": "docx", "mime": None, "filesize": 20},
+            {"id": "res-zip", "title": "Archive", "url": "https://exemple.fr/a.zip", "format": "zip", "mime": None, "filesize": 30},
+            {"id": "res-nu", "title": "Fichier sans metadonnees", "url": "https://exemple.fr/f", "format": None, "mime": None, "filesize": None},
+        ],
+    }
+    responses.add(responses.GET, "https://www.data.gouv.fr/api/1/datasets/jeu-mixte/", json=reponse_api, status=200)
+
+    reponse = lister_ressources("jeu-mixte", registre=registre)
+    donnees = reponse["donnees"]
+    par_id = {r["id"]: r for r in donnees["ressources"]}
+
+    # Inclusion : tout id de indetermination est dans ressources, classe indetermine
+    for id_ in donnees["indetermination"]:
+        assert id_ in par_id
+        assert par_id[id_]["classe"] == "indetermine"
+
+    # Exclusion : toute ressource classee est absente de indetermination
+    for id_, res in par_id.items():
+        if res["classe"] != "indetermine":
+            assert id_ not in donnees["indetermination"]
+
+    assert donnees["indetermination"] == ["res-mystere", "res-nu"]
+
+
+@responses.activate
+def test_indetermination_autoportante_pour_agent(registre):
+    # Réf. tests/plan_tests.md : TU-11 (l'agent A3 dispose du titre et de l'URL sans appel d'outil supplémentaire)
+    reponse_api = {
+        "id": "jeu-a3",
+        "title": "Jeu A3",
+        "resources": [
+            {"id": "res-a", "title": "Ressource A", "url": "https://exemple.fr/a", "format": "bin", "mime": None, "filesize": 1},
+        ],
+    }
+    responses.add(responses.GET, "https://www.data.gouv.fr/api/1/datasets/jeu-a3/", json=reponse_api, status=200)
+
+    reponse = lister_ressources("jeu-a3", registre=registre)
+    donnees = reponse["donnees"]
+    par_id = {r["id"]: r for r in donnees["ressources"]}
+
+    for id_ in donnees["indetermination"]:
+        assert par_id[id_]["titre"]
+        assert par_id[id_]["url"]
+
+
+@responses.activate
+def test_jeu_introuvable_404(registre):
+    # Réf. tests/plan_tests.md : TI-02 (identifiant jamais délivré → jeu_introuvable, aucune écriture au registre)
+    responses.add(responses.GET, URL_JEU, json={"message": "not found"}, status=404)
+
+    reponse = lister_ressources("67660551c8588734a16a6a60", registre=registre)
+
+    assert reponse["statut"] == "jeu_introuvable"
+    assert reponse["donnees"]["suggestion"] == "reprendre à rechercher_jeux"
+    assert registre.rapport_pour_agent()["sources_inaccessibles"] == []
+
+
+def test_id_jeu_vide(registre):
+    # Réf. tests/plan_tests.md : TU-12 (paramètre obligatoire vide → erreur_parametres, jamais d'appel HTTP)
+    reponse = lister_ressources("", registre=registre)
+    assert reponse["statut"] == "erreur_parametres"
+
+
+@responses.activate
+def test_reponse_invalide_echec_propre(registre):
+    # Réf. tests/plan_tests.md : TU-37 (charge utile non conforme → échec propre, sans exception)
+    reponse_invalide = {"id": "abc", "resources": "pas une liste"}
+    responses.add(responses.GET, URL_JEU, json=reponse_invalide, status=200)
+
+    reponse = lister_ressources("67660551c8588734a16a6a60", registre=registre)
+
+    assert reponse["statut"] == "echec_technique"

@@ -19,6 +19,7 @@ from typing import List, Optional
 import typer
 
 from src.core.search import rechercher_jeux
+from src.core.resources import lister_ressources
 from src.utils.logging import configure_logging
 
 app = typer.Typer(help="CLI openDataAgent : acquisition de donnees data.gouv.fr.")
@@ -86,6 +87,38 @@ def search(
         typer.echo(json.dumps(reponse, ensure_ascii=False, indent=2))
     else:
         _afficher_recherche(reponse)
+
+    if reponse["statut"] == "erreur_parametres":
+        raise typer.Exit(code=2)
+    if reponse["statut"] != "succes":
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def list(
+    id_jeu: str = typer.Argument(..., help="Identifiant du jeu, issu de la recherche."),
+    id_execution: Optional[str] = typer.Option(None, "--id-execution", help="Identifiant d'execution pour les traces."),
+    sortie_json: bool = typer.Option(False, "--json", help="Sortie JSON brute de la reponse normalisee."),
+) -> None:
+    """Liste les ressources d'un jeu de donnees avec leurs metadonnees."""
+    identifiant = id_execution or _id_execution_auto()
+    configure_logging(id_execution=identifiant)
+
+    reponse = lister_ressources(id_jeu=id_jeu, id_execution=identifiant)
+
+    if sortie_json:
+        import json
+        typer.echo(json.dumps(reponse, ensure_ascii=False, indent=2))
+    elif reponse["statut"] == "succes":
+        donnees = reponse["donnees"]
+        typer.echo(f"statut : {reponse['statut']}")
+        typer.echo(f"{len(donnees['ressources'])} ressource(s), "
+                   f"{len(donnees['indetermination'])} indeterminee(s)")
+        for res in donnees["ressources"]:
+            typer.echo(f"- [{res['classe']}] {res['titre']}  ({res['format'] or 'format inconnu'})")
+            typer.echo(f"  id={res['id']}  taille={res['taille_octets']}  {res['url']}")
+    else:
+        typer.secho(f"[{reponse['statut']}] {reponse['message']}", fg=typer.colors.RED, err=True)
 
     if reponse["statut"] == "erreur_parametres":
         raise typer.Exit(code=2)

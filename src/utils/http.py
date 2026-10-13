@@ -179,3 +179,26 @@ def rechercher_jeux_api(
             page_suivante = int(numero[0])
     resultat.donnees["page_suivante"] = page_suivante
     return resultat
+
+
+def lister_ressources_api(id_jeu: str, **kwargs: Any) -> ResultatAppel:
+    """Appelle l'endpoint de detail d'un jeu /api/1/datasets/{id}/ (v1).
+
+    Valide la reponse contre le schema jsonschema de l'outil (T2.2) ;
+    une reponse invalide produit un echec propre sans exception.
+    Un 404 produit le statut `jeu_introuvable`.
+    """
+    from src.contracts.validation_api import valider_reponse_api
+
+    resultat = appel_api(f"/datasets/{id_jeu}/", **kwargs)
+    if not resultat.reussi:
+        return resultat
+
+    validation = valider_reponse_api("lister_ressources", resultat.donnees)
+    if not validation.valide:
+        return ResultatAppel(
+            statut="echec_technique",
+            status_code=resultat.status_code,
+            erreur="Reponse d'inventaire invalide : " + " ; ".join(validation.erreurs),
+        )
+    return resultat
