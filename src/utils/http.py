@@ -20,6 +20,7 @@ Couche unique d'acces reseau du projet (T3.1.1). Fournit :
 import os
 import time
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 import requests
@@ -202,3 +203,72 @@ def lister_ressources_api(id_jeu: str, **kwargs: Any) -> ResultatAppel:
             erreur="Reponse d'inventaire invalide : " + " ; ".join(validation.erreurs),
         )
     return resultat
+
+
+def telecharger_fichier(
+    url: str,
+    destination: Path,
+    timeout: float = 30.0,
+    nb_tentatives: int = 3,
+) -> ResultatAppel:
+    """Telecharge un fichier binaire en flux vers `destination`.
+
+    Ecriture atomique : le flux est ecrit dans un fichier temporaire
+    `<destination>.part` et renomme seulement apres reussite complete ;
+    aucun fichier partiel ne reste sur disque en cas d'echec (TI-07).
+    Ne leve jamais d'exception : les echecs sont convertis en
+    ResultatAppel de statut `echec_technique`.
+    """
+    temporaire = destination.with_name(destination.name + ".part")
+
+    for tentative in range(1, nb_tentatives + 1):
+        try:
+            reponse = _SESSION.get(url, stream=True, timeout=timeout)
+        except requests.exceptions.RequestException as exc:
+            log_to_file(
+                "Echec du telechargement",
+                url=url,
+                tentative=tentative,
+                erreur=str(exc),
+            )
+            if tentative < nb_tentatives:
+                time.sleep(DELAIS_TENTATIVES[min(tentative - 1, len(DELAIS_TENTATIVES) - 1)])
+                continue
+            return ResultatAppel(statut="echec_technique", erreur=str(exc))
+
+        if reponse.status_code == 404:
+            reponse.close()
+            return ResultatAppel(statut="jeu_introuvable", status_code=404)
+
+        if reponse.status_code in STATUTS_TRANSITOIRES and tentative < nb_tentatives:
+            reponse.close()
+            log_to_file(
+                "Statut transitoire, nouvelle tentative",
+                url=url,
+                status_code=reponse.status_code,
+                tentative=tentative,
+            )
+            time.sleep(DELAIS_TENTATIVES[min(tentative - 1, len(DELAIS_TENTATIVES) - 1)])
+            continue
+
+        if reponse.status_code >= 400:
+            reponse.close()
+            log_to_file(
+                "Refus du serveur d'origine",
+                url=url,
+                status_code=reponse.status_code,
+            )
+            return ResultatAppel(statut="echec_technique", status_code=reponse.status_code)
+
+        try:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            with open(temporaire, "wb") as flux:
+                for morceau in reponse.iter_content(chunk_size=8192):
+                    flux.write(morceau)
+        finally:
+            reponse.close()
+
+        temporaire.rename(destination)
+        return ResultatAppel(statut="succes", status_code=200, donnees={})
+
+    return ResultatAppel(statut="echec_technique", erreur="Tentatives epuisees")

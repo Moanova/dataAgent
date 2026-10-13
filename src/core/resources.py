@@ -30,6 +30,10 @@ _registre_par_defaut = RegistreSourcesInaccessibles()
 # (T3.4.1) et interroger_ressource (T3.3.1).
 _inventaire: Dict[str, Dict[str, Any]] = {}
 
+# Metadonnees du jeu en cours d'inventaire (id, licence) ; positionnees
+# le temps de l'appel a lister_ressources.
+_jeu_courant: Dict[str, Any] = {}
+
 
 def inventaire() -> Dict[str, Dict[str, Any]]:
     """Retourne une copie de l'inventaire des ressources deja vues."""
@@ -45,6 +49,8 @@ def _normaliser_ressource(ressource: Dict[str, Any]) -> Dict[str, Any]:
     )
     return {
         "id": ressource["id"],
+        "id_jeu": _jeu_courant.get("id"),
+        "organisation": _jeu_courant.get("organisation"),
         "titre": ressource["title"],
         "format": ressource.get("format"),
         "taille_octets": ressource.get("filesize"),
@@ -54,6 +60,8 @@ def _normaliser_ressource(ressource: Dict[str, Any]) -> Dict[str, Any]:
         # v1 : filetype "file" = heberge sur la plateforme, "remote" sinon.
         "heberge_sur_plateforme": ressource.get("filetype") == "file",
         "url": ressource["url"],
+        # La licence suit le fichier jusqu'a la visualisation (contrat telecharger_brut).
+        "licence": _jeu_courant.get("licence"),
     }
 
 
@@ -118,6 +126,12 @@ def lister_ressources(
         }
 
     data = resultat.donnees
+    global _jeu_courant
+    _jeu_courant = {
+        "id": id_jeu,
+        "licence": data.get("license"),
+        "organisation": (data.get("organization") or {}).get("name", ""),
+    }
     ressources_normalisees = [_normaliser_ressource(r) for r in data.get("resources", [])]
 
     # Invariant du contrat : l'appel enregistre les metadonnees de chaque

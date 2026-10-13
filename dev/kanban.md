@@ -31,15 +31,12 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 - [ ] **T3.3.3** : Retourner une recommandation pour les volumes élevés.
 
 #### 3.4. Téléchargement brut (`telecharger_brut`)
-- [ ] **T3.4.1** : Implémenter le téléchargement des fichiers (`src/core/download.py`).
-- [ ] **T3.4.2** : Stocker les fichiers dans `data/raw/<id_execution>/` (`src/utils/storage.py`).
-- [ ] **T3.4.3** : Gérer les échecs techniques et consigner dans le registre.
 
 ---
 
 ### 4. Intégration et CLI
-  - [ ] Commande `search` : Appelle `rechercher_jeux`.
-  - [ ] Commande `list` : Appelle `lister_ressources`.
+  - [X] Commande `search` : Appelle `rechercher_jeux`. *(Livrée le 13/10/2026 — T4.1/T4.2)*
+  - [X] Commande `list` : Appelle `lister_ressources`. *(Livrée le 13/10/2026 — avec T3.2.1)*
   - [ ] Commande `query` : Appelle `interroger_ressource`.
   - [ ] Commande `download` : Appelle `telecharger_brut`.
 
@@ -48,10 +45,8 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 ### 5. Tests
 
 #### 5.1. Tests unitaires
-- [ ] **T5.1.1** : Écrire les tests pour `rechercher_jeux` (`tests/test_search.py`).
-- [ ] **T5.1.2** : Écrire les tests pour `lister_ressources` (`tests/test_resources.py`).
-- [ ] **T5.1.3** : Écrire les tests pour `interroger_ressource` (`tests/test_query.py`).
-- [ ] **T5.1.4** : Écrire les tests pour `telecharger_brut` (`tests/test_download.py`).
+- [ ] **T5.1.3** : Écrire les tests pour `interroger_ressource` (`tests/unit/test_query.py`).
+- [ ] **T5.1.4** : Écrire les tests pour `telecharger_brut` (`tests/unit/test_download.py`).
 - [ ] **T5.1.5** : Tester les formats non tabulaires (ZIP, GeoJSON, etc.).
 
 #### 5.2. Tests d'intégration
@@ -68,8 +63,7 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 ---
 
 ### 6. Logging et journalisation
-- [ ] **T6.1** : Configurer `structlog` pour tracer les appels et les erreurs.
-- [ ] **T6.2** : Ajouter des logs pour chaque étape du flux.
+- [ ] **T6.2** : Ajouter des logs pour chaque étape du flux. *(En cours — recherche, inventaire, HTTP, registre couverts ; interroger et télécharger à venir avec T3.3/T3.4)*
 
 ---
 
@@ -83,15 +77,24 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 
 ## 🚧 En cours
 
-- [ ] **T4.1** : Créer la CLI avec Typer (`src/main.py`). *(En cours — commande `search` livrée et testée ; `list`, `query`, `download` à venir avec T3.2/T3.3/T3.4)*
-- [ ] **T4.2** : Configurer les arguments et options pour chaque commande. *(En cours — périmètre `search` livré)*
+- [ ] **T4.1** : Créer la CLI avec Typer (`src/main.py`). *(En cours — commandes `search` et `list` livrées et testées ; `query`, `download` à venir avec T3.3/T3.4)*
+- [ ] **T4.2** : Configurer les arguments et options pour chaque commande. *(En cours — périmètres `search` et `list` livrés)*
 
 
-- [ ] **T6.1** : Configurer `structlog` pour tracer les appels et les erreurs (intégration en cours).
 
 ---
 
 ## ✅ Terminé
+
+- [X] **T3.4.3** : Gérer les échecs techniques et consigner dans le registre. *(Termine le 13/10/2026 - TI-08 passe, motif serveur_origine_bloque statu quo, organisation reportee)*
+
+- [X] **T3.4.2** : Stocker les fichiers dans `data/raw/<id_execution>/` (`src/utils/storage.py`). *(Termine le 13/10/2026 - nommage et arborescence livres avec T3.4.1, collisions par suffixe numerique ajoutees)*
+
+- [X] **T3.4.1** : Implémenter le téléchargement des fichiers (`src/core/download.py`). *(Termine le 13/10/2026 - TI-05..07 passes, ecriture atomique, valide en reel depuis la sandbox : CSV 4,3 Mo via API Insee)*
+
+- [X] **T6.1** : Configurer `structlog` pour tracer les appels et les erreurs. *(Terminé le 13/10/2026 — configure_logging/log_to_file/bind_context, TU-29 à TU-32, utilisé par tous les modules)*
+- [X] **T5.1.1** : Écrire les tests pour `rechercher_jeux` (`tests/unit/test_search.py`). *(Terminé le 13/10/2026 — TU-12, TU-14, TU-17, invariants licence/registre, pagination)*
+- [X] **T5.1.2** : Écrire les tests pour `lister_ressources` (`tests/unit/test_resources.py`). *(Terminé le 13/10/2026 — TI-01, TI-02, TU-37, cohérence indétermination)*
 
 - [X] **T3.2.3** : Identifier les ressources ambiguës (`indetermination`). *(Termine le 13/10/2026 - semantique actee : contradictoire tranche par priorite, inconnu seulement -> indetermine ; autoportance A3 verrouillee)*
 

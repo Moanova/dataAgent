@@ -20,6 +20,7 @@ import typer
 
 from src.core.search import rechercher_jeux
 from src.core.resources import lister_ressources
+from src.core.download import telecharger_brut
 from src.utils.logging import configure_logging
 
 app = typer.Typer(help="CLI openDataAgent : acquisition de donnees data.gouv.fr.")
@@ -121,6 +122,37 @@ def list(
         typer.secho(f"[{reponse['statut']}] {reponse['message']}", fg=typer.colors.RED, err=True)
 
     if reponse["statut"] == "erreur_parametres":
+        raise typer.Exit(code=2)
+    if reponse["statut"] != "succes":
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def download(
+    id_ressource: str = typer.Argument(..., help="Identifiant de la ressource, issu de l'inventaire."),
+    id_execution: Optional[str] = typer.Option(None, "--id-execution", help="Identifiant d'execution pour les traces."),
+    sortie_json: bool = typer.Option(False, "--json", help="Sortie JSON brute de la reponse normalisee."),
+) -> None:
+    """Telecharge une ressource non indexee dans son etat brut."""
+    identifiant = id_execution or _id_execution_auto()
+    configure_logging(id_execution=identifiant)
+
+    reponse = telecharger_brut(id_ressource=id_ressource, id_execution=identifiant)
+
+    if sortie_json:
+        import json
+        typer.echo(json.dumps(reponse, ensure_ascii=False, indent=2))
+    elif reponse["statut"] == "succes":
+        donnees = reponse["donnees"]
+        typer.echo(f"statut : {reponse['statut']}")
+        typer.echo(f"fichier : {donnees['chemin_local']}")
+        typer.echo(f"format : {donnees['format'] or 'inconnu'}  licence : {donnees['licence'] or 'inconnue'}")
+    else:
+        typer.secho(f"[{reponse['statut']}] {reponse['message']}", fg=typer.colors.RED, err=True)
+        if reponse["donnees"].get("suggestion"):
+            typer.secho(f"suggestion : {reponse['donnees']['suggestion']}", fg=typer.colors.YELLOW, err=True)
+
+    if reponse["statut"] in ("erreur_parametres", "ressource_introuvable"):
         raise typer.Exit(code=2)
     if reponse["statut"] != "succes":
         raise typer.Exit(code=1)
