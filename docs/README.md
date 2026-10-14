@@ -18,6 +18,8 @@ openDataAgent/
 │
 ├── docs/                        # Documentation globale
 │   ├── README.md                # Présentation du projet (ce fichier)
+│   ├── projet/
+│   │   └── kanban.md            # Kanban des tâches
 │
 ├── specs/                       # Spécifications techniques
 │   ├── contracts/               # Contrats JSON des outils
@@ -35,8 +37,6 @@ openDataAgent/
 │   ├── conception.mmd           # Diagramme des flux
 │   └── decisions_conception.md  # Journal des décisions
 │
-├── dev/                         # Suivi du développement
-│   └── kanban.md                # Kanban des tâches
 │
 ├── src/                         # Code source
 │   ├── __init__.py
@@ -152,7 +152,7 @@ Les quatre premières commandes (`search`, `list`, `query`, `download`) sont le 
 Chaque commande de la CLI manuelle est un **processus et un flux indépendants**. L'inventaire des ressources peuplé par `list` ne survit pas à la fin de la commande : un `download <id_ressource>` lancé dans une commande suivante répondra `ressource_introuvable` (« identifiant jamais vu au cours du flux courant »).
 
 - Pour conduire un flux complet en une seule fois, utilisez `chat` (mode agentique) — un seul processus conduit recherche, inventaire et acquisition.
-- Le paramètre `--id-execution` permet de **tracer** plusieurs commandes avec le même identifiant (logs et journaux regroupés) ; en l'état, il ne partage pas l'inventaire entre les commandes (évolution prévue : persistance de l'inventaire par id d'exécution).
+- Le paramètre `--id-execution` permet de **tracer** plusieurs commandes avec le même identifiant (logs et conversations regroupés) ; en l'état, il ne partage pas l'inventaire entre les commandes (évolution prévue : persistance de l'inventaire par id d'exécution).
 
 ### 💬 Commande `chat` (mode agentique)
 
@@ -199,10 +199,10 @@ Rapport :
 - Sources écartées : 2 jeux (licence incompatible)
 - Limites : aucune
 
-journal de conversation : journaux/20261014_142233/conversation.jsonl
+journal de conversation : conversations/20261014_142233/conversation.jsonl
 ```
 
-Le journal JSONL (`journaux/<id_execution>/conversation.jsonl`) conserve la conversation complète : contexte (modèle, prompt, date), messages, raisonnements de l'agent, invocations d'outils avec arguments et résultats. Il sert à l'audit et aux tests agentiques (propriétés TA).
+Le journal JSONL (`conversations/<id_execution>/conversation.jsonl`) conserve la conversation complète : contexte (modèle, prompt, date), messages, raisonnements de l'agent, invocations d'outils avec arguments et résultats. Il sert à l'audit et aux tests agentiques (propriétés TA).
 
 **Codes de sortie** : `0` succès ; `1` échec technique (clé absente, API injoignable, erreur en cours de conversation) ; `2` paramètres invalides.
 
@@ -237,7 +237,7 @@ Toute licence fermée, non spécifiée (`notspecified`) ou commerciale est refus
 ---
 
 ## 📋 Suivi des tâches
-Le suivi des tâches est disponible dans [`dev/kanban.md`](dev/kanban.md).
+Le suivi des tâches est disponible dans [`docs/projet/kanban.md`](projet/kanban.md).
 
 ---
 

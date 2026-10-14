@@ -230,7 +230,7 @@ Implémentation : `tests/unit/test_boucle.py` (12 tests). Journalisation sans bl
 | TU-C7 | Rejeu : extraction ordonnée des invocations (outil, arguments décodés, statut, tour) | base TA-01/TA-02 vérifiable | Bloquant (CA-3) |
 | TU-C8 | Lecture tolérante : lignes corrompues ignorées, fichier absent → liste vide | rejeu jamais en échec sur ligne illisible | Avertissement |
 
-Implémentation : `tests/unit/test_journal.py` (8 tests). Journaux conservés dans `journaux/<id_execution>/conversation.jsonl` (plan_tests §9 : conservation avec contexte pour l'audit).
+Implémentation : `tests/unit/test_journal.py` (8 tests). Journaux conservés dans `conversations/<id_execution>/conversation.jsonl` (plan_tests §9 : conservation avec contexte pour l'audit).
 
 ### Annexes T5.3.4 — prompt système (tests unitaires de contenu, non bloquants)
 

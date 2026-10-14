@@ -48,5 +48,5 @@ __pypackages__/
 # Fichiers spécifiques à Poetry (si tu passes à Poetry plus tard)
 poetry.lock
 # Fichiers de brouillon ou temporaires
-src/openDataAgentDraft.pyjournaux/
-journaux/
+src/openDataAgentDraft.pyconversations/
+conversations/

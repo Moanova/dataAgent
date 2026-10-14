@@ -15,7 +15,7 @@ leurs arguments, resultats normalises, raisonnements de l'agent
 (texte emis entre les tool_calls) et evenements de fin.
 
 Format : JSONL, un enregistrement par ligne, dans
-journaux/<id_execution>/conversation.jsonl. Ces journaux servent aux
+conversations/<id_execution>/conversation.jsonl. Ces journaux servent aux
 tests de proprietes TA (rejeu) et a l'audit (plan_tests section 9).
 
 Aucune erreur d'ecriture ne remonte vers la boucle : la journalisation
@@ -28,7 +28,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-REPERTOIRE_JOURNAUX = Path("journaux")
+REPERTOIRE_JOURNAUX = Path("conversations")
 
 EVENEMENTS = (
     "contexte",
@@ -48,7 +48,7 @@ class JournalConversation:
 
     Attributs :
         id_execution : identifiant du flux.
-        chemin : fichier du journal (journaux/<id>/conversation.jsonl).
+        chemin : fichier du journal (conversations/<id>/conversation.jsonl).
     """
 
     def __init__(self, id_execution: str, modele: str = "", prompt: str = "", plafond: int = 0, repertoire: Optional[Path] = None) -> None:

@@ -15,7 +15,7 @@ Il est automatiquement chargé à chaque séance, mais **aucune action structura
 5. **`tests/plan_tests.md`** : pour reprendre connaissance des tests associés aux tâches.
 6. **`docs/test/acceptation.md`** : pour reprendre connaissance des critères d'acceptation des réalisations du projet.
 7. **`SESSIONS.md`** : pour reprendre connaissance des **actions, décisions et blocages** des séances précédentes.
-8. **`dev/kanban.md`** : pour reprendre connaissance du tableau des tâches.
+8. **`docs/projet/kanban.md`** : pour reprendre connaissance du tableau des tâches.
 
 
 ### **Étapes à suivre (sur demande uniquement)**
@@ -100,7 +100,7 @@ Il est automatiquement chargé à chaque séance, mais **aucune action structura
 ### **Étape 5 : Validation (sur demande)**
 - **Actions** :
   1. Valider que tous les tests passent et que les critères d'acceptation sont respectés.
-  2. Mettre à jour `dev/kanban.md` (déplacer la tâche en **✅ Terminé**).
+  2. Mettre à jour `docs/projet/kanban.md` (déplacer la tâche en **✅ Terminé**).
   3. Commiter les changements avec un message explicite.
 - **Exemple de demande** :
   ```markdown
@@ -177,7 +177,7 @@ Les actions suivantes peuvent être demandées en séance **sans être référen
 | Fichier                  | Rôle                                                                                            |
 |--------------------------|-------------------------------------------------------------------------------------------------|
 | `SESSIONS.md`            | Journal des **actions, décisions et blocages** par séance. Utilisé pour la reprise de contexte. |
-| `dev/kanban.md`          | Suivi des tâches (À faire → En cours → Terminé).                                                |
+| `docs/projet/kanban.md`          | Suivi des tâches (À faire → En cours → Terminé).                                                |
 | `tests/plan_tests.md`    | Plan de tests (TU, TI, TB) et couverture des critères d'acceptabilité.                          |
 | `docs/tasks/`            | Suivi détaillé par tâche (optionnel).                                                           |
 | `BLOCKERS.md`            | Liste des **blocages non résolus** (documentés après 4 échecs de test).                         |
