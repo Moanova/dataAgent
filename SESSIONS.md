@@ -5,6 +5,46 @@ Il est mis à jour automatiquement à la fin de chaque session et relu au début
 
 ---
 
+## **Séance du 14/10/2026 — clôture des sections 1 à 7 + réorganisation**
+
+### **Contexte**
+- **Objectif** : clôturer T4.1/T4.2 (CLI query/download), livrer toute la partie agentique (T5.3.1..T5.3.4), la commande `chat` (T4.3), les tests d'intégration restants (T5.1.5, T5.2.1, T5.2.2), corriger le logging, documenter la politique de licence et réorganiser l'arborescence.
+- **Validations réelles du concepteur en local** : création/destruction d'agent (T5.3.1), boucle de conversation (T5.3.2), téléchargement ZIP réel (TI-11 partiel : GeoJSON TI-12 restant).
+
+### **Actions réalisées**
+1. **T4.1/T4.2 clôturés** (commits 70bb045) : commandes query/download déjà implémentées, gardes CLI filtre/tri ajoutées, 11 tests CLI, kanban synchronisé.
+2. **T5.3.1 agent éphémère** (f5ee456, refactor ef7b4a2) : `client.beta.agents` (mistralai>=3.2.0), choix concepteur après comparatif éphémère/persistant + garde-fou MISTRAL_AGENT_ID (vérification stricte modèle/prompt/outils, sinon recréation), `nettoyer_agents_orphelins`. Refactor `scripts/agent.py` → `src/agent/agent.py` (décision concepteur : toute la logique agentique dans src/agent/).
+3. **T5.3.2 boucle** (ef7b4a2) : `src/agent/outils.py` (dispatch tool_calls vers le cœur, validation arguments), `src/agent/boucle.py` (itération tool_calls → exécution → renvoi normalisé, plafond 10 configurable, journalisation **sans blocage** TA-02 — décision concepteur : tracer, le cœur refusant déjà les ids hors chaîne).
+4. **T5.3.3 journal** (3d1d090, b3642b5) : `src/agent/journal.py`, JSONL `conversations/<id>/conversation.jsonl` (initialement journaux/, renommé en fin de séance), rejeu `extraire_invocations` (base TA-01/TA-02), raisonnements capturés.
+5. **T5.3.4 prompt système** (ef45a3f) : ~750 mots, sections A1-A4 + règles générales (7 statuts, identifiants, ordre, plafond, licence), pagination/volumes. Distinction clarifiée avec le concepteur : T5.3.1 = prompt minimal (mécanisme), T5.3.4 = prompt final (expertise).
+6. **T4.3 commande chat** (688aea2) : point d'entrée agentique (prompt libre, try/finally destruction garantie, --plafond/--id-execution/--json), 7 tests, documentation d'utilisation complète dans docs/README.md.
+7. **T5.1.5** (3525583) : formats non tabulaires ZIP/GeoJSON/JSON/SHP/PDF (TU-40..46, renumérotation section 3.9 du plan — doublons TU-30..33 corrigés), 9 tests.
+8. **Logging corrigé** (9fee7f8) : bug réel découvert via le test du concepteur (id_execution=None) — get_logger capturait le contexte en snapshot à l'import ; correction par processor structlog injectant le contexte à chaque événement.
+9. **T5.2.1/T5.2.2** (019abb7, 346c129) : flux complet avec exclusion licence (TI-14) + ressource hors chaîne refusée (TI-14b, illustration du piège list→download identifié par le concepteur) ; persistance du registre validée (TI-15/15b/15c) : rechargement entre instances, enrichissement cumulatif, re-test non bloquant.
+10. **Politique de licence documentée** : section README (7 licences + obligations + implications partie 2) ; tâche T7.5 créée puis section 9 dédiée (30a30e1) : registre descriptif + mention d'attribution.
+11. **Réorganisation arborescence** (f6eb48a, 0563c44) : kanban → docs/projet/kanban.md (redirection conservée en dev/), journaux/ → conversations/ (distinction logs techniques vs dialogues agentiques), .gitignore dédoublonné, AGENTS.md et références mis à jour. Skills mis à jour par le concepteur.
+
+### **Décisions**
+- **Agent éphémère** plutôt que persistant : la configuration vit dans le dépôt (invariant contrat_global) ; garde-fou pour réutiliser un agent console strictement conforme.
+- **Journalisation TA-02 sans blocage** : le cœur refuse déjà les identifiants hors chaîne ; la boucle observe pour le rejeu.
+- **Mode manuel multi-commandes** : chaque commande = un processus = un flux isolé (inventaire en mémoire) — documenté comme limite connue dans le README ; évolution « inventaire persistant par id d'exécution » évoquée, non créée.
+- **T7.5 en section 9** : préparation de la partie 2 (registre descriptif licences + attribution), distinct des améliorations optionnelles.
+- **Kanban restructuré** : la partie agentique est une section d'implémentation à part entière (section 5), pas une sous-section de tests ; identifiants de tâches inchangés pour la traçabilité.
+
+### **Tests**
+- **Résultat final : 253/253 PASSED** en ~23 s (208 en début de séance → 253).
+- Validations réelles du concepteur : agent (création/conversation/destruction), téléchargement ZIP.
+- Restants en local : TI-12 (GeoJSON réel), validation chat de T5.2.1 (recoupe TB-04), campagne TA sur journaux réels.
+
+### **Blocages**
+- Aucun. Nota : piège list→download en mode manuel identifié et documenté (pas un bug : l'inventaire est scopé au processus, conforme au contrat).
+
+### **État en fin de séance**
+- **Kanban : sections 1 à 7 entièrement terminées** (39 tâches ✅). Restent : T7.1..T7.4 (optionnelles) et T7.5 (section 9, partie 2).
+- Sandbox : environnement fonctionnel (mistralai 3.2.0 installable, pytest/responses/typer).
+
+---
+
 ## **Séance du 13/10/2026 — parties 1 à 4 (T3.1.x à T3.3.x, T4.1/T4.2, T6.1)**
 
 ### **Contexte**
