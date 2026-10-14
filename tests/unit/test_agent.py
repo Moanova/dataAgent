@@ -274,3 +274,43 @@ def test_empreinte_differencie_prompts():
     # Réf. tests/plan_tests.md : Annexe T5.3 — base du garde-fou
     assert empreinte("a") != empreinte("b")
     assert empreinte(PROMPT_SYSTEME) == empreinte(PROMPT_SYSTEME)
+
+
+# ---------------------------------------------------------------------
+# Contenu du prompt systeme (T5.3.4)
+# ---------------------------------------------------------------------
+
+def test_prompt_sections_structurantes():
+    # Réf. tests/plan_tests.md : Annexe T5.3.4 — présence des sections A1..A4
+    for marqueur in ("A1 - REFORMULATION", "A2 - SELECTION", "A3 - TRANCHAGE", "A4 - SYNTHESE"):
+        assert marqueur in PROMPT_SYSTEME
+
+
+def test_prompt_consignes_transversales():
+    # Réf. tests/plan_tests.md : Annexe T5.3.4 — outils, statuts, identifiants, langue
+    for outil in ("rechercher_jeux", "lister_ressources", "interroger_ressource", "telecharger_brut"):
+        assert outil in PROMPT_SYSTEME
+    for statut in ("succes", "erreur_parametres", "jeu_introuvable", "ressource_introuvable",
+                   "ressource_non_indexee", "licence_refusee", "echec_technique"):
+        assert statut in PROMPT_SYSTEME
+    assert "n'invente jamais un identifiant" in PROMPT_SYSTEME.lower() or "N'invente jamais un identifiant" in PROMPT_SYSTEME
+    assert "francais" in PROMPT_SYSTEME
+    assert "{statut, message, donnees}" in PROMPT_SYSTEME
+
+
+def test_prompt_pagination_plafond_licence():
+    # Réf. tests/plan_tests.md : Annexe T5.3.4 — pagination, plafond, licence, volumes
+    assert "page_suivante" in PROMPT_SYSTEME
+    assert "plafonne" in PROMPT_SYSTEME
+    assert "licence" in PROMPT_SYSTEME.lower()
+    assert "volume_eleve_telechargement_brut_suggere" in PROMPT_SYSTEME
+    assert "fichier_heberge_exterieurement" in PROMPT_SYSTEME
+    assert "indetermination" in PROMPT_SYSTEME
+
+
+def test_prompt_garde_fou_t531_inchange():
+    # Réf. tests/plan_tests.md : Annexe T5.3.4 — l'empreinte du prompt reste la référence du garde-fou
+    from src.agent.agent import creer_agent
+    import inspect
+    source = inspect.getsource(creer_agent)
+    assert "PROMPT_SYSTEME" in source

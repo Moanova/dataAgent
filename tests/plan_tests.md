@@ -217,6 +217,17 @@ Implémentation : `tests/unit/test_boucle.py` (12 tests). Journalisation sans bl
 
 Implémentation : `tests/unit/test_journal.py` (8 tests). Journaux conservés dans `journaux/<id_execution>/conversation.jsonl` (plan_tests §9 : conservation avec contexte pour l'audit).
 
+### Annexes T5.3.4 — prompt système (tests unitaires de contenu, non bloquants)
+
+| Id | Cas de test | Résultat attendu | Blocage |
+|---|---|---|---|
+| TU-D1 | Sections structurantes A1..A4 présentes | quatre marqueurs de section | Avertissement |
+| TU-D2 | Consignes transversales : 4 outils, 7 codes de statut, intégrité des identifiants, français, format normalisé | tous présents | Avertissement |
+| TU-D3 | Pagination, plafond, licence, volume élevé, fichier hébergé, indétermination | tous présents | Avertissement |
+| TU-D4 | Garde-fou T5.3.1 : le prompt reste passé par constante à la création (empreinte = référence) | vérifié | Avertissement |
+
+Implémentation : `tests/unit/test_agent.py` (4 tests de contenu ajoutés). Le prompt est une variable d'ajustement des propriétés TA-01..TA-05 : itérations évaluées sur journaux réels (TA-04 : conformité ≥ 90 % ; TA-05 : invocations < plafond).
+
 ## 8. Ordre d'exécution et définition de fini
 
 1. À chaque modification de code : TU et TI (sans réseau), TC. Exécution en quelques secondes.
