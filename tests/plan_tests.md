@@ -165,6 +165,26 @@ Non déterministes : vérification par propriétés observables et grille d'éva
 | TA-04 | Grille d'évaluation de la sélection : corpus de listes prédéfinies ; conformité des jeux retenus (présents dans la liste, licences correctes, exclusions justifiées) | taux de conformité supérieur au seuil défini | Avertissement (CA-10) |
 | TA-05 | Propriété de terminaison : la conversation agentique se termine en un nombre d'invocations sous le plafond | nombre d'invocations inférieur au plafond | Avertissement (CA-11) |
 
+### Annexes T5.3 — création/destruction de l'agent (tests unitaires, SDK simulé, zéro réseau)
+
+| Id | Cas de test | Résultat attendu | Blocage |
+|---|---|---|---|
+| TU-A1 | Charger les quatre contrats d'outils depuis le manifeste | ensemble exact des 4 noms de fonction | Bloquant (CA-2) |
+| TU-A2 | Divergence manifeste/contrat ou manifeste/fichier | refus de démarrer (exception ValueError) | Bloquant (CA-2) |
+| TU-A3 | Création de l'agent éphémère via beta.agents.create | succès, model/instructions/outils/metadata conformes au dépôt | Bloquant (CA-2) |
+| TU-A4 | MISTRAL_MODELE défini | modèle propagé à la création | Avertissement |
+| TU-A5 | Clé MISTRAL_API_KEY absente | échec propre echec_technique, aucune exception | Bloquant (CA-2) |
+| TU-A6 | Erreur SDK à la création (429/500) | échec propre echec_technique | Bloquant (CA-2) |
+| TU-A7 | MISTRAL_AGENT_ID persistant strictement conforme | réutilisé, aucune création | Avertissement |
+| TU-A8 | MISTRAL_AGENT_ID divergent (prompt, modèle, outils) ou inaccessible | agent éphémère neuf créé | Bloquant (CA-2) |
+| TU-A9 | Destruction de l'agent éphéméré | succès, beta.agents.delete appelé | Bloquant (CA-2) |
+| TU-A10 | Destruction d'un agent déjà absent (404) | succès idempotent | Avertissement |
+| TU-A11 | Erreur réseau à la destruction | échec propre avec suggestion nettoyer_agents_orphelins | Avertissement |
+| TU-A12 | Agent persistant réutilisé | jamais détruit par le flux | Bloquant (CA-3) |
+| TU-A13 | Nettoyage des agents orphelins du projet uniquement | seuls les agents du préfixe projet supprimés | Avertissement |
+
+Implémentation : `tests/unit/test_agent.py` (18 tests). Test réel de bout en bout (création → conversation → destruction sur la console Mistral) : à exécuter en local avec `MISTRAL_API_KEY`, hors sandbox.
+
 ## 8. Ordre d'exécution et définition de fini
 
 1. À chaque modification de code : TU et TI (sans réseau), TC. Exécution en quelques secondes.
