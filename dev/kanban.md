@@ -46,19 +46,14 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 
 C'est la raison d'être du projet : l'agent Mistral porte les étapes A1 à A4 du flux (reformulation, sélection, tranchage des indéterminations, synthèse du registre) en s'appuyant sur les fonctions du cœur. Les identifiants T5.3.x sont conservés pour la traçabilité avec le plan de tests et les fichiers de suivi.
 
-- [X] **T5.3.1** : Créer (et détruire) l'agent Mistral : prompt système (minimal, enrichi en T5.3.4), choix du modèle, définition des outils (`src/agent/agent.py`). *(Terminé le 14/10/2026 — agent éphémère via client.beta.agents, garde-fou MISTRAL_AGENT_ID, 18 TU ; test réel validé en local par le concepteur)*
-- [X] **T5.3.2** : Implémenter la boucle de conversation : envoi du message utilisateur, réception et exécution des `tool_calls` vers les fonctions du cœur, renvoi des résultats normalisés (`src/agent/boucle.py`). *(Terminé le 14/10/2026 — dispatch src/agent/outils.py, plafond 10 configurable, journalisation sans blocage TA-02, 12 TU ; test réel validé en local par le concepteur)*
-- [X] **T5.3.3** : Journaliser les conversations (arguments, résultats, raisonnements) pour les tests TA et l'audit. *(Terminé le 14/10/2026 — src/agent/journal.py, JSONL journaux/<id>/conversation.jsonl, rejeu extraire_invocations, 8 TU)*
-- [X] **T5.3.4** : Rédiger le prompt système : consignes de reformulation (A1), sélection (A2), tranchage des indéterminations (A3), synthèse du registre (A4), pagination et plafond d'invocations. *(Terminé le 14/10/2026 — prompt structuré s1–s8 (~750 mots) dans src/agent/agent.py, 4 tests de contenu TU-D1..D4 ; évaluation des propriétés TA sur journaux réels à venir en local)*
+> ✅ Toutes les tâches de cette section (T5.3.1 à T5.3.4) sont terminées — déplacées en colonne ✅ Terminé.
 
 ---
 
 ### 6. Tests
 
 #### 6.1. Tests unitaires
-- [X] **T5.1.3** : Écrire les tests pour `interroger_ressource` (`tests/unit/test_query.py`). *(Terminé le 13/10/2026 — livrés avec T3.3.x, kanban non tenu à jour)*
-- [X] **T5.1.4** : Écrire les tests pour `telecharger_brut` (`tests/unit/test_download.py`). *(Terminé le 13/10/2026 — livrés avec T3.4.x, kanban non tenu à jour)*
-- [ ] **T5.1.5** : Tester les formats non tabulaires (ZIP, GeoJSON, etc.).
+- [X] **T5.1.5** : Tester les formats non tabulaires (ZIP, GeoJSON, etc.). *(Terminé le 14/10/2026 — chaînage inventaire → telecharger_brut → persistance pour ZIP/GeoJSON/JSON/SHP/PDF, TU-40..46 (renumérotation section 3.9 du plan), 9 tests ; TI-11/TI-12 réels à passer en local)*
 
 #### 6.2. Tests d'intégration
 - [ ] **T5.2.1** : Tester le flux complet (recherche → inventaire → téléchargement).
@@ -67,7 +62,6 @@ C'est la raison d'être du projet : l'agent Mistral porte les étapes A1 à A4 d
 ---
 
 ### 7. Logging et journalisation
-- [X] **T6.2** : Ajouter des logs pour chaque étape du flux. *(Terminé le 14/10/2026 — recherche, inventaire, interroger, télécharger, HTTP, registre couverts (src/core/*.py, src/utils/*.py), plus les événements agentiques de src/agent/ ; kanban non tenu à jour lors de T3.3/T3.4)*
 
 ---
 
@@ -81,14 +75,29 @@ C'est la raison d'être du projet : l'agent Mistral porte les étapes A1 à A4 d
 
 ## 🚧 En cours
 
-- [X] **T4.1** : Créer la CLI avec Typer (`src/main.py`). *(Terminé le 14/10/2026 — commandes search, list, query, download livrées et testées)*
-- [X] **T4.2** : Configurer les arguments et options pour chaque commande. *(Terminé le 14/10/2026 — gardes CLI filtre/tri ajoutées sur query, codes de sortie 0/1/2)*
-
-
+*(Aucune tâche en cours.)*
 
 ---
 
 ## ✅ Terminé
+
+- [X] **T5.3.4** : Rédiger le prompt système : consignes de reformulation (A1), sélection (A2), tranchage des indéterminations (A3), synthèse du registre (A4), pagination et plafond d'invocations. *(Terminé le 14/10/2026 — prompt structuré s1–s8 (~750 mots) dans src/agent/agent.py, 4 tests de contenu TU-D1..D4 ; évaluation des propriétés TA sur journaux réels à venir en local)*
+
+- [X] **T5.3.3** : Journaliser les conversations (arguments, résultats, raisonnements) pour les tests TA et l'audit. *(Terminé le 14/10/2026 — src/agent/journal.py, JSONL journaux/<id>/conversation.jsonl, rejeu extraire_invocations, 8 TU)*
+
+- [X] **T5.3.2** : Implémenter la boucle de conversation : envoi du message utilisateur, réception et exécution des `tool_calls` vers les fonctions du cœur, renvoi des résultats normalisés (`src/agent/boucle.py`). *(Terminé le 14/10/2026 — dispatch src/agent/outils.py, plafond 10 configurable, journalisation sans blocage TA-02, 12 TU ; test réel validé en local par le concepteur)*
+
+- [X] **T5.3.1** : Créer (et détruire) l'agent Mistral : prompt système (minimal, enrichi en T5.3.4), choix du modèle, définition des outils (`src/agent/agent.py`). *(Terminé le 14/10/2026 — agent éphémère via client.beta.agents, garde-fou MISTRAL_AGENT_ID, 18 TU ; test réel validé en local par le concepteur)*
+
+- [X] **T4.1** : Créer la CLI avec Typer (`src/main.py`). *(Terminé le 14/10/2026 — commandes search, list, query, download livrées et testées)*
+
+- [X] **T4.2** : Configurer les arguments et options pour chaque commande. *(Terminé le 14/10/2026 — gardes CLI filtre/tri ajoutées sur query, codes de sortie 0/1/2)*
+
+- [X] **T6.2** : Ajouter des logs pour chaque étape du flux. *(Terminé le 14/10/2026 — recherche, inventaire, interroger, télécharger, HTTP, registre couverts (src/core/*.py, src/utils/*.py), plus les événements agentiques de src/agent/ ; kanban non tenu à jour lors de T3.3/T3.4)*
+
+- [X] **T5.1.3** : Écrire les tests pour `interroger_ressource` (`tests/unit/test_query.py`). *(Terminé le 13/10/2026 — livrés avec T3.3.x, kanban non tenu à jour)*
+
+- [X] **T5.1.4** : Écrire les tests pour `telecharger_brut` (`tests/unit/test_download.py`). *(Terminé le 13/10/2026 — livrés avec T3.4.x, kanban non tenu à jour)*
 
 - [X] **T3.3.2** : Gérer la pagination, le filtrage et le tri. *(Termine le 13/10/2026 - traductions livrees avec T3.3.1 ; consolide : page_suivante (contrat v1.1.0), erreur actionnable colonne inexistante)*
 - [X] **T3.3.3** : Retourner une recommandation pour les volumes élevés. *(Termine le 13/10/2026 - livree avec T3.3.1, revue formelle conclurante : seuil 5000 configurable, TI-09 en trois volets)*

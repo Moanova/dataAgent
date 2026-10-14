@@ -193,3 +193,126 @@ def test_lister_fichiers_execution(inventaire_peuple, registre, tmp_path, monkey
     assert fichiers[0].name == "res-1_budget-2024.csv"
 
     assert lister_fichiers("execution_inexistante") == []
+
+
+# ---------------------------------------------------------------------
+# Formats non tabulaires (T5.1.5) : chaine inventaire -> telechargement
+# -> persistance, pour ZIP, GeoJSON, JSON, SHP, PDF.
+# ---------------------------------------------------------------------
+
+import io
+import zipfile
+
+
+def _contenu_zip():
+    tampon = io.BytesIO()
+    with zipfile.ZipFile(tampon, "w") as archive:
+        archive.writestr("donnees.csv", "col1,col2\na,b\n")
+    return tampon.getvalue()
+
+
+CONTENUS_FORMATS = {
+    "zip": _contenu_zip(),
+    "geojson": json.dumps({"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": {"type": "Point", "coordinates": [2.35, 48.85]}, "properties": {"nom": "Paris"}}]}).encode("utf-8"),
+    "json": json.dumps({"cle": "valeur", "liste": [1, 2, 3]}).encode("utf-8"),
+    "shp": bytes([0x00, 0x00, 0x27, 0x0A, 0xFF, 0xFE, 0x0D, 0x0A, 0x1A, 0x00]),
+    "pdf": b"%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF",
+}
+
+MIMES_FORMATS = {
+    "zip": "application/zip",
+    "geojson": "application/geo+json",
+    "json": "application/json",
+    "shp": "application/octet-stream",
+    "pdf": "application/pdf",
+}
+
+
+def _inventaire_avec_ressource(registre, tmp_path, id_ressource, titre, url, format_ressource, mime):
+    reponse_api = {
+        "id": "jeu-f",
+        "title": "Jeu Formats",
+        "license": "lov2",
+        "resources": [
+            {"id": id_ressource, "title": titre, "url": url, "format": format_ressource, "mime": mime, "filesize": None}
+        ],
+    }
+    url_jeu = URL_JEU.replace("jeu-t", "jeu-f")
+    with patch("src.core.resources.est_indexee_api_tabulaire", return_value=False), responses.mock:
+        responses.add(responses.GET, url_jeu, json=reponse_api, status=200)
+        lister_ressources("jeu-f", registre=registre)
+    return reponse_api
+
+
+@pytest.mark.parametrize("format_ressource", ["zip", "geojson", "json", "shp", "pdf"])
+def test_format_non_tabulaire_chaine_complete(format_ressource, registre, tmp_path, monkeypatch):
+    # Réf. tests/plan_tests.md : TU-40..TU-44 (section 3.9) — persistance octet-octet, chemin valide, format retourné
+    monkeypatch.chdir(tmp_path)
+    url = f"https://exemple.fr/donnees/parcelles.{format_ressource}"
+    _inventaire_avec_ressource(registre, tmp_path, "res-nt", f"Parcelles {format_ressource}", url, format_ressource, MIMES_FORMATS[format_ressource])
+    contenu = CONTENUS_FORMATS[format_ressource]
+    with responses.mock:
+        responses.add(responses.GET, url, body=contenu, status=200)
+        reponse = telecharger_brut("res-nt", id_execution="20261014_formats", registre=registre)
+    assert reponse["statut"] == "succes", reponse
+    chemin = Path(reponse["donnees"]["chemin_local"])
+    assert chemin.exists()
+    assert chemin.read_bytes() == contenu
+    assert chemin.parent.name == "20261014_formats"
+    assert reponse["donnees"]["format"] == format_ressource
+    assert reponse["donnees"]["licence"] == "lov2"
+
+
+def test_zip_telecharge_est_une_archive_valide(registre, tmp_path, monkeypatch):
+    # Réf. tests/plan_tests.md : TU-40 (section 3.9) — intégrité de l'archive écrite
+    monkeypatch.chdir(tmp_path)
+    url = "https://exemple.fr/donnees/parcelles.zip"
+    _inventaire_avec_ressource(registre, tmp_path, "res-zip", "Parcelles ZIP", url, "zip", "application/zip")
+    with responses.mock:
+        responses.add(responses.GET, url, body=CONTENUS_FORMATS["zip"], status=200)
+        reponse = telecharger_brut("res-zip", id_execution="20261014_zip", registre=registre)
+    chemin = Path(reponse["donnees"]["chemin_local"])
+    with zipfile.ZipFile(chemin) as archive:
+        assert archive.testzip() is None
+        assert archive.namelist() == ["donnees.csv"]
+        assert archive.read("donnees.csv") == b"col1,col2\na,b\n"
+
+
+def test_geojson_telecharge_est_du_json_valide(registre, tmp_path, monkeypatch):
+    # Réf. tests/plan_tests.md : TU-41 (section 3.9) — parsing du GeoJSON écrit
+    monkeypatch.chdir(tmp_path)
+    url = "https://exemple.fr/donnees/quartiers.geojson"
+    _inventaire_avec_ressource(registre, tmp_path, "res-gj", "Quartiers GeoJSON", url, "geojson", "application/geo+json")
+    with responses.mock:
+        responses.add(responses.GET, url, body=CONTENUS_FORMATS["geojson"], status=200)
+        reponse = telecharger_brut("res-gj", id_execution="20261014_gj", registre=registre)
+    chemin = Path(reponse["donnees"]["chemin_local"])
+    contenu = json.loads(chemin.read_text(encoding="utf-8"))
+    assert contenu["type"] == "FeatureCollection"
+    assert len(contenu["features"]) == 1
+    assert contenu["features"][0]["geometry"]["type"] == "Point"
+
+
+def test_mime_zip_format_inconnu(registre, tmp_path, monkeypatch):
+    # Réf. tests/plan_tests.md : TU-45 (section 3.9) — le mime application/zip suffit à l'acquisition
+    monkeypatch.chdir(tmp_path)
+    url = "https://exemple.fr/donnees/archive-mystere"
+    _inventaire_avec_ressource(registre, tmp_path, "res-mk", "Archive mystere", url, "format inconnu", "application/zip")
+    with responses.mock:
+        responses.add(responses.GET, url, body=CONTENUS_FORMATS["zip"], status=200)
+        reponse = telecharger_brut("res-mk", id_execution="20261014_mk", registre=registre)
+    assert reponse["statut"] == "succes"
+    assert Path(reponse["donnees"]["chemin_local"]).read_bytes() == CONTENUS_FORMATS["zip"]
+
+
+def test_contenu_binaire_non_utf8(registre, tmp_path, monkeypatch):
+    # Réf. tests/plan_tests.md : TU-46 (section 3.9) — octets invalides en UTF-8 : aucune erreur de décodage
+    monkeypatch.chdir(tmp_path)
+    url = "https://exemple.fr/donnees/binaire.shp"
+    contenu = bytes([0x89, 0x50, 0x4E, 0x47, 0xFF, 0xFE, 0x80, 0x9F, 0xC3, 0x28])
+    _inventaire_avec_ressource(registre, tmp_path, "res-bin", "Binaire SHP", url, "shp", "application/octet-stream")
+    with responses.mock:
+        responses.add(responses.GET, url, body=contenu, status=200)
+        reponse = telecharger_brut("res-bin", id_execution="20261014_bin", registre=registre)
+    assert reponse["statut"] == "succes"
+    assert Path(reponse["donnees"]["chemin_local"]).read_bytes() == contenu

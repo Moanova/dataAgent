@@ -85,11 +85,21 @@ Tests isolés, sans réseau. La couche HTTP est simulée.
 | TU-31 | Écriture dans le fichier de logs | Le fichier est créé et contient les logs attendus | Bloquant (CA-2) |
 | TU-32 | Niveaux de log (`DEBUG`, `INFO`, `ERROR`) | Les logs respectent les niveaux demandés (ex : `DEBUG` n'apparaît pas en `INFO`) | Avertissement (CA-2) |
 
-| TU-33 | Fichier ZIP (format zip, mime application/zip) | fichier_autre_format, persistance locale, chemin valide | Bloquant (CA-13) |
-| TU-30 | Fichier GeoJSON (format geojson, mime application/geo+json) | fichier_autre_format, persistance locale, chemin valide | Bloquant (CA-13) |
-| TU-31 | Fichier JSON (format json, mime application/json) | fichier_autre_format, persistance locale, chemin valide | Bloquant (CA-13) |
-| TU-32 | Fichier SHP (format shp, mime application/octet-stream) | fichier_autre_format, persistance locale, chemin valide | Bloquant (CA-13) |
-| TU-33 | Fichier PDF (format pdf, mime application/pdf) | fichier_autre_format, persistance locale, chemin valide | Bloquant (CA-13) |
+(Nota T5.1.5 : les cinq lignes ci-dessus, initialement numérotées TU-30..TU-33 en doublon de la section journalisation, sont renumérotées TU-40..TU-44 et détaillées en section 3.9.)
+
+### 3.9 Formats non tabulaires (T5.1.5) — classification déjà couverte par TU-07 ; ici le chaînage complet : inventaire → telecharger_brut → persistance
+
+| Id | Cas de test | Résultat attendu | Blocage |
+|---|---|---|---|
+| TU-40 | Fichier ZIP (format zip, mime application/zip), contenu binaire d'archive valide | statut succes, classe fichier_autre_format, fichier persisté octet-octet, chemin sous data/raw/<id>/, format zip retourné | Bloquant (CA-13) |
+| TU-41 | Fichier GeoJSON (format geojson, mime application/geo+json), contenu JSON géographique valide | idem, format geojson | Bloquant (CA-13) |
+| TU-42 | Fichier JSON (format json, mime application/json) | idem, format json | Bloquant (CA-13) |
+| TU-43 | Fichier SHP (format shp, mime application/octet-stream), contenu binaire brut | idem, format shp | Bloquant (CA-13) |
+| TU-44 | Fichier PDF (format pdf, mime application/pdf), contenu binaire factice | idem, format pdf | Bloquant (CA-13) |
+| TU-45 | Format inconnu mais mime application/zip | le mime suffit : fichier_autre_format, acquisition réussie | Bloquant (CA-13) |
+| TU-46 | Contenu binaire non-UTF8 (octets invalides en UTF-8) | aucune erreur de décodage, fichier écrit identique | Bloquant (CA-13) |
+
+Implémentation : `tests/unit/test_download.py` (section formats non tabulaires). Tests réels correspondants : TI-11 (ZIP) et TI-12 (GeoJSON) — à passer en local sur des jeux réels, avec vérification d'intégrité (ouverture de l'archive, parsing du GeoJSON).
 
 ### 3.8 Validation des reponses API (`jsonschema`, T2.2)
 
