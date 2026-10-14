@@ -54,8 +54,8 @@ C'est la raison d'être du projet : l'agent Mistral porte les étapes A1 à A4 d
 > ✅ T5.1.3, T5.1.4, T5.1.5 terminées — déplacées en colonne ✅ Terminé.
 
 #### 6.2. Tests d'intégration
-- [X] **T5.2.1** : Tester le flux complet (recherche → inventaire → téléchargement). *(Terminé le 14/10/2026 — TI-14/TI-14b dans tests/unit/test_integration.py : flux nominal avec exclusion licence + ressource hors chaîne refusée ; flux complet nominal mocké déjà couvert par TI-05 ; validation réelle en mode chat à passer en local, recoupe TB-04)*
-- [X] **T5.2.2** : Valider la persistance du registre des sources inaccessibles. *(Terminé le 14/10/2026 — TI-15/TI-15b/TI-15c : rechargement intégral entre instances, enrichissement cumulatif sans altération, re-test d'entrée technique non bloquant ; persistance confirmée, aucun défaut trouvé)*
+
+> ✅ T5.2.1 et T5.2.2 terminées — déplacées en colonne ✅ Terminé.
 
 ---
 
@@ -79,6 +79,10 @@ C'est la raison d'être du projet : l'agent Mistral porte les étapes A1 à A4 d
 ---
 
 ## ✅ Terminé
+
+- [X] **T5.2.1** : Tester le flux complet (recherche → inventaire → téléchargement). *(Terminé le 14/10/2026 — TI-14/TI-14b dans tests/unit/test_integration.py : flux nominal avec exclusion licence + ressource hors chaîne refusée ; flux complet nominal mocké déjà couvert par TI-05 ; validation réelle en mode chat à passer en local, recoupe TB-04)*
+
+- [X] **T5.2.2** : Valider la persistance du registre des sources inaccessibles. *(Terminé le 14/10/2026 — TI-15/TI-15b/TI-15c : rechargement intégral entre instances, enrichissement cumulatif sans altération, re-test d'entrée technique non bloquant ; persistance confirmée, aucun défaut trouvé)*
 
   - [X] Commande `search` : Appelle `rechercher_jeux`. *(Livrée le 13/10/2026 — T4.1/T4.2)*
 
