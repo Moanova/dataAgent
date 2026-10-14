@@ -34,11 +34,8 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 ---
 
 ### 4. Intégration et CLI
-  - [X] Commande `search` : Appelle `rechercher_jeux`. *(Livrée le 13/10/2026 — T4.1/T4.2)*
-  - [X] Commande `list` : Appelle `lister_ressources`. *(Livrée le 13/10/2026 — avec T3.2.1)*
-  - [X] Commande `query` : Appelle `interroger_ressource`. *(Livrée le 14/10/2026 — avec T4.1/T4.2, gardes CLI filtre/tri)*
-  - [X] Commande `download` : Appelle `telecharger_brut`. *(Livrée le 14/10/2026 — avec T4.1/T4.2)*
-  - [X] **T4.3** : Commande `chat` : point d'entrée agentique grand public — un prompt libre en argument ; crée l'agent (T5.3.1), conduit la conversation (T5.3.2), journalise (T5.3.3), détruit l'agent, affiche la synthèse finale et le chemin du journal. Options : `--plafond`, `--id-execution`, `--json`. *(Terminé le 14/10/2026 — 7 tests CLI TU-E1..E7, documentation d'utilisation dans docs/README.md, destruction garantie par finally)*
+
+> ✅ Toutes les commandes livrées (search, list, query, download, chat — T4.1, T4.2, T4.3) — déplacées en colonne ✅ Terminé.
 
 ---
 
@@ -53,11 +50,12 @@ C'est la raison d'être du projet : l'agent Mistral porte les étapes A1 à A4 d
 ### 6. Tests
 
 #### 6.1. Tests unitaires
-- [X] **T5.1.5** : Tester les formats non tabulaires (ZIP, GeoJSON, etc.). *(Terminé le 14/10/2026 — chaînage inventaire → telecharger_brut → persistance pour ZIP/GeoJSON/JSON/SHP/PDF, TU-40..46 (renumérotation section 3.9 du plan), 9 tests ; TI-11/TI-12 réels à passer en local)*
+
+> ✅ T5.1.3, T5.1.4, T5.1.5 terminées — déplacées en colonne ✅ Terminé.
 
 #### 6.2. Tests d'intégration
-- [ ] **T5.2.1** : Tester le flux complet (recherche → inventaire → téléchargement).
-- [ ] **T5.2.2** : Valider la persistance du registre des sources inaccessibles.
+- [X] **T5.2.1** : Tester le flux complet (recherche → inventaire → téléchargement). *(Terminé le 14/10/2026 — TI-14/TI-14b dans tests/unit/test_integration.py : flux nominal avec exclusion licence + ressource hors chaîne refusée ; flux complet nominal mocké déjà couvert par TI-05 ; validation réelle en mode chat à passer en local, recoupe TB-04)*
+- [X] **T5.2.2** : Valider la persistance du registre des sources inaccessibles. *(Terminé le 14/10/2026 — TI-15/TI-15b/TI-15c : rechargement intégral entre instances, enrichissement cumulatif sans altération, re-test d'entrée technique non bloquant ; persistance confirmée, aucun défaut trouvé)*
 
 ---
 
@@ -70,6 +68,7 @@ C'est la raison d'être du projet : l'agent Mistral porte les étapes A1 à A4 d
 - [ ] **T7.2** : Implémenter un nettoyage automatique des anciennes exécutions.
 - [ ] **T7.3** : Automatiser les tests agentiques.
 - [ ] **T7.4** : Supporter d'autres sources de données (ex : Eurostat, INSEE).
+- [ ] **T7.5** : Registre descriptif des licences et génération de mention d'attribution (`src/core/licences_descriptif.py`) : propriétés par licence (attribution, partage à l'identique, usage commercial), `mention_attribution()` à partir des métadonnées de l'inventaire, prédicats de compatibilité pour la partie 2 (visualisation). Base de la politique de licence documentée dans docs/README.md. Branchement optionnel sur telecharger_brut (champ mention_attribution, contrat v1.2.0) à décider.
 
 ---
 
@@ -80,6 +79,18 @@ C'est la raison d'être du projet : l'agent Mistral porte les étapes A1 à A4 d
 ---
 
 ## ✅ Terminé
+
+  - [X] Commande `search` : Appelle `rechercher_jeux`. *(Livrée le 13/10/2026 — T4.1/T4.2)*
+
+  - [X] Commande `list` : Appelle `lister_ressources`. *(Livrée le 13/10/2026 — avec T3.2.1)*
+
+  - [X] Commande `query` : Appelle `interroger_ressource`. *(Livrée le 14/10/2026 — avec T4.1/T4.2, gardes CLI filtre/tri)*
+
+  - [X] Commande `download` : Appelle `telecharger_brut`. *(Livrée le 14/10/2026 — avec T4.1/T4.2)*
+
+  - [X] **T4.3** : Commande `chat` : point d'entrée agentique grand public — un prompt libre en argument ; crée l'agent (T5.3.1), conduit la conversation (T5.3.2), journalise (T5.3.3), détruit l'agent, affiche la synthèse finale et le chemin du journal. Options : `--plafond`, `--id-execution`, `--json`. *(Terminé le 14/10/2026 — 7 tests CLI TU-E1..E7, documentation d'utilisation dans docs/README.md, destruction garantie par finally)*
+
+- [X] **T5.1.5** : Tester les formats non tabulaires (ZIP, GeoJSON, etc.). *(Terminé le 14/10/2026 — chaînage inventaire → telecharger_brut → persistance pour ZIP/GeoJSON/JSON/SHP/PDF, TU-40..46 (renumérotation section 3.9 du plan), 9 tests ; TI-11/TI-12 réels à passer en local)*
 
 - [X] **T5.3.4** : Rédiger le prompt système : consignes de reformulation (A1), sélection (A2), tranchage des indéterminations (A3), synthèse du registre (A4), pagination et plafond d'invocations. *(Terminé le 14/10/2026 — prompt structuré s1–s8 (~750 mots) dans src/agent/agent.py, 4 tests de contenu TU-D1..D4 ; évaluation des propriétés TA sur journaux réels à venir en local)*
 

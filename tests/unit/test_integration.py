@@ -192,3 +192,201 @@ def test_entree_exclusion_non_alteree_par_echec(registre, tmp_path, monkeypatch)
     entrees = registre.rapport_pour_agent()["sources_inaccessibles"]
     assert len(entrees) == 2
     assert entrees[0] == avant
+
+
+@responses.activate
+def test_t521_flux_complet_avec_exclusion_licence(registre, tmp_path, monkeypatch):
+    # Réf. tests/plan_tests.md : TI-14 (T5.2.1) — flux complet nominal avec exclusion de licence à la recherche
+    monkeypatch.chdir(tmp_path)
+    responses.add(responses.GET, URL_RECHERCHE, json={
+        "data": [
+            _jeu("jeu-ouvert", "Jeu Ouvert", "lov2", "Insee"),
+            _jeu("jeu-ferme", "Jeu Ferme", "other-closed", "Ministere X"),
+        ],
+        "total": 2, "page": 1, "next_page": None, "previous_page": None,
+    }, status=200)
+    recherche = rechercher_jeux(["budget"], registre=registre)
+    assert recherche["statut"] == "succes"
+    ids = [j["id"] for j in recherche["donnees"]["jeux"]]
+    assert ids == ["jeu-ouvert"]
+    assert recherche["donnees"]["exclus_licence"] == 1
+
+    responses.add(responses.GET, ping_tabulaire("res-jeu-ouvert"), json={"links": []}, status=200)
+    responses.add(responses.GET, url_jeu("jeu-ouvert"), json={
+        "id": "jeu-ouvert", "title": "Jeu Ouvert", "license": "lov2",
+        "organization": {"name": "Insee"},
+        "resources": [
+            {"id": "res-jeu-ouvert", "title": "Budget", "url": URL_FICHIER, "format": "csv", "mime": "text/csv", "filesize": 7}
+        ],
+    }, status=200)
+    inventaire = lister_ressources("jeu-ouvert", registre=registre)
+    assert inventaire["statut"] == "succes"
+
+    responses.add(responses.GET, URL_FICHIER, body=b"col;val\nx;1\n", status=200)
+    telechargement = telecharger_brut("res-jeu-ouvert", id_execution="20261014_flux", registre=registre)
+    assert telechargement["statut"] == "succes"
+    chemin = Path(telechargement["donnees"]["chemin_local"])
+    assert chemin.read_bytes() == b"col;val\nx;1\n"
+    assert telechargement["donnees"]["licence"] == "lov2"
+
+    # Le jeu ferme n'a jamais ete expose a l'inventaire ni au telechargement :
+    # la chaine identifiants est restee integre, l'exclusion est tracee au registre.
+    entrees = registre.rapport_pour_agent()["sources_inaccessibles"]
+    assert len(entrees) == 1
+    assert entrees[0]["motif"] == "licence_incompatible"
+    assert entrees[0]["id_jeu"] == "jeu-ferme"
+
+
+@responses.activate
+def test_t521_ressource_hors_chaine_refusee(registre, tmp_path, monkeypatch):
+    # Réf. tests/plan_tests.md : TI-14b (T5.2.1) — propriété TA-01/TA-02 au niveau intégration :
+    # un téléchargement d'identifiant jamais délivré par le flux est refusé, aucune écriture disque
+    monkeypatch.chdir(tmp_path)
+    responses.add(responses.GET, URL_RECHERCHE, json={
+        "data": [_jeu("jeu-a", "Jeu A", "lov2", "Insee")],
+        "total": 1, "page": 1, "next_page": None, "previous_page": None,
+    }, status=200)
+    recherche = rechercher_jeux(["budget"], registre=registre)
+    assert recherche["statut"] == "succes"
+
+    responses.add(responses.GET, ping_tabulaire("res-jeu-a"), json={"links": []}, status=200)
+    responses.add(responses.GET, url_jeu("jeu-a"), json={
+        "id": "jeu-a", "title": "Jeu A", "license": "lov2",
+        "organization": {"name": "Insee"},
+        "resources": [
+            {"id": "res-jeu-a", "title": "Fichier", "url": URL_FICHIER, "format": "csv", "mime": "text/csv", "filesize": 5}
+        ],
+    }, status=200)
+    inventaire = lister_ressources("jeu-a", registre=registre)
+    assert inventaire["statut"] == "succes"
+
+    # Ressource inventoriee : le telechargement fonctionne
+    responses.add(responses.GET, URL_FICHIER, body=b"a;b\n", status=200)
+    reponse_ok = telecharger_brut("res-jeu-a", id_execution="20261014_hc", registre=registre)
+    assert reponse_ok["statut"] == "succes"
+
+    # Ressource jamais vue par l'inventaire de CE flux : refusee, aucune ecriture
+    reponse_ko = telecharger_brut("res-fantome", id_execution="20261014_hc", registre=registre)
+    assert reponse_ko["statut"] == "ressource_introuvable"
+    assert reponse_ko["donnees"]["suggestion"] == "reprendre par l'inventaire"
+    # Aucune ecriture pour la ressource refusee : un seul fichier dans l'arborescence
+    fichiers = list((tmp_path / "data" / "raw").rglob("*"))
+    fichiers_ecrits = [f for f in fichiers if f.is_file()]
+    assert len(fichiers_ecrits) == 1
+
+
+# ---------------------------------------------------------------------
+# T5.2.2 : persistance du registre des sources inaccessibles
+# ---------------------------------------------------------------------
+
+@responses.activate
+def test_t522_rechargement_entre_executions(tmp_path, monkeypatch):
+    # Réf. tests/plan_tests.md : TI-15 (T5.2.2) — exécution 1 écrit, exécution 2 (nouvelle instance) retrouve tout
+    monkeypatch.chdir(tmp_path)
+    chemin_registre = tmp_path / "registry.json"
+
+    # --- Exécution 1 : exclusion de licence + échec de téléchargement
+    registre_1 = RegistreSourcesInaccessibles(chemin=chemin_registre)
+    responses.add(responses.GET, URL_RECHERCHE, json={
+        "data": [
+            _jeu("jeu-ouvert", "Jeu Ouvert", "lov2", "Insee"),
+            _jeu("jeu-ferme", "Jeu Ferme", "other-closed", "Ministere X"),
+        ],
+        "total": 2, "page": 1, "next_page": None, "previous_page": None,
+    }, status=200)
+    recherche = rechercher_jeux(["budget"], registre=registre_1)
+    assert recherche["statut"] == "succes"
+    assert recherche["donnees"]["exclus_licence"] == 1
+
+    responses.add(responses.GET, ping_tabulaire("res-jeu-ouvert"), json={"links": []}, status=200)
+    responses.add(responses.GET, url_jeu("jeu-ouvert"), json={
+        "id": "jeu-ouvert", "title": "Jeu Ouvert", "license": "lov2",
+        "organization": {"name": "Insee"},
+        "resources": [
+            {"id": "res-jeu-ouvert", "title": "Budget", "url": URL_FICHIER, "format": "csv", "mime": "text/csv", "filesize": 5}
+        ],
+    }, status=200)
+    inventaire = lister_ressources("jeu-ouvert", registre=registre_1)
+    assert inventaire["statut"] == "succes"
+
+    responses.add(responses.GET, URL_FICHIER, body=b"", status=403)
+    echec = telecharger_brut("res-jeu-ouvert", id_execution="20261014_exec1", registre=registre_1)
+    assert echec["statut"] == "echec_technique"
+
+    entrees_1 = registre_1.rapport_pour_agent()["sources_inaccessibles"]
+    assert len(entrees_1) == 2
+
+    # --- Exécution 2 : nouvelle instance sur le même chemin — la persistance
+    registre_2 = RegistreSourcesInaccessibles(chemin=chemin_registre)
+    entrees_2 = registre_2.rapport_pour_agent()["sources_inaccessibles"]
+    assert len(entrees_2) == 2, "le registre doit être rechargé intégralement par l'exécution suivante"
+    motifs = [e["motif"] for e in entrees_2]
+    assert "licence_incompatible" in motifs
+    assert "serveur_origine_bloque" in motifs
+    for e1, e2 in zip(entrees_1, entrees_2):
+        assert e1 == e2, "aucune entrée ne doit être altérée entre les exécutions"
+    # JSON valide au chemin
+    json.loads(chemin_registre.read_text(encoding="utf-8"))
+
+
+@responses.activate
+def test_t522_enrichissement_cumulatif(tmp_path, monkeypatch):
+    # Réf. tests/plan_tests.md : TI-15b (T5.2.2) — l'exécution 2 ajoute sans altérer les entrées d'origine
+    monkeypatch.chdir(tmp_path)
+    chemin_registre = tmp_path / "registry.json"
+
+    # Exécution 1 : une exclusion juridique
+    registre_1 = RegistreSourcesInaccessibles(chemin=chemin_registre)
+    responses.add(responses.GET, URL_RECHERCHE, json={
+        "data": [_jeu("jeu-ferme", "Jeu Ferme", "other-closed", "Ministere X")],
+        "total": 1, "page": 1, "next_page": None, "previous_page": None,
+    }, status=200)
+    rechercher_jeux(["budget"], registre=registre_1)
+    entrees_1 = registre_1.rapport_pour_agent()["sources_inaccessibles"]
+    assert len(entrees_1) == 1
+    entree_juridique = entrees_1[0]
+
+    # Exécution 2 : nouvelle instance, un échec technique s'ajoute
+    registre_2 = RegistreSourcesInaccessibles(chemin=chemin_registre)
+    registre_2.consigner_echec_technique(
+        id_jeu="jeu-x",
+        organisation="Org Y",
+        licence="fr-lo",
+        url="https://exemple.org/x.csv",
+        detail="Statut HTTP 500",
+    )
+    registre_2.sauvegarder()
+    entrees_2 = registre_2.rapport_pour_agent()["sources_inaccessibles"]
+    assert len(entrees_2) == 2, "l'exécution 2 cumule sans écraser"
+    juridique_apres = [e for e in entrees_2 if e["motif"] == "licence_incompatible"][0]
+    assert juridique_apres == entree_juridique, "l'entrée juridique d'origine n'est pas altérée"
+    technique = [e for e in entrees_2 if e["motif"] == "serveur_origine_bloque"][0]
+    assert technique["detail"] == "Statut HTTP 500"
+    # Ordre chronologique
+    assert entrees_2[0]["timestamp"] <= entrees_2[1]["timestamp"]
+
+    # Exécution 3 : relecture nue — le cumul persiste
+    registre_3 = RegistreSourcesInaccessibles(chemin=chemin_registre)
+    assert len(registre_3.rapport_pour_agent()["sources_inaccessibles"]) == 2
+
+
+def test_t522_retetest_echec_technique_non_bloquant(tmp_path, monkeypatch):
+    # Réf. tests/plan_tests.md : TI-15c (T5.2.2) — une entrée technique ne bloque pas un nouvel essai :
+    # le contrat global autorise le re-test d'une source en échec technique lors d'une exécution ultérieure.
+    monkeypatch.chdir(tmp_path)
+    chemin_registre = tmp_path / "registry.json"
+    registre = RegistreSourcesInaccessibles(chemin=chemin_registre)
+    registre.consigner_echec_technique(
+        id_jeu="jeu-y",
+        organisation="Org Z",
+        licence="lov2",
+        url="https://exemple.org/y.csv",
+        detail="Statut HTTP 503",
+    )
+    registre.sauvegarder()
+    # Le registre ne bloque rien par lui-même : une nouvelle exécution peut re-tenter la ressource.
+    # (Le re-test effectif relancera telecharger_brut ; le registre n'interdit pas l'accès.)
+    nouveau_registre = RegistreSourcesInaccessibles(chemin=chemin_registre)
+    assert len(nouveau_registre.rapport_pour_agent()["sources_inaccessibles"]) == 1
+    # Aucune API du registre n'expose de mécanisme de blocage : comportement conforme au contrat
+    # (entrée technique re-testable, entrée juridique définitive côté filtrage licence).

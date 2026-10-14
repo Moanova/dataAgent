@@ -129,6 +129,11 @@ Composants assemblés, réseau simulé, sans agent.
 | TI-10 | Vérification systématique des invariants de la documentation : chaque invariant des fichiers docs/*.md couvert par une assertion | tous les invariants vérifiés | Bloquant |
 | TI-11 | Téléchargement d'un fichier ZIP | Fichier téléchargé, chemin valide, statut succes | Bloquant (CA-13) |
 | TI-12 | Téléchargement d'un fichier GeoJSON | Fichier téléchargé, chemin valide, statut succes | Bloquant (CA-13) |
+| TI-14 | T5.2.1 — Flux complet dans un même processus (recherche → inventaire → téléchargement) avec exclusion de licence à la recherche | jeu exclu non exposé, exclusion consignée au registre (licence_incompatible), fichier téléchargé avec licence, chaîne d'identifiants intacte | Bloquant (CA-2, CA-3) |
+| TI-14b | T5.2.1 — Ressource jamais délivrée par le flux : téléchargement refusé | ressource_introuvable, suggestion reprendre par l'inventaire, aucune écriture disque (propriété TA-01/TA-02 au niveau intégration) | Bloquant (CA-3) |
+| TI-15 | T5.2.2 — Persistance : exécution 1 écrit (exclusion + échec), nouvelle instance retrouve intégralement | 2 entrées rechargées, aucune altérée, JSON valide | Bloquant (CA-2) |
+| TI-15b | T5.2.2 — Enrichissement cumulatif : l'exécution 2 ajoute une entrée technique | cumul de 2 (puis relecture 3 : 2), entrée juridique d'origine intacte, ordre chronologique | Bloquant (CA-2) |
+| TI-15c | T5.2.2 — Re-test d'une entrée technique possible à l'exécution suivante | aucune API de blocage, relecture conforme au contrat global | Avertissement |
 
 ### 5.1 Journalisation (`structlog`)
 
