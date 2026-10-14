@@ -4,7 +4,7 @@
 # Script       : download.py
 # Version      : 1
 # Date         : 13-10-2026
-# Design       : TSC
+# Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
 """Telechargement brut d'une ressource non indexee (voie 2, T3.4.1).

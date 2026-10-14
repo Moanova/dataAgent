@@ -4,7 +4,7 @@
 # Script       : outils.py
 # Version      : 1
 # Date         : 14-10-2026
-# Design       : TSC
+# Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
 """Execution des tool_calls vers les fonctions du coeur (T5.3.2).

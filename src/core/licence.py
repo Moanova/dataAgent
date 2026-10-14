@@ -4,7 +4,7 @@
 # Script       : licence.py
 # Version      : 1
 # Date         : 12-10-2026
-# Design       : TSC
+# Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
 """Filtre de licence du projet openDataAgent (T3.1.2).

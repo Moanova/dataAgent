@@ -4,7 +4,7 @@
 # Script       : base.py
 # Version      : 1
 # Date         : 12-10-2026
-# Design       : TSC
+# Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
 """Modeles Pydantic communs aux contrats des outils exposes aux agents.

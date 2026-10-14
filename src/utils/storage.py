@@ -4,7 +4,7 @@
 # Script       : storage.py
 # Version      : 1
 # Date         : 13-10-2026
-# Design       : TSC
+# Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
 """Stockage local des fichiers telecharges (cf. docs/specs/stockage.md).

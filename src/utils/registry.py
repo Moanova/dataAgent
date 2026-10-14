@@ -4,7 +4,7 @@
 # Script       : registry.py
 # Version      : 1
 # Date         : 12-10-2026
-# Design       : TSC
+# Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
 """Registre des sources inaccessibles (T3.1.3, cf. docs/specs/registre.md).

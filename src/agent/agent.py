@@ -4,7 +4,7 @@
 # Script       : agent.py
 # Version      : 1.1
 # Date         : 14-10-2026
-# Design       : TSC
+# Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
 """Creation et destruction de l'agent Mistral (T5.3.1).

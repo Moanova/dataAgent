@@ -4,7 +4,7 @@
 # Script       : resources.py
 # Version      : 1
 # Date         : 13-10-2026
-# Design       : TSC
+# Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
 """Inventaire des ressources d'un jeu de donnees (lister_ressources, T3.2.1).

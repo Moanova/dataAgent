@@ -4,7 +4,7 @@
 # Script       : query.py
 # Version      : 1
 # Date         : 13-10-2026
-# Design       : TSC
+# Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
 """Interrogation d'une ressource indexee par l'API tabulaire (voie 1, T3.3.1).

@@ -4,7 +4,7 @@
 # Script       : validation_api.py
 # Version      : 1
 # Date         : 12-10-2026
-# Design       : TSC
+# Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
 """Validation des reponses brutes de l'API data.gouv.fr avec jsonschema.

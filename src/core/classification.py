@@ -4,7 +4,7 @@
 # Script       : classification.py
 # Version      : 1
 # Date         : 13-10-2026
-# Design       : TSC
+# Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
 """Classificateur deterministe des ressources (B3, T3.2.2/T3.2.3).
