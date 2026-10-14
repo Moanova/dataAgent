@@ -54,6 +54,7 @@ def configure_logging(id_execution: Optional[str] = None) -> None:
     # Configuration des processors pour structlog
     shared_processors = [
         structlog.contextvars.merge_contextvars,
+        _injecter_contexte_global,
         structlog.stdlib.add_logger_name,
         structlog.stdlib.add_log_level,
         structlog.processors.TimeStamper(fmt="iso"),
@@ -90,6 +91,17 @@ def configure_logging(id_execution: Optional[str] = None) -> None:
     )
 
 
+def _injecter_contexte_global(logger, method_name, event_dict):
+    """Processor structlog : injecte le contexte global dans chaque evenement.
+
+    Le contexte doit refl eter la valeur courante (notamment id_execution
+    defini par configure_logging), pas un instantane pris a l'import.
+    """
+    for cle, valeur in _default_context.items():
+        event_dict.setdefault(cle, valeur)
+    return event_dict
+
+
 def get_logger(name: str) -> structlog.stdlib.BoundLogger:
     """
     Retourne un logger configuré pour le module spécifié.
@@ -101,7 +113,7 @@ def get_logger(name: str) -> structlog.stdlib.BoundLogger:
         structlog.stdlib.BoundLogger: Logger configuré.
     """
     logger = structlog.get_logger(name)
-    return logger.bind(**_default_context)
+    return logger
 
 
 def bind_context(**kwargs: Any) -> None:

@@ -110,6 +110,50 @@ Le projet s'utilise via une **CLI** (Command Line Interface) avec Typer. Voici l
 
 Les quatre premières commandes (`search`, `list`, `query`, `download`) sont le mode manuel : l'utilisateur joue lui-même les étapes de sélection. La commande `chat` est le mode agentique : l'agent Mistral conduit le flux de bout en bout (reformulation, sélection, acquisition) en s'appuyant sur les mêmes fonctions.
 
+### ⌨️ Options des commandes
+
+**`search` — recherche de jeux** :
+| Option | Description | Défaut |
+|---|---|---|
+| `mots_cles` (arguments) | Mots-clés de la recherche (logique ET). | Obligatoire |
+| `--tri` | `pertinence`, `recent`, `vues`, `reutilisations`. | `pertinence` |
+| `--fenetre-maj` | `toutes`, `30_jours`, `12_mois`, `3_ans`. | `toutes` |
+| `--limite` | Nombre max de jeux retournés (1-20). | 10 |
+| `--page` | Page de résultats demandée. | 1 |
+| `--id-execution` | Identifiant d'exécution (traces, logs). | Horodatage auto |
+| `--json` | Sortie JSON brute. | Désactivé |
+
+**`list` — inventaire des ressources d'un jeu** :
+| Option | Description | Défaut |
+|---|---|---|
+| `id_jeu` (argument) | Identifiant du jeu, issu de `search`. | Obligatoire |
+| `--id-execution`, `--json` | Comme ci-dessus. | — |
+
+**`query` — interrogation d'une ressource indexée (voie 1)** :
+| Option | Description | Défaut |
+|---|---|---|
+| `id_ressource` (argument) | Identifiant de la ressource, issu de `list`. | Obligatoire |
+| `--page` | Page demandée. | 1 |
+| `--taille-page` | Lignes par page (1-50). | 20 |
+| `--filtre-colonne`, `--filtre-valeur` | Filtre sur une colonne (les deux requis ensemble). | — |
+| `--filtre-operateur` | `exact`, `contient`, `inferieur`, `superieur`, `strictement_inferieur`, `strictement_superieur`. | `exact` |
+| `--tri-colonne` | Colonne du tri. | — |
+| `--tri-ordre` | `croissant`, `decroissant`. | `croissant` |
+| `--id-execution`, `--json` | Comme ci-dessus. | — |
+
+**`download` — téléchargement brut (voie 2)** :
+| Option | Description | Défaut |
+|---|---|---|
+| `id_ressource` (argument) | Identifiant de la ressource, issu de `list`. | Obligatoire |
+| `--id-execution`, `--json` | Comme ci-dessus. | — |
+
+### ⚠️ Important : mode manuel et inventaire
+
+Chaque commande de la CLI manuelle est un **processus et un flux indépendants**. L'inventaire des ressources peuplé par `list` ne survit pas à la fin de la commande : un `download <id_ressource>` lancé dans une commande suivante répondra `ressource_introuvable` (« identifiant jamais vu au cours du flux courant »).
+
+- Pour conduire un flux complet en une seule fois, utilisez `chat` (mode agentique) — un seul processus conduit recherche, inventaire et acquisition.
+- Le paramètre `--id-execution` permet de **tracer** plusieurs commandes avec le même identifiant (logs et journaux regroupés) ; en l'état, il ne partage pas l'inventaire entre les commandes (évolution prévue : persistance de l'inventaire par id d'exécution).
+
 ### 💬 Commande `chat` (mode agentique)
 
 **Usage** :
