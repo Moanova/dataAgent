@@ -27,6 +27,8 @@ from src.utils.logging import configure_logging
 app = typer.Typer(help="CLI openDataAgent : acquisition de donnees data.gouv.fr.")
 
 TRIS = ["pertinence", "recent", "vues", "reutilisations"]
+OPERATEURS_FILTRE = ["exact", "contient", "inferieur", "superieur", "strictement_inferieur", "strictement_superieur"]
+ORDRES_TRI = ["croissant", "decroissant"]
 FENETRES_MAJ = ["toutes", "30_jours", "12_mois", "3_ans"]
 
 
@@ -173,6 +175,12 @@ def query(
     sortie_json: bool = typer.Option(False, "--json", help="Sortie JSON brute de la reponse normalisee."),
 ) -> None:
     """Interroge une ressource indexee par l'API tabulaire."""
+    if operateur not in OPERATEURS_FILTRE:
+        typer.secho(f"Valeur --filtre-operateur invalide : {operateur}. Valeurs acceptees : {', '.join(OPERATEURS_FILTRE)}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2)
+    if tri_ordre not in ORDRES_TRI:
+        typer.secho(f"Valeur --tri-ordre invalide : {tri_ordre}. Valeurs acceptees : {', '.join(ORDRES_TRI)}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2)
     identifiant = id_execution or _id_execution_auto()
     configure_logging(id_execution=identifiant)
 

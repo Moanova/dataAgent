@@ -34,16 +34,16 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 ### 4. Intégration et CLI
   - [X] Commande `search` : Appelle `rechercher_jeux`. *(Livrée le 13/10/2026 — T4.1/T4.2)*
   - [X] Commande `list` : Appelle `lister_ressources`. *(Livrée le 13/10/2026 — avec T3.2.1)*
-  - [ ] Commande `query` : Appelle `interroger_ressource`.
-  - [ ] Commande `download` : Appelle `telecharger_brut`.
+  - [X] Commande `query` : Appelle `interroger_ressource`. *(Livrée le 14/10/2026 — avec T4.1/T4.2, gardes CLI filtre/tri)*
+  - [X] Commande `download` : Appelle `telecharger_brut`. *(Livrée le 14/10/2026 — avec T4.1/T4.2)*
 
 ---
 
 ### 5. Tests
 
 #### 5.1. Tests unitaires
-- [ ] **T5.1.3** : Écrire les tests pour `interroger_ressource` (`tests/unit/test_query.py`).
-- [ ] **T5.1.4** : Écrire les tests pour `telecharger_brut` (`tests/unit/test_download.py`).
+- [X] **T5.1.3** : Écrire les tests pour `interroger_ressource` (`tests/unit/test_query.py`). *(Terminé le 13/10/2026 — livrés avec T3.3.x, kanban non tenu à jour)*
+- [X] **T5.1.4** : Écrire les tests pour `telecharger_brut` (`tests/unit/test_download.py`). *(Terminé le 13/10/2026 — livrés avec T3.4.x, kanban non tenu à jour)*
 - [ ] **T5.1.5** : Tester les formats non tabulaires (ZIP, GeoJSON, etc.).
 
 #### 5.2. Tests d'intégration
@@ -74,8 +74,8 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 
 ## 🚧 En cours
 
-- [ ] **T4.1** : Créer la CLI avec Typer (`src/main.py`). *(En cours — commandes `search` et `list` livrées et testées ; `query`, `download` à venir avec T3.3/T3.4)*
-- [ ] **T4.2** : Configurer les arguments et options pour chaque commande. *(En cours — périmètres `search` et `list` livrés)*
+- [X] **T4.1** : Créer la CLI avec Typer (`src/main.py`). *(Terminé le 14/10/2026 — commandes search, list, query, download livrées et testées)*
+- [X] **T4.2** : Configurer les arguments et options pour chaque commande. *(Terminé le 14/10/2026 — gardes CLI filtre/tri ajoutées sur query, codes de sortie 0/1/2)*
 
 
 
