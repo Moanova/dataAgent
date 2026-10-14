@@ -7,9 +7,9 @@
 # Design       : TSC
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
-"""Package des contrats Pydantic pour les outils exposes aux agents.
+"""Package des contrats Pydantic pour les outils exposés aux agents.
 
-Re-exporte tous les modeles pour un import facilite :
+Re-exporte tous les modèles pour un import facilité :
     from src.contracts import RechercherJeuxInput, StatutEnum, ReponseBase
 """
 

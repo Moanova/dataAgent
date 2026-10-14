@@ -7,12 +7,12 @@
 # Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
-"""Execution des tool_calls vers les fonctions du coeur (T5.3.2).
+"""Exécution des tool_calls vers les fonctions du coeur (T5.3.2).
 
-L'API Mistral n'execute jamais les fonctions : ce module re coit le
+L'API Mistral n'éxécute jamais les fonctions : ce module reçoit le
 nom d'un outil et ses arguments, valide les arguments contre les
-modeles Pydantic des contrats, execute la fonction du coeur
-correspondante et retourne la reponse normalisee {statut, message,
+modèles Pydantic des contrats, éxécute la fonction du coeur
+correspondante et retourne la réponse normalisée {statut, message,
 donnees}. Aucune exception ne remonte vers l'agent."""
 from __future__ import annotations
 
@@ -55,16 +55,16 @@ FILTRES_OPTIONS: Dict[str, Callable[[Dict[str, Any]], Dict[str, Any]]] = {
 
 
 def executer_outil(nom: str, arguments: Any, id_execution: str) -> Dict[str, Any]:
-    """Execute un tool_call vers la fonction coeur correspondante.
+    """Exécute un tool_call vers la fonction coeur correspondante.
 
     Args:
-        nom : nom de l'outil appele par l'agent.
+        nom : nom de l'outil appelé par l'agent.
         arguments : arguments de l'appel (dictionnaire ou chaene JSON).
-        id_execution : identifiant d'execution lie au flux.
+        id_execution : identifiant d'exécution lie au flux.
 
     Returns:
-        Reponse normalisee {statut, message, donnees}. Toute
-        defaillance (outil inconnu, arguments invalides, exception du
+        Réponse normalisée {statut, message, donnees}. Toute
+        défaillance (outil inconnu, arguments invalides, exception du
         coeur) devient un statut, jamais une exception vers l'agent.
     """
     fonction = TABLE_OUTILS.get(nom)
@@ -102,7 +102,7 @@ def executer_outil(nom: str, arguments: Any, id_execution: str) -> Dict[str, Any
 
 
 def _decoder_arguments(arguments: Any) -> Any:
-    """Decode les arguments d'un tool_call en dictionnaire, ou None."""
+    """Décode les arguments d'un tool_call en dictionnaire, ou None."""
     if isinstance(arguments, dict):
         return arguments
     if isinstance(arguments, str):

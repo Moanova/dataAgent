@@ -7,24 +7,24 @@
 # Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
-"""Classificateur deterministe des ressources (B3, T3.2.2/T3.2.3).
+"""Classificateur déterministe des ressources (B3, T3.2.2/T3.2.3).
 
 Fonction pure, sans I/O. Trois signaux independants peuvent entrer en
-conflit (format declare, mime detecte, URL) ; l'ordre de priorite fixe
-est : HTML > API distante > tabulaire > autre format > indetermine.
+conflit (format declare, mime detecte, URL) ; l'ordre de priorité fixe
+est : HTML > API distante > tabulaire > autre format > indeterminé.
 
 Distinction fondamentale (T3.2.3) : des signaux CONTRADICTOIRES sont
-tranches par l'ordre de priorite (ex. format csv + mime text/html ->
+tranchés par l'ordre de priorite (ex. format csv + mime text/html ->
 page_web) ; seuls des signaux ABSENTS ou INCONNUS produisent
-`indetermine`. L'agent (etape A3) ne voit donc dans
+`indeterminé`. L'agent (etape A3) ne voit donc dans
 `donnees.indetermination` que de l'inconnu, jamais du contradictoire
-deja tranche, et dispose pour chaque id du titre et de l'URL dans
-`donnees.ressources` (autoportance, sans appel d'outil supplementaire).
+deja tranché, et dispose pour chaque id du titre et de l'URL dans
+`donnees.ressources` (autoportance, sans appel d'outil supplémentaire).
 
-Piste d'evolution (pas dans le perimetre) : l'API v1 propose un
-parametre `format` de pre-filtrage des recherches, utilisable par
-l'etape A1 ; il ne remplace pas cette classification (le format
-declare n'est pas fiable, cf. conflits format/mime).
+Piste d'évolution (pas dans le périmètre) : l'API v1 propose un
+paramètre `format` de pre-filtrage des recherches, utilisable par
+l'étape A1 ; il ne remplace pas cette classification (le format
+declaré n'est pas fiable, cf. conflits format/mime).
 """
 from typing import Optional, Tuple
 
@@ -57,19 +57,19 @@ def classer_ressource(
     mime: Optional[str],
     url: Optional[str],
 ) -> Tuple[str, bool]:
-    """Classe une ressource a partir de ses trois signaux.
+    """Classe une ressource à partir de ses trois signaux.
 
     Retourne (classe, indetermine) ou classe vaut l'une des cinq valeurs
     de l'enum ClasseRessource. Priorite : HTML > api_distante >
-    fichier_tabulaire > fichier_autre_format > indetermine. Le defaut
-    est sur : toute ressource non classee est `indetermine`.
+    fichier_tabulaire > fichier_autre_format > indetermine. Le défaut
+    est sur : toute ressource non classée est `indetermine`.
     """
     format_ = _normaliser(format_ressource)
     mime_ = _normaliser(mime)
     url_ = _normaliser(url)
 
-    # 1. HTML : contenu trompeur le plus couteux (le fichier declare
-    #    n'est pas ce qui est servi) -> priorite maximale.
+    # 1. HTML : contenu trompeur le plus co$uteux (le fichier declaré
+    #    n'est pas ce qui est servi) -> priorité maximale.
     if format_ in FORMATS_HTML or mime_ in MIMES_HTML:
         return "page_web", False
 
@@ -82,7 +82,7 @@ def classer_ressource(
     if format_ in FORMATS_TABULAIRES or mime_ in MIMES_TABULAIRES:
         return "fichier_tabulaire", False
 
-    # 4. Autre format connu (liste fermee).
+    # 4. Autre format connu (liste fermée).
     if format_ in FORMATS_AUTRES or mime_ in MIMES_AUTRES:
         return "fichier_autre_format", False
 

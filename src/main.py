@@ -10,7 +10,7 @@
 """CLI openDataAgent (Typer).
 
 Couche mince de presentation : traduit une ligne de commande en appel
-de la fonction coeur correspondante et affiche la reponse normalisee
+de la fonction coeur correspondante et affiche la reponse normalisée
 {statut, message, donnees}. Aucune logique metier ici.
 """
 from datetime import datetime
@@ -27,7 +27,7 @@ from src.agent.agent import creer_agent, detruire_agent
 from src.agent.boucle import PLAFOND_DEFAUT, boucle_conversation
 from src.agent.journal import REPERTOIRE_JOURNAUX
 
-app = typer.Typer(help="CLI openDataAgent : acquisition de donnees data.gouv.fr.")
+app = typer.Typer(help="CLI openDataAgent : acquisition de données de data.gouv.fr.")
 
 TRIS = ["pertinence", "recent", "vues", "reutilisations"]
 OPERATEURS_FILTRE = ["exact", "contient", "inferieur", "superieur", "strictement_inferieur", "strictement_superieur"]
@@ -56,25 +56,25 @@ def _afficher_recherche(reponse: dict) -> None:
 
 @app.callback()
 def racine() -> None:
-    """CLI openDataAgent : acquisition de donnees data.gouv.fr."""
+    """CLI openDataAgent : acquisition de données de data.gouv.fr."""
 
 
 @app.command()
 def search(
-    mots_cles: List[str] = typer.Argument(..., help="Mots-cles de la recherche (logique ET)."),
+    mots_cles: List[str] = typer.Argument(..., help="Mots-clés de la recherche (logique ET)."),
     tri: str = typer.Option("pertinence", "--tri", help="Ordre de tri des resultats."),
-    fenetre_maj: str = typer.Option("toutes", "--fenetre-maj", help="Restriction sur la derniere mise a jour."),
-    limite: int = typer.Option(10, "--limite", min=1, max=20, help="Nombre maximum de jeux retournes."),
-    page: int = typer.Option(1, "--page", min=1, help="Numero de la page de resultats demandee."),
-    id_execution: Optional[str] = typer.Option(None, "--id-execution", help="Identifiant d'execution pour les traces."),
-    sortie_json: bool = typer.Option(False, "--json", help="Sortie JSON brute de la reponse normalisee."),
+    fenetre_maj: str = typer.Option("toutes", "--fenetre-maj", help="Restriction sur la dernière mise à jour."),
+    limite: int = typer.Option(10, "--limite", min=1, max=20, help="Nombre maximum de jeux retournés."),
+    page: int = typer.Option(1, "--page", min=1, help="Numéro de la page de résultats demandée."),
+    id_execution: Optional[str] = typer.Option(None, "--id-execution", help="Identifiant d'exécution pour les traces."),
+    sortie_json: bool = typer.Option(False, "--json", help="Sortie JSON brute de la réponse normalisée."),
 ) -> None:
-    """Recherche des jeux de donnees sur data.gouv.fr par mots-cles."""
+    """Recherche des jeux de données sur data.gouv.fr par mots-clés."""
     if tri not in TRIS:
-        typer.secho(f"Valeur --tri invalide : {tri}. Valeurs acceptees : {', '.join(TRIS)}", fg=typer.colors.RED, err=True)
+        typer.secho(f"Valeur --tri invalide : {tri}. Valeurs acceptées : {', '.join(TRIS)}", fg=typer.colors.RED, err=True)
         raise typer.Exit(code=2)
     if fenetre_maj not in FENETRES_MAJ:
-        typer.secho(f"Valeur --fenetre-maj invalide : {fenetre_maj}. Valeurs acceptees : {', '.join(FENETRES_MAJ)}", fg=typer.colors.RED, err=True)
+        typer.secho(f"Valeur --fenetre-maj invalide : {fenetre_maj}. Valeurs acceptées : {', '.join(FENETRES_MAJ)}", fg=typer.colors.RED, err=True)
         raise typer.Exit(code=2)
 
     identifiant = id_execution or _id_execution_auto()
@@ -104,10 +104,10 @@ def search(
 @app.command()
 def list(
     id_jeu: str = typer.Argument(..., help="Identifiant du jeu, issu de la recherche."),
-    id_execution: Optional[str] = typer.Option(None, "--id-execution", help="Identifiant d'execution pour les traces."),
-    sortie_json: bool = typer.Option(False, "--json", help="Sortie JSON brute de la reponse normalisee."),
+    id_execution: Optional[str] = typer.Option(None, "--id-execution", help="Identifiant d'exécution pour les traces."),
+    sortie_json: bool = typer.Option(False, "--json", help="Sortie JSON brute de la réponse normalisée."),
 ) -> None:
-    """Liste les ressources d'un jeu de donnees avec leurs metadonnees."""
+    """Liste les ressources d'un jeu de données avec leurs métadonnées."""
     identifiant = id_execution or _id_execution_auto()
     configure_logging(id_execution=identifiant)
 
@@ -120,7 +120,7 @@ def list(
         donnees = reponse["donnees"]
         typer.echo(f"statut : {reponse['statut']}")
         typer.echo(f"{len(donnees['ressources'])} ressource(s), "
-                   f"{len(donnees['indetermination'])} indeterminee(s)")
+                   f"{len(donnees['indetermination'])} indeterminée(s)")
         for res in donnees["ressources"]:
             typer.echo(f"- [{res['classe']}] {res['titre']}  ({res['format'] or 'format inconnu'})")
             typer.echo(f"  id={res['id']}  taille={res['taille_octets']}  {res['url']}")
@@ -136,8 +136,8 @@ def list(
 @app.command()
 def download(
     id_ressource: str = typer.Argument(..., help="Identifiant de la ressource, issu de l'inventaire."),
-    id_execution: Optional[str] = typer.Option(None, "--id-execution", help="Identifiant d'execution pour les traces."),
-    sortie_json: bool = typer.Option(False, "--json", help="Sortie JSON brute de la reponse normalisee."),
+    id_execution: Optional[str] = typer.Option(None, "--id-execution", help="Identifiant d'exécution pour les traces."),
+    sortie_json: bool = typer.Option(False, "--json", help="Sortie JSON brute de la réponse normalisée."),
 ) -> None:
     """Telecharge une ressource non indexee dans son etat brut."""
     identifiant = id_execution or _id_execution_auto()
@@ -167,27 +167,27 @@ def download(
 @app.command()
 def query(
     id_ressource: str = typer.Argument(..., help="Identifiant de la ressource, issu de l'inventaire."),
-    page: int = typer.Option(1, "--page", min=1, help="Page demandee."),
+    page: int = typer.Option(1, "--page", min=1, help="Page demandée."),
     taille_page: int = typer.Option(20, "--taille-page", min=1, max=50, help="Lignes par page (max 50)."),
     colonne: Optional[str] = typer.Option(None, "--filtre-colonne", help="Colonne du filtre."),
     valeur: Optional[str] = typer.Option(None, "--filtre-valeur", help="Valeur du filtre."),
     operateur: Optional[str] = typer.Option("exact", "--filtre-operateur", help="Operateur : exact, contient, inferieur, superieur, strictement_inferieur, strictement_superieur."),
     tri_colonne: Optional[str] = typer.Option(None, "--tri-colonne", help="Colonne du tri."),
     tri_ordre: Optional[str] = typer.Option("croissant", "--tri-ordre", help="Ordre : croissant ou decroissant."),
-    id_execution: Optional[str] = typer.Option(None, "--id-execution", help="Identifiant d'execution pour les traces."),
-    sortie_json: bool = typer.Option(False, "--json", help="Sortie JSON brute de la reponse normalisee."),
+    id_execution: Optional[str] = typer.Option(None, "--id-execution", help="Identifiant d'exécution pour les traces."),
+    sortie_json: bool = typer.Option(False, "--json", help="Sortie JSON brute de la réponse normalisée."),
 ) -> None:
     """Interroge une ressource indexee par l'API tabulaire."""
     if operateur not in OPERATEURS_FILTRE:
-        typer.secho(f"Valeur --filtre-operateur invalide : {operateur}. Valeurs acceptees : {', '.join(OPERATEURS_FILTRE)}", fg=typer.colors.RED, err=True)
+        typer.secho(f"Valeur --filtre-operateur invalide : {operateur}. Valeurs acceptées : {', '.join(OPERATEURS_FILTRE)}", fg=typer.colors.RED, err=True)
         raise typer.Exit(code=2)
     if tri_ordre not in ORDRES_TRI:
-        typer.secho(f"Valeur --tri-ordre invalide : {tri_ordre}. Valeurs acceptees : {', '.join(ORDRES_TRI)}", fg=typer.colors.RED, err=True)
+        typer.secho(f"Valeur --tri-ordre invalide : {tri_ordre}. Valeurs acceptées : {', '.join(ORDRES_TRI)}", fg=typer.colors.RED, err=True)
         raise typer.Exit(code=2)
     identifiant = id_execution or _id_execution_auto()
     configure_logging(id_execution=identifiant)
 
-    filtre = {"colonne": colonne, "valeur": valeur, "operateur": operateur} if colonne and valeur is not None else None
+    filtre = {"colonne": colonne, "valeur": valeur, "opérateur": operateur} if colonne and valeur is not None else None
     tri = {"colonne": tri_colonne, "ordre": tri_ordre} if tri_colonne else None
 
     reponse = interroger_ressource(
@@ -211,7 +211,7 @@ def query(
         for ligne in donnees["lignes"][:5]:
             typer.echo(f"- {ligne}")
         if len(donnees["lignes"]) > 5:
-            typer.echo(f"  ... ({len(donnees['lignes']) - 5} ligne(s) supplementaires)")
+            typer.echo(f"  ... ({len(donnees['lignes']) - 5} ligne(s) supplémentaires)")
     else:
         typer.secho(f"[{reponse['statut']}] {reponse['message']}", fg=typer.colors.RED, err=True)
         if reponse["donnees"].get("suggestion"):
@@ -225,15 +225,15 @@ def query(
 
 @app.command()
 def chat(
-    prompt: List[str] = typer.Argument(..., help="Demande en francais : l'agent conduit recherche, selection et acquisition."),
+    prompt: List[str] = typer.Argument(..., help="Demande en francais : l'agent conduit recherche, sélection et acquisition."),
     plafond: int = typer.Option(10, "--plafond", min=1, help="Nombre maximum d'invocations d'outils."),
-    id_execution: Optional[str] = typer.Option(None, "--id-execution", help="Identifiant d'execution pour les traces et le journal."),
-    sortie_json: bool = typer.Option(False, "--json", help="Sortie JSON brute de la reponse normalisee."),
+    id_execution: Optional[str] = typer.Option(None, "--id-execution", help="Identifiant d'exécution pour les traces et le journal."),
+    sortie_json: bool = typer.Option(False, "--json", help="Sortie JSON brute de la réponse normalisée."),
 ) -> None:
-    """Conversation agentique : cree l'agent, conduit le flux, journalise, detruit l'agent."""
+    """Conversation agentique : crée l'agent, conduit le flux, journalise, detruit l'agent."""
     texte = " ".join(prompt).strip()
     if not texte:
-        typer.secho("Le prompt ne peut pas etre vide.", fg=typer.colors.RED, err=True)
+        typer.secho("Le prompt ne peut pas être vide.", fg=typer.colors.RED, err=True)
         raise typer.Exit(code=2)
     identifiant = id_execution or _id_execution_auto()
     configure_logging(id_execution=identifiant)

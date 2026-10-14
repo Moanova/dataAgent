@@ -9,15 +9,15 @@
 # ---------------------------------------------------------------------
 """Boucle de conversation agentique (T5.3.2).
 
-Envoi du message utilisateur a l'agent Mistral, reception des
-tool_calls, execution par le code (jamais par l'API), renvoi des
-resultats normalises, iteration jusqu'a la reponse finale.
-Plafond d'invocations d'outils (defaut 10, CA-11) : au dela, arret
-propre avec synthese partielle.
+Envoi du message utilisateur à l'agent Mistral, réception des
+tool_calls, exécution par le code (jamais par l'API), renvoi des
+résultats normalisés, itération jusqu'à la réponse finale.
+Plafond d'invocations d'outils (defaut 10, CA-11) : au delà, arrêt
+propre avec synthèse partielle.
 
 Journalisation sans blocage (TA-02) : chaque invocation est
-journalisee avec son tour et ses arguments ; le rejeu des journaux
-verifie la propriete d'ordre, la boucle ne bloque rien."""
+journalisée avec son tour et ses arguments ; le rejeu des journaux
+verifie la proprieté d'ordre, la boucle ne bloque rien."""
 from __future__ import annotations
 
 import json
@@ -40,18 +40,18 @@ def boucle_conversation(
     id_execution: Optional[str] = None,
     journal: Optional[JournalConversation] = None,
 ) -> Dict[str, Any]:
-    """Execute une conversation complete avec l'agent Mistral.
+    """Exécute une conversation complète avec l'agent Mistral.
 
     Args:
-        agent : objet Agent retourne par creer_agent.
+        agent : objet Agent retourné par creer_agent.
         message_utilisateur : demande initiale de l'utilisateur.
         plafond : nombre maximum d'invocations d'outils (defaut 10 ou
                   PLAFOND_INVOCATIONS dans l'environnement).
-        id_execution : identifiant d'execution pour les traces.
+        id_execution : identifiant d'exécution pour les traces.
 
     Returns:
         Reponse normalisee {statut, message, donnees} ; donnees
-        contient reponse_agent (texte final ou synthese partielle),
+        contient reponse_agent (texte final ou synthèse partielle),
         nb_invocations et plafond.
     """
     plafond = plafond or int(os.environ.get("PLAFOND_INVOCATIONS", PLAFOND_DEFAUT))
@@ -86,7 +86,7 @@ def boucle_conversation(
             )
             return {
                 "statut": "echec_technique",
-                "message": f"Echec de l'appel a l'API Mistral : {erreur}",
+                "message": f"Échec de l'appel à l'API Mistral : {erreur}",
                 "donnees": {"nb_invocations": invocations, "plafond": plafond},
             }
         tool_calls = _extraire_tool_calls(reponse)
@@ -124,11 +124,11 @@ def boucle_conversation(
                 )
                 return {
                     "statut": "succes",
-                    "message": "Plafond d'invocations atteint : synthese partielle retournee.",
+                    "message": "Plafond d'invocations atteint : synthèse partielle retournée.",
                     "donnees": {
                         "reponse_agent": (
                             f"Arret au plafond de {plafond} invocations d'outils. "
-                            "Les acquisitions deja effectuees sont valides ; "
+                            "Les acquisitions déjà effectuées sont valides ; "
                             "relancer le flux pour continuer l'exploration."
                         ),
                         "nb_invocations": invocations,
@@ -175,7 +175,7 @@ def boucle_conversation(
 
 
 def _extraire_tool_calls(reponse: Any) -> List[Any]:
-    """Extrait les tool_calls d'une reponse du SDK, formats objet ou dict."""
+    """Extrait les tool_calls d'une réponse du SDK, formats objet ou dict."""
     try:
         choix = reponse.choices[0]
         message = getattr(choix, "message", None)
@@ -191,7 +191,7 @@ def _extraire_tool_calls(reponse: Any) -> List[Any]:
 
 
 def _decoder_tool_call(tool_call: Any) -> Any:
-    """Decode un tool_call en (nom, arguments, id_appel)."""
+    """Décode un tool_call en (nom, arguments, id_appel)."""
     if isinstance(tool_call, dict):
         fonction = tool_call.get("function", {})
         return fonction.get("name", ""), fonction.get("arguments", {}), tool_call.get("id", "")
@@ -202,7 +202,7 @@ def _decoder_tool_call(tool_call: Any) -> Any:
 
 
 def _extraire_contenu(reponse: Any) -> str:
-    """Extrait le texte final de la reponse de l'agent."""
+    """Extrait le texte final de la réponse de l'agent."""
     try:
         message = getattr(reponse.choices[0], "message", None)
         contenu = getattr(message, "content", None)
@@ -219,7 +219,7 @@ def _extraire_contenu(reponse: Any) -> str:
 
 
 def _message_assistant(reponse: Any) -> Dict[str, Any]:
-    """Construit le message assistant a renvoyer dans la conversation."""
+    """Construit le message assistant à renvoyer dans la conversation."""
     if isinstance(reponse, dict):
         return reponse.get("choices", [{}])[0].get("message", {"role": "assistant"})
     message = getattr(reponse.choices[0], "message", None)

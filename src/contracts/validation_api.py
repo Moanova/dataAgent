@@ -10,14 +10,14 @@
 """Validation des reponses brutes de l'API data.gouv.fr avec jsonschema.
 
 Tache T2.2. Ce module valide la couche entrante : les charges utiles
-brutes retournees par l'API data.gouv.fr, avant tout traitement, contre
-les schemas JSON stockes dans `contrats/schemas_api/`. Les schemas des
+brutes retourn"es par l'API data.gouv.fr, avant tout traitement, contre
+les schemas JSON stockés dans `contrats/schemas_api/`. Les schémas des
 outils (`contrats/<outil>.json`) restent la source de verite pour le
-function calling Mistral ; les modeles Pydantic (`src/contracts/`)
+function calling Mistral ; les modèles Pydantic (`src/contracts/`)
 valident la couche sortante.
 
-Tout ecart de schema doit produire un echec propre (`echec_technique`),
-jamais une exception non geree.
+Tout "cart de sch"ma doit produire un échec propre (`echec_technique`),
+jamais une exception non gérée.
 """
 from __future__ import annotations
 
@@ -40,11 +40,11 @@ SCHEMAS_CONNUS: Dict[str, str] = {
 
 @dataclass
 class ResultatValidation:
-    """Resultat d'une validation de reponse API.
+    """Résultat d'une validation de reponse API.
 
     Attributs :
         valide : True si la charge utile est conforme au schema.
-        erreurs : liste de messages lisibles, un par ecart detecte,
+        erreurs : liste de messages lisibles, un par écart détécté,
                   avec le chemin JSON de l'element fautif.
     """
 
@@ -53,25 +53,25 @@ class ResultatValidation:
 
     @property
     def statut(self) -> str:
-        """Code de statut normalise associe au resultat."""
+        """Code de statut normalisé associé au résultat."""
         return "succes" if self.valide else "echec_technique"
 
 
 def charger_schema(nom_outil: str, repertoire: Optional[Path] = None) -> Dict[str, Any]:
-    """Charge le schema JSON de reponse pour l'outil donne.
+    """Charge le schema JSON de réponse pour l'outil donné.
 
     Raises:
-        KeyError : si le nom d'outil n'est pas reference dans SCHEMAS_CONNUS.
-        FileNotFoundError : si le fichier de schema est absent du repertoire.
+        KeyError : si le nom d'outil n'est pas réferencé dans SCHEMAS_CONNUS.
+        FileNotFoundError : si le fichier de schéma est absent du repertoire.
     """
     if nom_outil not in SCHEMAS_CONNUS:
         raise KeyError(
-            f"Aucun schema de reponse API reference pour l'outil '{nom_outil}'. "
+            f"Aucun schéma de réponse API référence pour l'outil '{nom_outil}'. "
             f"Outils connus : {sorted(SCHEMAS_CONNUS)}"
         )
     chemin = (repertoire or REPERTOIRE_SCHEMAS) / SCHEMAS_CONNUS[nom_outil]
     if not chemin.is_file():
-        raise FileNotFoundError(f"Schema de reponse API introuvable : {chemin}")
+        raise FileNotFoundError(f"Schéma de réponse API introuvable : {chemin}")
     with open(chemin, encoding="utf-8") as flux:
         return json.load(flux)
 
@@ -88,12 +88,12 @@ def valider_reponse_api(
     donnees: Any,
     repertoire: Optional[Path] = None,
 ) -> ResultatValidation:
-    """Valide une charge utile brute de l'API contre le schema de l'outil.
+    """Valide une charge utile brute de l'API contre le schéma de l'outil.
 
-    Ne leve jamais d'exception pour des donnees non conformes ; les ecarts
-    sont retournes dans `ResultatValidation.erreurs`. Les erreurs de
-    chargement du schema (outil inconnu, fichier absent, JSON invalide)
-    sont egalement converties en echec propre, sans exception.
+    Ne lève jamais d'exception pour des données non conformes ; les écarts
+    sont retournés dans `ResultatValidation.erreurs`. Les erreurs de
+    chargement du schéma (outil inconnu, fichier absent, JSON invalide)
+    sont également converties en échec propre, sans exception.
     """
     try:
         schema = charger_schema(nom_outil, repertoire)
@@ -101,7 +101,7 @@ def valider_reponse_api(
     except (KeyError, FileNotFoundError, json.JSONDecodeError) as exc:
         return ResultatValidation(
             valide=False,
-            erreurs=[f"Erreur de chargement du schema '{nom_outil}' : {exc}"],
+            erreurs=[f"Erreur de chargement du schéma '{nom_outil}' : {exc}"],
         )
     erreurs = [_formater_erreur(e) for e in validateur.iter_errors(donnees)]
     return ResultatValidation(valide=not erreurs, erreurs=erreurs)
@@ -115,7 +115,7 @@ def valider_json_brut(
     """Valide une reponse API fournie comme texte JSON brut.
 
     Un texte non parsable en JSON, ou une racine non objet, produit un
-    echec propre (`echec_technique`), sans exception.
+    échec propre (`echec_technique`), sans exception.
     """
     try:
         donnees = json.loads(texte)

@@ -10,9 +10,9 @@
 """Registre des sources inaccessibles (T3.1.3, cf. docs/specs/registre.md).
 
 Persistant dans `data/registry.json`. Invariants :
-- aucune entree n'est supprimee ou modifiee apres ecriture ;
-- le registre persiste entre les executions ;
-- ecriture interne uniquement : l'agent n'y accede qu'en lecture via
+- aucune entrée n'est supprimée ou modifiée après écriture ;
+- le registre persiste entre les exécutions ;
+- ecriture interne uniquement : l'agent n'y accède qu'en lecture via
   `rapport_pour_agent()`, qui retourne une copie.
 """
 import copy
@@ -37,7 +37,7 @@ class RegistreSourcesInaccessibles:
         self._entrees: List[Dict[str, Any]] = self._charger()
 
     def _charger(self) -> List[Dict[str, Any]]:
-        """Charge le registre preexistant sans l'ecraser (TU-24).
+        """Charge le registre préexistant sans l'ecraser (TU-24).
 
         Un fichier absent ou invalide produit un registre vide, sans
         exception.
@@ -84,7 +84,7 @@ class RegistreSourcesInaccessibles:
         url: str,
         detail: str = "Licence non ouverte",
     ) -> Dict[str, Any]:
-        """Consigne une exclusion de licence (ecrit par rechercher_jeux, TU-21)."""
+        """Consigne une exclusion de licence (écrit par rechercher_jeux, TU-21)."""
         return self._consigner(MOTIF_LICENCE, id_jeu, organisation, licence, url, detail)
 
     def consigner_echec_technique(
@@ -96,11 +96,11 @@ class RegistreSourcesInaccessibles:
         detail: str,
         motif: str = MOTIF_SERVEUR,
     ) -> Dict[str, Any]:
-        """Consigne un echec technique (ecrit par telecharger_brut, T3.4)."""
+        """Consigne un échec technique (écrit par telecharger_brut, T3.4)."""
         return self._consigner(motif, id_jeu, organisation, licence, url, detail)
 
     def sauvegarder(self) -> None:
-        """Ecrit le registre au format JSON valide (TU-22)."""
+        """Écrit le registre au format JSON valide (TU-22)."""
         self.chemin.parent.mkdir(parents=True, exist_ok=True)
         contenu = {"sources_inaccessibles": self._entrees}
         self.chemin.write_text(json.dumps(contenu, ensure_ascii=False, indent=2), encoding="utf-8")

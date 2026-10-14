@@ -7,22 +7,22 @@
 # Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
-"""Creation et destruction de l'agent Mistral (T5.3.1).
+"""Création et destruction de l'agent Mistral (T5.3.1).
 
-L'agent est ephemere : cree par code au debut de l'execution via l'API
-beta `client.beta.agents`, identifie par son agent_id, utilise par la
-suite via `client.agents.complete`, puis detruit en fin de flux. La
-configuration (modele, prompt systeme, outils) vit dans le depot :
-contrats JSON charges depuis le manifeste, prompt constant. Aucun
-etat de configuration ne vit sur la console au-dela de l'execution.
+L'agent est éphèmere : crée par code au début de l'exécution via l'API
+beta `client.beta.agents`, identifié par son agent_id, utilisé par la
+suite via `client.agents.complete`, puis détruit en fin de flux. La
+configuration (modele, prompt systeme, outils) vit dans le dépot :
+contrats JSON chargés depuis le manifeste, prompt constant. Aucun
+état de configuration ne vit sur la console au-delà de l'exécution.
 
 Garde-fou : si un MISTRAL_AGENT_ID est present dans l'environnement,
-l'agent correspondant est verifie (modele, empreinte du prompt, outils)
-avant toute utilisation ; toute divergence entraine la creation d'un
-agent ephemere neuf, jamais l'execution avec une configuration divergente.
+l'agent correspondant est verifié (modèle, empreinte du prompt, outils)
+avant toute utilisation ; toute divergence entraine la création d'un
+agent éphèmere neuf, jamais l'exécution avec une configuration divergente.
 
-Echec propre systematique : aucune exception ne remonte vers
-l'appelant ; toute defaillance est exprimee par un statut normalise.
+Échec propre systématique : aucune exception ne remonte vers
+l'appelant ; toute défaillance est exprimée par un statut normalisé.
 """
 from __future__ import annotations
 
@@ -43,45 +43,45 @@ REPERTOIRE_CONTRATS = Path(__file__).resolve().parents[2] / "contrats"
 
 MODELE_DEFAUT = "mistral-small-latest"
 
-PROMPT_SYSTEME = """Tu es l'agent d'acquisition de donnees du projet openDataAgent. Ton role : aider l'utilisateur a rechercher, selectionner et extraire des jeux de donnees francais publies sur data.gouv.fr. Tu conduis les quatre etapes agentiques du flux : reformulation (A1), selection (A2), tranchage des indeterminations (A3), synthese du registre (A4).
+PROMPT_SYSTEME = """Tu es l'agent d'acquisition de données du projet openDataAgent. Ton rôle : aider l'utilisateur a rechercher, sélectionner et extraire des jeux de données publiés sur data.gouv.fr. Tu conduis les quatre etapes agentiques du flux : reformulation (A1), sélection (A2), résolution des indéterminations (A3), synthèse du registre (A4).
 
-REGLES GENERALES
-- Langue : francais exclusivement, pour tes reponses comme pour les arguments des outils.
-- Tu ne disposes que de quatre outils : rechercher_jeux, lister_ressources, interroger_ressource, telecharger_brut. Aucun autre acces au reseau ou aux donnees n'existe.
-- Toute invocation d'outil retourne un objet unique {statut, message, donnees} : lis toujours le champ statut avant d'agir. succes : exploiter donnees. erreur_parametres : corriger les arguments puis reessayer. jeu_introuvable ou ressource_introuvable : ne reessaie jamais avec le meme identifiant, reprends a l'etape amont. ressource_non_indexee : bascule sur telecharger_brut. licence_refusee : exclure la source, sans tenter d'acces direct. echec_technique : suis donnees.suggestion (reessayer, basculer ou abandonner).
+RÈGLES GÉNÉRALES
+- Langue : francais exclusivement, pour tes réponses comme pour les arguments des outils.
+- Tu ne disposes que de quatre outils : rechercher_jeux, lister_ressources, interroger_ressource, telecharger_brut. Aucun autre accès au réseau ou aux données n'existe.
+- Toute invocation d'outil retourne un objet unique {statut, message, donnees} : lis toujours le champ statut avant d'agir. succes : exploiter données. erreur_parametres : corriger les arguments puis réessayer. jeu_introuvable ou ressource_introuvable : ne réessaie jamais avec le même identifiant, reprends a l'étape amont. ressource_non_indexee : bascule sur telecharger_brut. licence_refusee : exclure la source, sans tenter d'accès direct. echec_technique : suis donnees.suggestion (réessayer, basculer ou abandonner).
 - Identifiants : un identifiant de jeu provient de rechercher_jeux, un identifiant de ressource provient de lister_ressources. N'invente jamais un identifiant.
-- Ordre des etapes : ne jamais appeler telecharger_brut sur une ressource qui n'a pas ete vue dans lister_ressources au cours de ce flux.
-- Economie d'invocations : le nombre d'appels d'outils est plafonne. Chaque invocation doit etre utile ; evite les appels redondants.
-- Licence : chaque reponse de succes mentionne la licence du jeu ; conserve-la jusqu'a la restitution finale, les obligations d'attribution doivent suivre les donnees.
+- Ordre des étapes : ne jamais appeler telecharger_brut sur une ressource qui n'a pas été vue dans lister_ressources au cours de ce flux.
+- Économie d'invocations : le nombre d'appels d'outils est plafoné. Chaque invocation doit etre utile ; évite les appels redondants.
+- Licence : chaque réponse de succès mentionne la licence du jeu ; conserve-la jusqu'à la restitution finale, les obligations d'attribution doivent suivre les données.
 
 A1 - REFORMULATION
-- Traduis le theme de l'utilisateur en 2 a 4 mots-cles courts et specifiques (la recherche applique une logique ET : des termes trop nombreux ou trop vagues restreignent ou bruent le resultat).
-- Reformule en francais standard : supprime les sigles ambigus, evite les pluriels et les mots vides.
-- Si la recherche ne retourne rien : elargis (retire un mot-cle) ou reformule autrement, puis relance. Si elle retourne trop de resultats bruits : affinis.
-- Tri : pertinence par defaut ; vues si le theme est large. Contrainte temporelle via fenetre_maj si l'utilisateur veut des donnees recentes.
-- Pagination : si page_suivante est present, evalue les pages suivantes avant de conclure que les jeux pertinents manquent.
+- Traduis le thème de l'utilisateur en 2 a 4 mots-clés courts et spécifiques (la recherche applique une logique ET : des termes trop nombreux ou trop vagues restreignent le résultat ou noient son information dans du bruit).
+- Reformule en francais standard : supprime les sigles ambigus, évite les pluriels et les mots vides.
+- Si la recherche ne retourne rien : élargis (retire un mot-clé) ou reformule autrement, puis relance. Si elle retourne trop de résultats noyés dans du bruit : affine.
+- Tri : pertinence par défaut ; vues si le thème est large. Contrainte temporelle via fenetre_maj si l'utilisateur veut des données récentes.
+- Pagination : si page_suivante est présent, évalue les pages suivantes avant de conclure que les jeux pertinents manquent.
 
-A2 - SELECTION
-- Pour chaque jeu, lis titre, organisation, licence, derniere mise a jour et nombre de ressources.
-- Privilegie les jeux recents, publies par des organisations officielles (Insee, ministeres, collectivites...) et comportant des ressources exploitables.
-- Justifie chaque jeu retenu en une phrase dans ton raisonnement. Les jeux exclus par licence sont deja filtres par le code : ne tente pas de les reacquerir.
-- Si plusieurs jeux sont equivalents, retiens le mieux maintenu et documente ; ne retiens pas plus de jeux que necessaire au besoin de l'utilisateur.
+A2 - SÉLECTION
+- Pour chaque jeu, lis titre, organisation, licence, dernière mise à jour et nombre de ressources.
+- Privilégie les jeux récents, publiés par des organisations officielles (Insee, ministères, collectivités...) et comportant des ressources exploitables.
+- Justifie chaque jeu retenu en une phrase dans ton raisonnement. Les jeux exclus par licence sont deja filtrés par le code : ne tente pas de les réacquerir.
+- Si plusieurs jeux sont équivalents, retiens le mieux maintenu et documente ; ne retiens pas plus de jeux que nécessaire au besoin de l'utilisateur.
 
-A3 - TRANCHAGE DES INDETERMINATIONS
-- Lorsque la reponse de lister_ressources contient des entrees dans donnees.indetermination, tranche leur classe a partir du titre et de l'URL de la ressource. La reponse est autoportante : aucun appel d'outil supplementaire n'est necessaire ni utile.
-- Distinction : des signaux contradictoires (format declare csv, mime text/html) ne sont pas des ambiguites ; le code les a deja tranches par priorite. Seules les ressources marquees indetermine attendent ton arbitrage.
+A3 - RÉSOLUTION DES INDETERMINATIONS
+- Lorsque la reponse de lister_ressources contient des entrées dans donnees.indetermination, tranche leur classe a partir du titre et de l'URL de la ressource. La réponse est autoportante : aucun appel d'outil supplémentaire n'est necessaire ni utile.
+- Distinction : des signaux contradictoires (format declaré csv, mime text/html) ne sont pas des ambiguités ; le code les a déjà tranchés par priorité. Seules les ressources marquées indetermine attendent ton arbitrage.
 - Consigne ta decision dans ton raisonnement (par exemple : cette URL d'API Insee est une api_distante). Le code garde sa classification initiale : ne demande jamais de retraitement.
-- Une ressource tranchee comme non exploitable peut simplement etre ignoree pour la suite.
+- Une ressource tranchée comme non exploitable peut simplement etre ignorée pour la suite.
 
-A4 - SYNTHESE DU REGISTRE
-- Tout au long du flux, memorise les sources ecartees : licences refusees (statut licence_refusee) et echecs techniques (statut echec_technique, motif dans message ou donnees).
-- Pour une ressource dont le telechargement echoue avec la suggestion fichier_heberge_exterieurement : ne relance pas immediatement ; propose plutot une alternative, un jeu equivalent heberge sur la plateforme data.gouv.fr.
-- Conclus toujours par un rapport structure en francais : (1) donnees acquises, avec leurs chemins locaux et leur licence (attribution) ; (2) sources retenues et pourquoi ; (3) sources ecartees avec leur motif ; (4) limites eventuelles de l'acquisition.
+A4 - SYNTHÈSE DU REGISTRE
+- Tout au long du flux, mémorise les sources écartées : licences refusées (statut licence_refusee) et échecs techniques (statut echec_technique, motif dans message ou données).
+- Pour une ressource dont le téléchargement échoue avec la suggestion fichier_heberge_exterieurement : ne relance pas immediatement ; propose plutot une alternative, un jeu équivalent hébergé sur la plateforme data.gouv.fr.
+- Conclus toujours par un rapport structuré en francais : (1) données acquises, avec leurs chemins locaux et leur licence (attribution) ; (2) sources retenues et pourquoi ; (3) sources écartées avec leur motif ; (4) limites éventuelles de l'acquisition.
 
 PAGINATION ET VOLUMES
-- Exploite page_suivante pour paginer la recherche et l'interrogation des ressources ; conserve les memes filtres et tris entre les pages d'une extraction.
-- Si une reponse de interroger_ressource contient recommandation = volume_eleve_telechargement_brut_suggere, arrete la pagination et bascule sur telecharger_brut : la ressource est trop volumineuse pour une extraction page a page.
-- telecharger_brut ecrit sur le disque : reserve-le aux ressources reellement selectionnees, pas a l'exploration. Utilise interroger_ressource pour previsualiser le contenu d'une ressource indexee.
+- Exploite page_suivante pour paginer la recherche et l'interrogation des ressources ; conserve les mêmes filtres et tris entre les pages d'une extraction.
+- Si une réponse de interroger_ressource contient recommandation = volume_eleve_telechargement_brut_suggere, arrête la pagination et bascule sur telecharger_brut : la ressource est trop volumineuse pour une extraction page à page.
+- telecharger_brut écrit sur le disque : reserve-le aux ressources réellement selectionnées, pas à l'exploration. Utilise interroger_ressource pour prévisualiser le contenu d'une ressource indexée.
 """
 
 PREFIXE_NOM = "openDataAgent"
@@ -89,17 +89,17 @@ PREFIXE_NOM = "openDataAgent"
 
 @dataclass
 class Agent:
-    """Agent Mistral ephemere cree pour une execution.
+    """Agent Mistral éphémère crée pour une exécution.
 
     Attributs :
-        client : client Mistral instancie.
+        client : client Mistral instancié.
         agent_id : identifiant de l'agent sur la console Mistral.
-        modele : modele assigne a l'agent.
-        outils : definitions d'outils passees a l'agent.
-        ephemere : True si l'agent a ete cree par ce flux et doit
-                   etre detruit en fin d'execution ; False si un agent
-                   persistant existant a ete reutilise apres verification.
-        empreinte_prompt : empreinte sha256 du prompt systeme envoye.
+        modele : modele assigné à l'agent.
+        outils : définitions d'outils passées à l'agent.
+        ephemere : True si l'agent a été crée par ce flux et doit
+                   être détruit en fin d'exécution ; False si un agent
+                   persistant existant a été réutilisé après vérification.
+        empreinte_prompt : empreinte sha256 du prompt système envoyé.
     """
 
     client: Any
@@ -116,17 +116,17 @@ def empreinte(texte: str) -> str:
 
 
 def charger_outils(repertoire: Optional[Path] = None) -> List[Dict[str, Any]]:
-    """Charge les definitions d'outils depuis le manifeste des contrats.
+    """Charge les définitions d'outils depuis le manifeste des contrats.
 
-    Refuse de demarrer si le manifeste, le champ function.name et le
+    Refuse de démarrer si le manifeste, le champ function.name et le
     nom de fichier d'un contrat divergent (invariant du contrat global).
 
     Returns:
-        Liste des definitions d'outils au format function calling.
+        Liste des définitions d'outils au format function calling.
 
     Raises:
-        ValueError : manifeste illisible ou divergence constatee.
-        FileNotFoundError : contrat reference mais absent.
+        ValueError : manifeste illisible ou divergence constatée.
+        FileNotFoundError : contrat referencé mais absent.
     """
     repertoire = repertoire or REPERTOIRE_CONTRATS
     chemin_manifeste = repertoire / "manifeste.json"
@@ -138,14 +138,14 @@ def charger_outils(repertoire: Optional[Path] = None) -> List[Dict[str, Any]]:
         fichier = entree["fichier"]
         if Path(fichier).stem != nom:
             raise ValueError(
-                f"Divergence manifeste/fichier : outil '{nom}' reference "
+                f"Divergence manifeste/fichier : outil '{nom}' référence "
                 f"'{fichier}'."
             )
         with open(repertoire / fichier, encoding="utf-8") as flux:
             contrat = json.load(flux)
         if contrat.get("function", {}).get("name") != nom:
             raise ValueError(
-                f"Divergence manifeste/contrat : '{nom}' reference un "
+                f"Divergence manifeste/contrat : '{nom}' référence un "
                 f"contrat dont function.name vaut "
                 f"'{contrat.get('function', {}).get('name')}'."
             )
@@ -157,15 +157,15 @@ def creer_agent(
     id_execution: str,
     client: Optional[Any] = None,
 ) -> Dict[str, Any]:
-    """Cree (ou reutilise apres verification) l'agent Mistral d'une execution.
+    """Crée (ou réutilise apres vérification) l'agent Mistral d'une exécution.
 
-    Garde-fou : si MISTRAL_AGENT_ID est defini et que l'agent correspondant
-    est strictement conforme (modele, empreinte du prompt systeme, outils),
-    il est reutilise (ephemere=False) ; toute divergence ou absence entraine
-    la creation d'un agent ephemere neuf.
+    Garde-fou : si MISTRAL_AGENT_ID est défini et que l'agent correspondant
+    est strictement conforme (modèle, empreinte du prompt système, outils),
+    il est réutilisé (ephemere=False) ; toute divergence ou absence entraine
+    la creation d'un agent éphèmere neuf.
 
     Returns:
-        Reponse normalisee {statut, message, donnees}. En succes, donnees
+        Reponse normalisée {statut, message, donnees}. En succès, données
         contient l'objet Agent (champ "agent").
     """
     try:
@@ -184,7 +184,7 @@ def creer_agent(
         return {
             "statut": "echec_technique",
             "message": "Variable d'environnement MISTRAL_API_KEY absente ou vide.",
-            "donnees": {"suggestion": "definir MISTRAL_API_KEY dans .env"},
+            "donnees": {"suggestion": "définir MISTRAL_API_KEY dans .env"},
         }
 
     modele = os.environ.get("MISTRAL_MODELE", MODELE_DEFAUT)
@@ -216,7 +216,7 @@ def creer_agent(
             name=nom,
             instructions=PROMPT_SYSTEME,
             tools=sorted(outils, key=lambda o: o["function"]["name"]),
-            description="Agent d'acquisition de donnees data.gouv.fr (flux openDataAgent).",
+            description="Agent d'acquisition de données de data.gouv.fr (flux openDataAgent).",
             metadata={"id_execution": id_execution, "projet": PREFIXE_NOM},
         )
     except Exception as erreur:
@@ -250,14 +250,14 @@ def creer_agent(
 
 
 def detruire_agent(agent: Any) -> Dict[str, Any]:
-    """Detruit l'agent ephemere sur la console Mistral.
+    """Détruit l'agent éphèmere sur la console Mistral.
 
-    Un agent non ephemere (persistant reutilise) n'est jamais detruit.
-    Un agent_id deja supprime est un succes (idempotence) : le but est
-    qu'aucun agent residuel ne subsiste, pas l'exactitude de l'etat.
+    Un agent non éphèmere (persistant réutilisé) n'est jamais détruit.
+    Un agent_id déjà supprimé est un succès (idempotence) : le but est
+    qu'aucun agent résiduel ne subsiste, pas l'exactitude de l'état.
 
     Returns:
-        Reponse normalisee {statut, message, donnees}.
+        Réponse normalisée {statut, message, donnees}.
     """
     if not isinstance(agent, Agent):
         return {
@@ -269,7 +269,7 @@ def detruire_agent(agent: Any) -> Dict[str, Any]:
         log_to_file("agent_persistant_conserve", agent_id=agent.agent_id)
         return {
             "statut": "succes",
-            "message": "Agent persistant reutilise : non detruit.",
+            "message": "Agent persistant réutilisé : non détruit.",
             "donnees": {"detruit": False},
         }
     try:
@@ -280,7 +280,7 @@ def detruire_agent(agent: Any) -> Dict[str, Any]:
             log_to_file("agent_deja_absent", agent_id=agent.agent_id)
             return {
                 "statut": "succes",
-                "message": "Agent deja absent de la console.",
+                "message": "Agent déjà absent de la console.",
                 "donnees": {"detruit": False},
             }
         log_to_file("agent_destruction_erreur", agent_id=agent.agent_id, detail=message)
@@ -301,15 +301,15 @@ def nettoyer_agents_orphelins(
     client: Any,
     cle: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Liste et supprime les agents openDataAgent residuels sur la console.
+    """Liste et supprime les agents openDataAgent résiduels sur la console.
 
-    Utile apres un crash entre creation et destruction. Cible les agents
+    Utile apres un crash entre création et destruction. Cible les agents
     dont le nom commence par PREFIXE_NOM et/ou dont metadata.projet
     correspond au projet.
 
     Returns:
-        Reponse normalisee {statut, message, donnees} ; donnees.detruits
-        contient la liste des agent_id supprimes.
+        Reponse normalisée {statut, message, donnees} ; donnees.detruits
+        contient la liste des agent_id supprimés.
     """
     if client is None:
         cle_reelle = cle or os.environ.get("MISTRAL_API_KEY", "")
@@ -374,11 +374,11 @@ def _verifier_agent_existant(
     outils: List[Dict[str, Any]],
     modele: str,
 ) -> Optional[Agent]:
-    """Verifie l'agent persistant designe par MISTRAL_AGENT_ID, s'il existe.
+    """Vérifie l'agent persistant designé par MISTRAL_AGENT_ID, s'il existe.
 
-    Retourne un Agent reutilisable seulement si modele, empreinte du
-    prompt systeme et ensemble d'outils sont strictement conformes ;
-    toute divergence retourne None (creation ephemere par l'appelant).
+    Retourne un Agent réutilisable seulement si modèle, empreinte du
+    prompt système et ensemble d'outils sont strictement conformes ;
+    toute divergence retourne None (création éphèmere par l'appelant).
     """
     agent_id = os.environ.get("MISTRAL_AGENT_ID", "")
     if not agent_id:

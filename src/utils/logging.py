@@ -92,10 +92,10 @@ def configure_logging(id_execution: Optional[str] = None) -> None:
 
 
 def _injecter_contexte_global(logger, method_name, event_dict):
-    """Processor structlog : injecte le contexte global dans chaque evenement.
+    """Processor structlog : injecte le contexte global dans chaque évènement.
 
-    Le contexte doit refl eter la valeur courante (notamment id_execution
-    defini par configure_logging), pas un instantane pris a l'import.
+    Le contexte doit refléter la valeur courante (notamment id_execution
+    defini par configure_logging), pas un instantané pris a l'import.
     """
     for cle, valeur in _default_context.items():
         event_dict.setdefault(cle, valeur)

@@ -27,7 +27,7 @@ from src.contracts.base import JeuResume
 # ---------------------------------------------------------------------------
 
 class TriRecherche(str, Enum):
-    """Ordre de tri des resultats."""
+    """Ordre de tri des résultats."""
 
     PERTINENCE = "pertinence"
     RECENT = "recent"
@@ -36,7 +36,7 @@ class TriRecherche(str, Enum):
 
 
 class FenetreMaj(str, Enum):
-    """Restriction temporelle sur la derniere mise a jour."""
+    """Restriction temporelle sur la dernière mise à jour."""
 
     TOUTES = "toutes"
     TRENTE_JOURS = "30_jours"
@@ -45,38 +45,38 @@ class FenetreMaj(str, Enum):
 
 
 # ---------------------------------------------------------------------------
-# Entree
+# Entrée
 # ---------------------------------------------------------------------------
 
 class RechercherJeuxInput(BaseModel):
-    """Parametres d'entree de l'outil `rechercher_jeux`.
+    """Paramètres d'entrée de l'outil `rechercher_jeux`.
 
-    La recherche applique une logique ET sur les mots-cles.
+    La recherche applique une logique ET sur les mots-clés.
     """
 
     mots_cles: list[str] = Field(
         ...,
         min_length=1,
-        description="Mots-cles de la recherche, combines en logique ET.",
+        description="Mots-clés de la recherche, combinés en logique ET.",
     )
     tri: TriRecherche = Field(
         default=TriRecherche.PERTINENCE,
-        description="Ordre de tri des resultats.",
+        description="Ordre de tri des résultats.",
     )
     fenetre_maj: FenetreMaj = Field(
         default=FenetreMaj.TOUTES,
-        description="Restriction temporelle sur la derniere mise a jour.",
+        description="Restriction temporelle sur la dernière mise à jour.",
     )
     limite: int = Field(
         default=10,
         ge=1,
         le=20,
-        description="Nombre maximum de jeux retournes (defaut : 10, max : 20).",
+        description="Nombre maximum de jeux retournés (defaut : 10, max : 20).",
     )
     page: int = Field(
         default=1,
         ge=1,
-        description="Numero de la page de resultats demandee (defaut : 1).",
+        description="Numéro de la page de résultats demandée (defaut : 1).",
     )
 
 
@@ -85,13 +85,13 @@ class RechercherJeuxInput(BaseModel):
 # ---------------------------------------------------------------------------
 
 class RechercherJeuxOutput(BaseModel):
-    """Donnees retournees en cas de succes par `rechercher_jeux`."""
+    """Données retournées en cas de succès par `rechercher_jeux`."""
 
-    total_trouves: int = Field(description="Nombre total de jeux correspondant a la requete.")
-    jeux: list[JeuResume] = Field(description="Liste resumee des jeux de donnees.")
-    exclus_licence: int = Field(description="Nombre de jeux ecartes par le filtre de licence.")
-    page_courante: int = Field(description="Numero de la page retournee.")
+    total_trouves: int = Field(description="Nombre total de jeux correspondant a la requête.")
+    jeux: list[JeuResume] = Field(description="Liste resumée des jeux de données.")
+    exclus_licence: int = Field(description="Nombre de jeux écartés par le filtre de licence.")
+    page_courante: int = Field(description="Numéro de la page retournée.")
     page_suivante: int | None = Field(
         default=None,
-        description="Numero de la page suivante si elle existe, null sinon.",
+        description="Numéro de la page suivante si elle existe, null sinon.",
     )

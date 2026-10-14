@@ -9,16 +9,16 @@
 # ---------------------------------------------------------------------
 """Journal des conversations agentiques (T5.3.3).
 
-Conserve pour chaque execution la conversation complete : contexte
+Conserve pour chaque exécution la conversation complète : contexte
 (modele, prompt, date, plafond), messages, invocations d'outils avec
-leurs arguments, resultats normalises, raisonnements de l'agent
-(texte emis entre les tool_calls) et evenements de fin.
+leurs arguments, résultats normalisés, raisonnements de l'agent
+(texte émis entre les tool_calls) et évènements de fin.
 
 Format : JSONL, un enregistrement par ligne, dans
 conversations/<id_execution>/conversation.jsonl. Ces journaux servent aux
-tests de proprietes TA (rejeu) et a l'audit (plan_tests section 9).
+tests de proprietes TA (rejeu) et à l'audit (plan_tests section 9).
 
-Aucune erreur d'ecriture ne remonte vers la boucle : la journalisation
+Aucune erreur d'écriture ne remonte vers la boucle : la journalisation
 ne doit jamais interrompre une acquisition."""
 from __future__ import annotations
 
@@ -70,13 +70,13 @@ class JournalConversation:
             self._flux = None
 
     def enregistrer(self, event: str, **champs: Any) -> None:
-        """Ajoute un evenement au journal (echec d'ecriture silencieux)."""
+        """Ajoute un évènement au journal (échec d'écriture silencieux)."""
         if event not in EVENEMENTS:
             event = "fin"
         self._ecrire(event, **champs)
 
     def fermer(self, statut: str, **champs: Any) -> None:
-        """Ecrit l'evenement de fin et ferme le fichier."""
+        """"Écrit l'évènement de fin et ferme le fichier."""
         self._ecrire("fin", statut=statut, **champs)
         if self._flux is not None:
             try:
@@ -104,8 +104,8 @@ class JournalConversation:
 def lire_journal(chemin: Path) -> List[Dict[str, Any]]:
     """Charge un journal JSONL en liste d'enregistrements.
 
-    Les lignes illisibles sont ignorees : le rejeu ne doit jamais
-    echouer sur une ligne corrompue.
+    Les lignes illisibles sont ignorées : le rejeu ne doit jamais
+    échouer sur une ligne corrompue.
     """
     if not chemin.is_file():
         return []
@@ -123,11 +123,11 @@ def lire_journal(chemin: Path) -> List[Dict[str, Any]]:
 
 
 def extraire_invocations(enregistrements: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Extrait la sequence ordonnee des invocations d'outils d'un journal.
+    """Extrait la séquence ordonnée des invocations d'outils d'un journal.
 
-    Base du rejeu TA-01 (integrite des identifiants) et TA-02 (ordre
-    des appels) : chaque entree comporte tour, outil, arguments et le
-    statut du resultat associe.
+    Base du rejeu TA-01 (integrité des identifiants) et TA-02 (ordre
+    des appels) : chaque entrée comporte tour, outil, arguments et le
+    statut du résultat associé.
     """
     invocations: List[Dict[str, Any]] = []
     attente_resultat: Optional[Dict[str, Any]] = None

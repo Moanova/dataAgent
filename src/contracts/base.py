@@ -7,17 +7,17 @@
 # Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
-"""Modeles Pydantic communs aux contrats des outils exposes aux agents.
+"""Modèles Pydantic communs aux contrats des outils exposés aux agents.
 
-Ce module definit les types fondamentaux partagees par tous les contrats :
-- `StatutEnum` : les sept codes de statut normalises.
-- `ReponseBase` : enveloppe standardisee (statut / message / donnees).
-- `JeuResume` : resume d'un jeu de donnees retourne par `rechercher_jeux`.
-- `RessourceResume` : resume d'une ressource retourne par `lister_ressources`.
+Ce module définit les types fondamentaux partagées par tous les contrats :
+- `StatutEnum` : les sept codes de statut normalisés.
+- `ReponseBase` : enveloppe standardisée (statut / message / donnees).
+- `JeuResume` : resumé d'un jeu de données retourne par `rechercher_jeux`.
+- `RessourceResume` : resumé d'une ressource retourné par `lister_ressources`.
 - `ClasseRessource` : classification d'une ressource.
 
-Il fournit egalement `valider_coherence_contrat()` qui verifie la concordance
-entre un contrat JSON (source de verite pour le function calling) et le
+Il fournit egalement `valider_coherence_contrat()` qui vérifie la concordance
+entre un contrat JSON (source de verité pour le function calling) et le
 modele Pydantic correspondant.
 """
 
@@ -36,7 +36,7 @@ from pydantic import BaseModel, Field
 # ---------------------------------------------------------------------------
 
 class StatutEnum(str, Enum):
-    """Codes de statut retournes par tout outil, sans exception."""
+    """Codes de statut retournés par tout outil, sans exception."""
 
     SUCCES = "succes"
     JEU_INTROUVABLE = "jeu_introuvable"
@@ -52,7 +52,7 @@ class StatutEnum(str, Enum):
 # ---------------------------------------------------------------------------
 
 class ClasseRessource(str, Enum):
-    """Classes de ressources determinees par le classificateur (B3)."""
+    """Classes de ressources determinées par le classificateur (B3)."""
 
     FICHIER_TABULAIRE = "fichier_tabulaire"
     FICHIER_AUTRE_FORMAT = "fichier_autre_format"
@@ -66,9 +66,9 @@ class ClasseRessource(str, Enum):
 # ---------------------------------------------------------------------------
 
 class ReponseBase(BaseModel):
-    """Tout retour d'outil est un objet de ce type, serialisable en JSON.
+    """Tout retour d'outil est un objet de ce type, sérialisable en JSON.
 
-    Aucune fonction exposee ne leve d'exception vers l'agent.
+    Aucune fonction exposée ne lève d'exception vers l'agent.
     """
 
     statut: StatutEnum
@@ -81,7 +81,7 @@ class ReponseBase(BaseModel):
 # ---------------------------------------------------------------------------
 
 class JeuResume(BaseModel):
-    """Resume d'un jeu de donnees, retourne dans `donnees.jeux`."""
+    """Resumé d'un jeu de données, retourné dans `donnees.jeux`."""
 
     id: str
     titre: str
@@ -93,7 +93,7 @@ class JeuResume(BaseModel):
 
 
 class RessourceResume(BaseModel):
-    """Resume d'une ressource, retourne dans `donnees.ressources`."""
+    """Resumé d'une ressource, retourné dans `donnees.ressources`."""
 
     id: str
     titre: str
@@ -106,7 +106,7 @@ class RessourceResume(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Validation de coherence JSON <-> Pydantic
+# Validation de cohérence JSON <-> Pydantic
 # ---------------------------------------------------------------------------
 
 # Correspondance nom d'outil -> (module, classe Input, classe Output)
@@ -122,10 +122,10 @@ def valider_coherence_contrat(
     nom_outil: str,
     repertoire_contrats: Path = Path("contrats"),
 ) -> list[str]:
-    """Verifie la coherence entre le contrat JSON et les modeles Pydantic.
+    """Vérifie la coherence entre le contrat JSON et les modèles Pydantic.
 
     Retourne une liste de divergences (vide si tout est conforme).
-    Leve `ValueError` si l'outil est inconnu ou le JSON est absent.
+    Lève `ValueError` si l'outil est inconnu ou le JSON est absent.
     """
     if nom_outil not in _REGISTRE_MODELES:
         raise ValueError(f"Outil inconnu : '{nom_outil}'.")
@@ -150,20 +150,20 @@ def valider_coherence_contrat(
     required_json = set(params_json.get("required", []))
 
     for champ in champs_json - champs_pydantic:
-        divergences.append(f"Champ '{champ}' present dans le JSON mais absent du modele Pydantic.")
+        divergences.append(f"Champ '{champ}' présent dans le JSON mais absent du modèle Pydantic.")
     for champ in champs_pydantic - champs_json:
-        divergences.append(f"Champ '{champ}' present dans le modele Pydantic mais absent du JSON.")
+        divergences.append(f"Champ '{champ}' présent dans le modèle Pydantic mais absent du JSON.")
     for champ in required_json:
         field_info = modele_input.model_fields.get(champ)
         if field_info is not None and field_info.is_required() is False:
             divergences.append(f"Champ '{champ}' obligatoire dans le JSON mais optionnel dans Pydantic.")
 
-    # --- Verifier les enums ---
+    # --- Vérifier les enums ---
     for champ, spec in params_json.get("properties", {}).items():
         if "enum" in spec and champ in champs_pydantic:
             field_info = modele_input.model_fields[champ]
             annotation = field_info.annotation
-            # Resoudre Optional[Enum] -> Enum
+            # Résoudre Optional[Enum] -> Enum
             enum_cls = None
             if hasattr(annotation, "__args__"):
                 for arg in annotation.__args__:
@@ -181,7 +181,7 @@ def valider_coherence_contrat(
                         f"Pydantic={sorted(valeurs_pydantic)}"
                     )
 
-    # --- Verifier les champs de sortie ---
+    # --- Vérifier les champs de sortie ---
     _, _, output_nom = _REGISTRE_MODELES[nom_outil]
     modele_output: Type[BaseModel] = getattr(module, output_nom)
 
@@ -190,11 +190,11 @@ def valider_coherence_contrat(
     champs_donnees_pydantic = set(modele_output.model_fields.keys())
 
     for champ in champs_donnees_json - champs_donnees_pydantic:
-        divergences.append(f"Champ de sortie '{champ}' present dans le JSON mais absent du modele Pydantic.")
+        divergences.append(f"Champ de sortie '{champ}' présent dans le JSON mais absent du modèle Pydantic.")
     for champ in champs_donnees_pydantic - champs_donnees_json:
-        divergences.append(f"Champ de sortie '{champ}' present dans le modele Pydantic mais absent du JSON.")
+        divergences.append(f"Champ de sortie '{champ}' présent dans le modèle Pydantic mais absent du JSON.")
 
-    # Verifier le statut enum dans le retour
+    # Vérifier le statut enum dans le retour
     statut_json = returns_json.get("properties", {}).get("statut", {})
     if "enum" in statut_json:
         valeurs_json = set(statut_json["enum"])

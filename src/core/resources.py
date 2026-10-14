@@ -7,12 +7,12 @@
 # Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
-"""Inventaire des ressources d'un jeu de donnees (lister_ressources, T3.2.1).
+"""Inventaire des ressources d'un jeu de données (lister_ressources, T3.2.1).
 
-L'appel enregistre les metadonnees de chaque ressource (invariant du
-contrat) dans un inventaire en memoire : c'est ce qui arme
+L'appel enregistre les métadonnées de chaque ressource (invariant du
+contrat) dans un inventaire en mémoire : c'est ce qui arme
 `telecharger_brut` et `interroger_ressource` ensuite, et qui permet de
-refuser tout identifiant jamais delivre par la chaine.
+refuser tout identifiant jamais delivré par la chaine.
 """
 from typing import Any, Dict, Optional
 
@@ -25,18 +25,18 @@ logger = get_logger("openDataAgent.core.resources")
 
 _registre_par_defaut = RegistreSourcesInaccessibles()
 
-# Inventaire en memoire : id_ressource -> metadonnees normalisees.
-# Peuple a chaque appel de lister_ressources, consomme par telecharger_brut
+# Inventaire en mémoire : id_ressource -> métadonnées normalisées.
+# Peuplé a chaque appel de lister_ressources, consommé par telecharger_brut
 # (T3.4.1) et interroger_ressource (T3.3.1).
 _inventaire: Dict[str, Dict[str, Any]] = {}
 
-# Metadonnees du jeu en cours d'inventaire (id, licence) ; positionnees
+# Métadonnées du jeu en cours d'inventaire (id, licence) ; positionnées
 # le temps de l'appel a lister_ressources.
 _jeu_courant: Dict[str, Any] = {}
 
 
 def inventaire() -> Dict[str, Dict[str, Any]]:
-    """Retourne une copie de l'inventaire des ressources deja vues."""
+    """Retourne une copie de l'inventaire des ressources déjà vues."""
     return dict(_inventaire)
 
 
@@ -73,16 +73,16 @@ def lister_ressources(
     registre: Optional[RegistreSourcesInaccessibles] = None,
 ) -> Dict[str, Any]:
     """
-    Inventorie les ressources d'un jeu de donnees data.gouv.fr.
+    Inventorie les ressources d'un jeu de données data.gouv.fr.
 
     Args:
         id_jeu (str): Identifiant du jeu, issu de `rechercher_jeux`.
-        id_execution (Optional[str]): Identifiant unique pour tracer l'execution.
+        id_execution (Optional[str]): Identifiant unique pour tracer l'exécution.
         registre (Optional[RegistreSourcesInaccessibles]): Registre des sources
             inaccessibles ; par defaut, l'instance globale sur data/registry.json.
 
     Returns:
-        Dict[str, Any]: Resultat au format normalise (statut/message/donnees).
+        Dict[str, Any]: Resultat au format normalisé (statut/message/donnees).
     """
     if registre is None:
         registre = _registre_par_defaut
@@ -136,7 +136,7 @@ def lister_ressources(
     }
     ressources_normalisees = [_normaliser_ressource(r) for r in data.get("resources", [])]
 
-    # Invariant du contrat : l'appel enregistre les metadonnees de chaque
+    # Invariant du contrat : l'appel enregistre les métadonnées de chaque
     # ressource ; c'est ce qui rend telecharger_brut possible ensuite.
     for ressource in ressources_normalisees:
         _inventaire[ressource["id"]] = ressource

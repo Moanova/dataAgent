@@ -7,13 +7,13 @@
 # Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
-"""Client HTTP generique pour l'API data.gouv.fr.
+"""Client HTTP générique pour l'API data.gouv.fr.
 
-Couche unique d'acces reseau du projet (T3.1.1). Fournit :
-- une session `requests` reutilisable avec `User-Agent` explicite ;
+Couche unique d'accès réseau du projet (T3.1.1). Fournit :
+- une session `requests` réutilisable avec `User-Agent` explicite ;
 - des tentatives de reprise sur les statuts transitoires (429, 502, 503)
-  et les erreurs de connexion, avec delai croissant ;
-- des retours structures sans exception : aucun appel ne leve, les
+  et les erreurs de connexion, avec délai croissant ;
+- des retours structurés sans exception : aucun appel ne lève, les
   echecs sont convertis en statut `echec_technique` (ou `jeu_introuvable`
   pour un 404).
 """
@@ -40,7 +40,7 @@ STATUTS_TRANSITOIRES = {429, 502, 503}
 
 @dataclass
 class ResultatAppel:
-    """Resultat structure d'un appel API, sans exception."""
+    """Résultat structuré d'un appel API, sans exception."""
 
     statut: str
     status_code: Optional[int] = None
@@ -69,10 +69,10 @@ def appel_api(
     nb_tentatives: int = 3,
     statut_404: str = "jeu_introuvable",
 ) -> ResultatAppel:
-    """Effectue un appel GET vers une API data.gouv.fr avec reprise sur echec transitoire.
+    """Effectue un appel GET vers une API data.gouv.fr avec reprise sur échec transitoire.
 
-    Ne leve jamais d'exception : les echecs techniques (injoignable,
-    expiration du delai, statut transitoire persistant) produisent un
+    Ne lève jamais d'exception : les échecs techniques (injoignable,
+    éxpiration du délai, statut transitoire persistant) produisent un
     `ResultatAppel` de statut `echec_technique` ; un 404 produit le
     statut `statut_404` (par defaut `jeu_introuvable`, ou
     `ressource_non_indexee` pour l'API tabulaire).
@@ -85,11 +85,11 @@ def appel_api(
             reponse = _SESSION.get(url, params=params, timeout=timeout)
         except requests.exceptions.RequestException as exc:
             log_to_file(
-                "Echec de l'appel HTTP a data.gouv.fr",
+                "Échec de l'appel HTTP à data.gouv.fr",
                 url=url,
                 tentative=tentative,
                 erreur=str(exc),
-                suggestion="Reessayer apres 30 secondes",
+                suggestion="Réessayer apres 30 secondes",
             )
             if tentative < nb_tentatives:
                 time.sleep(DELAIS_TENTATIVES[min(tentative - 1, len(DELAIS_TENTATIVES) - 1)])
@@ -128,7 +128,7 @@ def appel_api(
                 url=url,
                 status_code=reponse.status_code,
                 erreur=detail_erreur,
-                suggestion="Reessayer apres 30 secondes",
+                suggestion="Réessayer apres 30 secondes",
             )
             return ResultatAppel(statut="echec_technique", status_code=reponse.status_code, erreur=detail_erreur)
 
@@ -138,7 +138,7 @@ def appel_api(
             return ResultatAppel(
                 statut="echec_technique",
                 status_code=reponse.status_code,
-                erreur=f"Reponse non parsable en JSON : {exc}",
+                erreur=f"Réponse non parsable en JSON : {exc}",
             )
         return ResultatAppel(statut="succes", status_code=reponse.status_code, donnees=donnees)
 
@@ -155,17 +155,17 @@ def rechercher_jeux_api(
 ) -> ResultatAppel:
     """Appelle l'endpoint de recherche /api/1/datasets/ (v1).
 
-    Traduit les arguments normalises vers les parametres de l'API et
+    Traduit les arguments normalisés vers les paramètres de l'API et
     valide la reponse contre le schema jsonschema de l'outil (T2.2) ;
-    une reponse invalide produit un echec propre sans exception.
-    Expose dans `donnees` la pagination normalisee `page_suivante`
+    une reponse invalide produit un échec propre sans exception.
+    Expose dans `donnees` la pagination normalisée `page_suivante`
     (numero entier extrait de l'URL `next_page` de la v1, null si absente).
     """
     from urllib.parse import urlparse, parse_qs
 
     from src.contracts.validation_api import valider_reponse_api
 
-    TRIS_API = {"recent": "-last_update", "vues": "-views", "reutilisations": "-reuses"}
+    TRIS_API = {"récent": "-last_update", "vues": "-views", "réutilisations": "-reuses"}
 
     params = {
         "q": " ".join(mots_cles),
@@ -202,8 +202,8 @@ def rechercher_jeux_api(
 def lister_ressources_api(id_jeu: str, **kwargs: Any) -> ResultatAppel:
     """Appelle l'endpoint de detail d'un jeu /api/1/datasets/{id}/ (v1).
 
-    Valide la reponse contre le schema jsonschema de l'outil (T2.2) ;
-    une reponse invalide produit un echec propre sans exception.
+    Valide la réponse contre le schéma jsonschema de l'outil (T2.2) ;
+    une réponse invalide produit un échec propre sans exception.
     Un 404 produit le statut `jeu_introuvable`.
     """
     from src.contracts.validation_api import valider_reponse_api
@@ -217,7 +217,7 @@ def lister_ressources_api(id_jeu: str, **kwargs: Any) -> ResultatAppel:
         return ResultatAppel(
             statut="echec_technique",
             status_code=resultat.status_code,
-            erreur="Reponse d'inventaire invalide : " + " ; ".join(validation.erreurs),
+            erreur="Réponse d'inventaire invalide : " + " ; ".join(validation.erreurs),
         )
     return resultat
 
@@ -227,11 +227,11 @@ def _base_tabulaire() -> str:
 
 
 def est_indexee_api_tabulaire(id_ressource: str, timeout: float = 5.0) -> bool:
-    """Detecte si une ressource est indexee par l'API tabulaire.
+    """Détecte si une ressource est indexée par l'API tabulaire.
 
     Simple ping GET /resources/{rid}/ : 200 = indexee, 404 ou echec =
-    non indexee. Ne leve jamais d'exception ; en cas d'echec reseau, la
-    ressource est reputee non indexee (comportement sur par defaut).
+    non indexee. Ne leve jamais d'exception ; en cas d'échec reseau, la
+    ressource est reputée non indexée (comportement sur par defaut).
     """
     resultat = appel_api(
         f"/resources/{id_ressource}/",
@@ -252,8 +252,8 @@ def interroger_ressource_api(
 ) -> ResultatAppel:
     """Appelle l'endpoint /resources/{rid}/data/ de l'API tabulaire.
 
-    Traduit les arguments normalises vers les parametres de l'API
-    (operateurs de filtre, tri, pagination) et valide la reponse contre
+    Traduit les arguments normalisés vers les paramètres de l'API
+    (opérateurs de filtre, tri, pagination) et valide la réponse contre
     le schema jsonschema de l'outil ; un 404 produit le statut
     `ressource_non_indexee`.
     """
@@ -289,7 +289,7 @@ def interroger_ressource_api(
         return ResultatAppel(
             statut="echec_technique",
             status_code=resultat.status_code,
-            erreur="Reponse tabulaire invalide : " + " ; ".join(validation.erreurs),
+            erreur="Réponse tabulaire invalide : " + " ; ".join(validation.erreurs),
         )
     return resultat
 
@@ -310,12 +310,12 @@ def telecharger_fichier(
     timeout: float = 30.0,
     nb_tentatives: int = 3,
 ) -> ResultatAppel:
-    """Telecharge un fichier binaire en flux vers `destination`.
+    """Télécharge un fichier binaire en flux vers `destination`.
 
-    Ecriture atomique : le flux est ecrit dans un fichier temporaire
-    `<destination>.part` et renomme seulement apres reussite complete ;
-    aucun fichier partiel ne reste sur disque en cas d'echec (TI-07).
-    Ne leve jamais d'exception : les echecs sont convertis en
+    Écriture atomique : le flux est écrit dans un fichier temporaire
+    `<destination>.part` et renomme seulement après réussite complète ;
+    aucun fichier partiel ne reste sur disque en cas d'échec (TI-07).
+    Ne lève jamais d'exception : les échecs sont convertis en
     ResultatAppel de statut `echec_technique`.
     """
     temporaire = destination.with_name(destination.name + ".part")

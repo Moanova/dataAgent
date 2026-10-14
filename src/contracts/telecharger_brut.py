@@ -19,11 +19,11 @@ from pydantic import BaseModel, Field
 
 
 # ---------------------------------------------------------------------------
-# Entree
+# Entrée
 # ---------------------------------------------------------------------------
 
 class TelechargerBrutInput(BaseModel):
-    """Parametres d'entree de l'outil `telecharger_brut`."""
+    """Paramètres d'entrée de l'outil `telecharger_brut`."""
 
     id_ressource: str = Field(
         ...,
@@ -36,12 +36,12 @@ class TelechargerBrutInput(BaseModel):
 # ---------------------------------------------------------------------------
 
 class TelechargerBrutOutput(BaseModel):
-    """Donnees retournees en cas de succes par `telecharger_brut`."""
+    """Données retournées en cas de succès par `telecharger_brut`."""
 
-    chemin_local: str = Field(description="Chemin relatif du fichier telecharge.")
-    format: str = Field(description="Format du fichier telecharge.")
-    licence: str = Field(description="Licence du jeu de donnees.")
+    chemin_local: str = Field(description="Chemin relatif du fichier téléchargé.")
+    format: str = Field(description="Format du fichier téléchargé.")
+    licence: str = Field(description="Licence du jeu de données.")
     suggestion: str | None = Field(
         default=None,
-        description="Suggestion en cas d'echec (ex : 'fichier_heberge_exterieurement').",
+        description="Suggestion en cas d'échec (ex : 'fichier_heberge_exterieurement').",
     )

@@ -26,7 +26,7 @@ from pydantic import BaseModel, Field
 # ---------------------------------------------------------------------------
 
 class OperateurFiltre(str, Enum):
-    """Operateurs de filtrage disponibles pour une colonne."""
+    """Opérateurs de filtrage disponibles pour une colonne."""
 
     EXACT = "exact"
     CONTIENT = "contient"
@@ -44,13 +44,13 @@ class OrdreTri(str, Enum):
 
 
 # ---------------------------------------------------------------------------
-# Sous-modeles
+# Sous-modèles
 # ---------------------------------------------------------------------------
 
 class FiltreColonne(BaseModel):
     """Filtre applicable sur une colonne (une colonne a la fois)."""
 
-    colonne: str = Field(description="Nom de la colonne a filtrer.")
+    colonne: str = Field(description="Nom de la colonne à filtrer.")
     valeur: str = Field(description="Valeur de comparaison.")
     operateur: OperateurFiltre = Field(
         default=OperateurFiltre.EXACT,
@@ -61,16 +61,16 @@ class FiltreColonne(BaseModel):
 class TriColonne(BaseModel):
     """Tri applicable sur une colonne."""
 
-    colonne: str = Field(description="Nom de la colonne a trier.")
-    ordre: OrdreTri = Field(description="Ordre de tri (croissant ou decroissant).")
+    colonne: str = Field(description="Nom de la colonne à trier.")
+    ordre: OrdreTri = Field(description="Ordre de tri (croissant ou décroissant).")
 
 
 # ---------------------------------------------------------------------------
-# Entree
+# Entrée
 # ---------------------------------------------------------------------------
 
 class InterrogerRessourceInput(BaseModel):
-    """Parametres d'entree de l'outil `interroger_ressource`."""
+    """Parametres d'entrée de l'outil `interroger_ressource`."""
 
     id_ressource: str = Field(
         ...,
@@ -85,7 +85,7 @@ class InterrogerRessourceInput(BaseModel):
         default=20,
         ge=1,
         le=50,
-        description="Nombre d'elements par page (defaut : 20, max : 100).",
+        description="Nombre d'éléments par page (defaut : 20, max : 100).",
     )
     filtre: FiltreColonne | None = Field(
         default=None,
@@ -102,18 +102,18 @@ class InterrogerRessourceInput(BaseModel):
 # ---------------------------------------------------------------------------
 
 class InterrogerRessourceOutput(BaseModel):
-    """Donnees retournees en cas de succes par `interroger_ressource`."""
+    """Données retournées en cas de succès par `interroger_ressource`."""
 
     total_lignes: int = Field(description="Nombre total de lignes de la ressource.")
-    colonnes: list[str] = Field(description="Schema detecte (noms des colonnes).")
-    lignes: list[dict[str, Any]] = Field(description="Page courante de donnees.")
-    page: int = Field(description="Numero de la page retournee.")
+    colonnes: list[str] = Field(description="Schéma detecte (noms des colonnes).")
+    lignes: list[dict[str, Any]] = Field(description="Page courante de données.")
+    page: int = Field(description="Numéro de la page retournée.")
     page_suivante: int | None = Field(
         default=None,
-        description="Numero de la page suivante si elle existe, null sinon.",
+        description="Numéro de la page suivante si elle existe, null sinon.",
     )
     recommandation: str | None = Field(
         default=None,
-        description="Recommandation pour les volumes eleves "
+        description="Recommandation pour les volumes élevés "
                     "(ex : 'volume_eleve_telechargement_brut_suggere').",
     )

@@ -7,12 +7,12 @@
 # Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
-"""Telechargement brut d'une ressource non indexee (voie 2, T3.4.1).
+"""Telechargement brut d'une ressource non indexée (voie 2, T3.4.1).
 
-L'URL n'est jamais prise en argument : elle est resolue par le code a
-partir des metadonnees enregistrees lors de l'inventaire (invariant du
-contrat telecharger_brut). Chaque telechargement est independant ; le
-registre est alimente meme en cas d'echec.
+L'URL n'est jamais prise en argument : elle est résolue par le code à
+partir des métadonnées enregistrées lors de l'inventaire (invariant du
+contrat telecharger_brut). Chaque téléchargement est independant ; le
+registre est alimenté même en cas d'echec.
 """
 from typing import Any, Dict, Optional
 
@@ -33,11 +33,11 @@ def telecharger_brut(
     registre: Optional[RegistreSourcesInaccessibles] = None,
 ) -> Dict[str, Any]:
     """
-    Telecharge une ressource dans son etat brut vers le stockage local.
+    Télécharge une ressource dans son état brut vers le stockage local.
 
     Args:
         id_ressource (str): Identifiant de la ressource, issu de `lister_ressources`.
-        id_execution (Optional[str]): Identifiant unique pour tracer l'execution.
+        id_execution (Optional[str]): Identifiant unique pour tracer l'exécution.
         registre (Optional[RegistreSourcesInaccessibles]): Registre des sources
             inaccessibles ; par defaut, l'instance globale sur data/registry.json.
 
@@ -54,7 +54,7 @@ def telecharger_brut(
     log_to_file("Appel de telecharger_brut", id_ressource=id_ressource)
 
     if not id_ressource:
-        logger.error("Erreur de parametres : id_ressource est vide")
+        logger.error("Erreur de paramètres : id_ressource est vide")
         return {
             "statut": "erreur_parametres",
             "message": "Le paramètre 'id_ressource' est obligatoire et ne peut être vide.",
@@ -76,13 +76,13 @@ def telecharger_brut(
     identifiant = id_execution or generer_id_execution()
     destination = resoudre_collision(chemin_destination(identifiant, id_ressource, url))
 
-    logger.debug("Telechargement en flux", url=url, destination=str(destination))
-    log_to_file("Telechargement en flux", url=url, destination=str(destination))
+    logger.debug("Téléchargement en flux", url=url, destination=str(destination))
+    log_to_file("Téléchargement en flux", url=url, destination=str(destination))
 
     resultat = telecharger_fichier(url, destination)
 
     if not resultat.reussi:
-        # Invariant : le registre est alimente meme en cas d'echec.
+        # Invariant : le registre est alimenté meme en cas d'échec.
         registre.consigner_echec_technique(
             id_jeu=metadonnees.get("id_jeu") or "",
             organisation=metadonnees.get("organisation") or "",

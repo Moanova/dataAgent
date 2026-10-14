@@ -7,11 +7,11 @@
 # Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
-"""Interrogation d'une ressource indexee par l'API tabulaire (voie 1, T3.3.1).
+"""Interrogation d'une ressource indexée par l'API tabulaire (voie 1, T3.3.1).
 
-Garde du contrat : jamais appelee sur une ressource non indexee
+Garde du contrat : jamais appelée sur une ressource non indexée
 (api_tabulaire faux -> ressource_non_indexee, bascule vers
-telecharger_brut) ni sur une ressource jamais delivree par l'inventaire
+telecharger_brut) ni sur une ressource jamais delivrée par l'inventaire
 (ressource_introuvable). Recommandation de volume au-dela du seuil
 configure (5000 par defaut) : volume_eleve_telechargement_brut_suggere.
 """
@@ -35,7 +35,7 @@ def _seuil_volume_eleve() -> int:
 
 
 def _colonnes_depuis_data(donnees: Dict[str, Any], id_ressource: str) -> list:
-    """Colonnes depuis la premiere ligne ; repli sur profile/ si data vide."""
+    """Colonnes depuis la première ligne ; repli sur profile/ si data vide."""
     lignes = donnees.get("data") or []
     if lignes and isinstance(lignes[0], dict):
         return list(lignes[0].keys())
@@ -47,10 +47,10 @@ def _colonnes_depuis_data(donnees: Dict[str, Any], id_ressource: str) -> list:
 
 
 def _page_suivante_depuis_links(liens: Optional[Dict[str, Any]]) -> Optional[int]:
-    """Extrait le numero de page depuis l'URL `links.next` (T3.3.2).
+    """Extrait le numéro de page depuis l'URL `links.next` (T3.3.2).
 
-    L'API tabulaire renvoie une URL complete (...&page=2) ou null sur
-    la derniere page ; retourne l'entier ou None.
+    L'API tabulaire renvoie une URL complète (...&page=2) ou null sur
+    la dernière page ; retourne l'entier ou None.
     """
     from urllib.parse import urlparse, parse_qs
 
@@ -70,18 +70,18 @@ def interroger_ressource(
     id_execution: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
-    Extrait des donnees d'une ressource indexee par l'API tabulaire.
+    Extrait des données d'une ressource indexée par l'API tabulaire.
 
     Args:
         id_ressource (str): Identifiant de la ressource, issu de `lister_ressources`.
-        page (int): Page demandee (defaut 1).
+        page (int): Page demandée (defaut 1).
         taille_page (int): Lignes par page (defaut 20, max 50).
-        filtre (Optional[dict]): {colonne, valeur, operateur} - une colonne a la fois.
+        filtre (Optional[dict]): {colonne, valeur, operateur} - une colonne à la fois.
         tri (Optional[dict]): {colonne, ordre} - ordre croissant|decroissant.
-        id_execution (Optional[str]): Identifiant unique pour tracer l'execution.
+        id_execution (Optional[str]): Identifiant unique pour tracer l'exécution.
 
     Returns:
-        Dict[str, Any]: Resultat au format normalise (statut/message/donnees).
+        Dict[str, Any]: Résultat au format normalisé (statut/message/donnees).
     """
     if id_execution:
         bind_context(id_execution=id_execution)
@@ -100,14 +100,14 @@ def interroger_ressource(
     )
 
     if not id_ressource:
-        logger.error("Erreur de parametres : id_ressource est vide")
+        logger.error("Erreur de paramètres : id_ressource est vide")
         return {
             "statut": "erreur_parametres",
             "message": "Le paramètre 'id_ressource' est obligatoire et ne peut être vide.",
             "donnees": {},
         }
 
-    # Gardes du contrat : identifiant delivre par la chaine, puis indexation.
+    # Gardes du contrat : identifiant delivré par la chaine, puis indexation.
     metadonnees = inventaire().get(id_ressource)
     if metadonnees is None:
         logger.error("Ressource jamais vue par l'inventaire", id_ressource=id_ressource)

@@ -23,15 +23,15 @@ __all__ = ["ClasseRessource", "ListerRessourcesInput", "ListerRessourcesOutput"]
 
 
 # ---------------------------------------------------------------------------
-# Entree
+# Entrée
 # ---------------------------------------------------------------------------
 
 class ListerRessourcesInput(BaseModel):
-    """Parametres d'entree de l'outil `lister_ressources`."""
+    """Paramètres d'entrée de l'outil `lister_ressources`."""
 
     id_jeu: str = Field(
         ...,
-        description="Identifiant du jeu de donnees, issu de `rechercher_jeux`.",
+        description="Identifiant du jeu de données, issu de `rechercher_jeux`.",
     )
 
 
@@ -40,12 +40,12 @@ class ListerRessourcesInput(BaseModel):
 # ---------------------------------------------------------------------------
 
 class ListerRessourcesOutput(BaseModel):
-    """Donnees retournees en cas de succes par `lister_ressources`."""
+    """Données retournées en cas de succès par `lister_ressources`."""
 
     ressources: list[RessourceResume] = Field(
         description="Inventaire des ressources du jeu avec classification.",
     )
     indetermination: list[str] = Field(
         default_factory=list,
-        description="Identifiants des ressources non classees automatiquement.",
+        description="Identifiants des ressources non classées automatiquement.",
     )
