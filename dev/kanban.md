@@ -68,7 +68,19 @@ C'est la raison d'être du projet : l'agent Mistral porte les étapes A1 à A4 d
 - [ ] **T7.2** : Implémenter un nettoyage automatique des anciennes exécutions.
 - [ ] **T7.3** : Automatiser les tests agentiques.
 - [ ] **T7.4** : Supporter d'autres sources de données (ex : Eurostat, INSEE).
-- [ ] **T7.5** : Registre descriptif des licences et génération de mention d'attribution (`src/core/licences_descriptif.py`) : propriétés par licence (attribution, partage à l'identique, usage commercial), `mention_attribution()` à partir des métadonnées de l'inventaire, prédicats de compatibilité pour la partie 2 (visualisation). Base de la politique de licence documentée dans docs/README.md. Branchement optionnel sur telecharger_brut (champ mention_attribution, contrat v1.2.0) à décider.
+
+---
+
+### 9. Licence descriptif et attribution
+
+> Cette section prépare la **partie 2 du projet** (exploitation et visualisation des données) : l'usage légitime des données acquises dépend des obligations propres à chaque licence (attribution, partage à l'identique). La politique d'acquisition (section 2, `src/core/licence.py`) est terminée et ne dépend pas de ces travaux.
+
+- [ ] **T7.5** : Registre descriptif des licences et génération de mention d'attribution (`src/core/licences_descriptif.py`) :
+  - registre des propriétés par licence (attribution obligatoire, partage à l'identique, usage commercial), miroir de la politique documentée dans `docs/README.md` (section Politique de licence) ;
+  - `mention_attribution()` : génération de la mention prête à afficher à partir des métadonnées de l'inventaire (organisation, licence, date de mise à jour) ;
+  - prédicats de compatibilité pour la partie 2 (ex. produit dérivé sous licence permissive autorisé ou non) ;
+  - échec propre sur licence inconnue et sur `other-open` (propriétés à vérifier, jamais devinées) ;
+  - branchement optionnel sur `telecharger_brut` (champ `mention_attribution` dans la réponse, contrat v1.1.0 → v1.2.0) : à décider séparément.
 
 ---
 
