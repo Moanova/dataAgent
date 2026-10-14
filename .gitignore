@@ -58,4 +58,4 @@ __pypackages__/
 poetry.lock
 
 # Fichiers de brouillon ou temporaires
-src/openDataAgentDraft.py
+src/openDataAgentDraft.pyjournaux/

@@ -202,6 +202,21 @@ Implémentation : `tests/unit/test_agent.py` (18 tests). Test réel de bout en b
 
 Implémentation : `tests/unit/test_boucle.py` (12 tests). Journalisation sans blocage (TA-02) : chaque invocation est journalisée (outil, arguments, tour, statut résultat) ; la propriété d'ordre se vérifie par rejeu des journaux.
 
+### Annexes T5.3.3 — journal des conversations (tests unitaires, zéro réseau)
+
+| Id | Cas de test | Résultat attendu | Blocage |
+|---|---|---|---|
+| TU-C1 | En-tête contexte du journal (modèle, prompt, plafond, date, id_execution) | champs complets, événement fin avec statut | Bloquant (CA-2) |
+| TU-C2 | Un enregistrement JSONL horodaté par événement | séquence exacte, id_execution sur chaque ligne | Bloquant (CA-2) |
+| TU-C3 | Échec d'écriture disque | silencieux, aucune exception vers la boucle | Bloquant (CA-2) |
+| TU-C4 | Événement hors liste bornée | remappé en « fin » | Avertissement |
+| TU-C5 | Conversation complète journalisée : message, raisonnement (texte entre tool_calls), invocation, résultat, réponse finale | séquence d'événements exacte, raisonnement avec tour | Bloquant (CA-2) |
+| TU-C6 | Plafond atteint et erreur API | événements plafond_atteint / erreur_api journalisés, statut fin correspondant | Bloquant (CA-11) |
+| TU-C7 | Rejeu : extraction ordonnée des invocations (outil, arguments décodés, statut, tour) | base TA-01/TA-02 vérifiable | Bloquant (CA-3) |
+| TU-C8 | Lecture tolérante : lignes corrompues ignorées, fichier absent → liste vide | rejeu jamais en échec sur ligne illisible | Avertissement |
+
+Implémentation : `tests/unit/test_journal.py` (8 tests). Journaux conservés dans `journaux/<id_execution>/conversation.jsonl` (plan_tests §9 : conservation avec contexte pour l'audit).
+
 ## 8. Ordre d'exécution et définition de fini
 
 1. À chaque modification de code : TU et TI (sans réseau), TC. Exécution en quelques secondes.

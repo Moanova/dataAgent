@@ -24,7 +24,8 @@ import json
 import os
 from typing import Any, Dict, List, Optional
 
-from src.agent.outils import executer_outil
+from src.agent.journal import JournalConversation
+from src.agent.outils import _decoder_arguments, executer_outil
 from src.utils.logging import bind_context, get_logger, log_to_file
 
 PLAFOND_DEFAUT = 10
@@ -37,6 +38,7 @@ def boucle_conversation(
     message_utilisateur: str,
     plafond: Optional[int] = None,
     id_execution: Optional[str] = None,
+    journal: Optional[JournalConversation] = None,
 ) -> Dict[str, Any]:
     """Execute une conversation complete avec l'agent Mistral.
 
@@ -56,8 +58,16 @@ def boucle_conversation(
     identifiant = id_execution or getattr(agent, "agent_id", "sans_id")
     if id_execution:
         bind_context(id_execution=identifiant)
+    if journal is None:
+        journal = JournalConversation(
+            identifiant,
+            modele=getattr(agent, "modele", ""),
+            prompt="",
+            plafond=plafond,
+        )
     messages: List[Dict[str, Any]] = [{"role": "user", "content": message_utilisateur}]
     invocations = 0
+    journal.enregistrer("message_utilisateur", contenu=message_utilisateur)
     log_to_file("boucle_debut", plafond=plafond, id_execution=identifiant)
     while True:
         try:
@@ -66,6 +76,8 @@ def boucle_conversation(
                 messages=messages,
             )
         except Exception as erreur:
+            journal.enregistrer("erreur_api", detail=str(erreur), nb_invocations=invocations)
+            journal.fermer("echec_technique", nb_invocations=invocations, plafond=plafond)
             log_to_file(
                 "boucle_erreur_api",
                 detail=str(erreur),
@@ -80,6 +92,8 @@ def boucle_conversation(
         tool_calls = _extraire_tool_calls(reponse)
         if not tool_calls:
             reponse_agent = _extraire_contenu(reponse)
+            journal.enregistrer("reponse_finale", contenu=reponse_agent, nb_invocations=invocations)
+            journal.fermer("succes", nb_invocations=invocations, plafond=plafond)
             log_to_file(
                 "boucle_reponse_finale",
                 nb_invocations=invocations,
@@ -94,9 +108,14 @@ def boucle_conversation(
                     "plafond": plafond,
                 },
             }
+        contenu_tour = _extraire_contenu(reponse)
+        if contenu_tour:
+            journal.enregistrer("raisonnement_agent", tour=invocations + 1, contenu=contenu_tour)
         messages.append(_message_assistant(reponse))
         for tool_call in tool_calls:
             if invocations >= plafond:
+                journal.enregistrer("plafond_atteint", nb_invocations=invocations, plafond=plafond)
+                journal.fermer("succes_plafond", nb_invocations=invocations, plafond=plafond)
                 log_to_file(
                     "boucle_plafond_atteint",
                     nb_invocations=invocations,
@@ -118,6 +137,12 @@ def boucle_conversation(
                 }
             nom, arguments, id_appel = _decoder_tool_call(tool_call)
             invocations += 1
+            journal.enregistrer(
+                "outil_invoque",
+                outil=nom,
+                arguments=_decoder_arguments(arguments) or arguments,
+                tour=invocations,
+            )
             log_to_file(
                 "boucle_outil_invoque",
                 outil=nom,
@@ -127,6 +152,13 @@ def boucle_conversation(
                 id_execution=identifiant,
             )
             resultat = executer_outil(nom, arguments, identifiant)
+            journal.enregistrer(
+                "outil_resultat",
+                outil=nom,
+                statut=resultat["statut"],
+                tour=invocations,
+                message=resultat.get("message", ""),
+            )
             log_to_file(
                 "boucle_outil_resultat",
                 outil=nom,

@@ -28,3 +28,7 @@ from src.agent.boucle import PLAFOND_DEFAUT, boucle_conversation
 from src.agent.outils import TABLE_OUTILS, executer_outil
 
 __all__ += ["PLAFOND_DEFAUT", "boucle_conversation", "TABLE_OUTILS", "executer_outil"]
+
+from src.agent.journal import JournalConversation, extraire_invocations, lire_journal
+
+__all__ += ["JournalConversation", "extraire_invocations", "lire_journal"]
