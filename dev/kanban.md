@@ -10,6 +10,8 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 
 ## 📌 À faire
 
+> Nota : la partie agentique Mistral est une section d'implémentation à part entière (section 5), pas une sous-section de tests ; les identifiants de tâches (T5.3.x, T5.1.x, T5.2.x) sont conservés inchangés pour la traçabilité avec `tests/plan_tests.md`, `docs/tasks/` et `SESSIONS.md`.
+
 ### 1. Initialisation du projet
 
 ---
@@ -39,18 +41,9 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 
 ---
 
-### 5. Tests
+### 5. Intégration agentique Mistral
 
-#### 5.1. Tests unitaires
-- [X] **T5.1.3** : Écrire les tests pour `interroger_ressource` (`tests/unit/test_query.py`). *(Terminé le 13/10/2026 — livrés avec T3.3.x, kanban non tenu à jour)*
-- [X] **T5.1.4** : Écrire les tests pour `telecharger_brut` (`tests/unit/test_download.py`). *(Terminé le 13/10/2026 — livrés avec T3.4.x, kanban non tenu à jour)*
-- [ ] **T5.1.5** : Tester les formats non tabulaires (ZIP, GeoJSON, etc.).
-
-#### 5.2. Tests d'intégration
-- [ ] **T5.2.1** : Tester le flux complet (recherche → inventaire → téléchargement).
-- [ ] **T5.2.2** : Valider la persistance du registre des sources inaccessibles.
-
-#### 5.3. Intégration agentique Mistral
+C'est la raison d'être du projet : l'agent Mistral porte les étapes A1 à A4 du flux (reformulation, sélection, tranchage des indéterminations, synthèse du registre) en s'appuyant sur les fonctions du cœur. Les identifiants T5.3.x sont conservés pour la traçabilité avec le plan de tests et les fichiers de suivi.
 
 - [X] **T5.3.1** : Créer (et détruire) l'agent Mistral : prompt système (minimal, enrichi en T5.3.4), choix du modèle, définition des outils (`src/agent/agent.py`). *(Terminé le 14/10/2026 — agent éphémère via client.beta.agents, garde-fou MISTRAL_AGENT_ID, 18 TU ; test réel validé en local par le concepteur)*
 - [X] **T5.3.2** : Implémenter la boucle de conversation : envoi du message utilisateur, réception et exécution des `tool_calls` vers les fonctions du cœur, renvoi des résultats normalisés (`src/agent/boucle.py`). *(Terminé le 14/10/2026 — dispatch src/agent/outils.py, plafond 10 configurable, journalisation sans blocage TA-02, 12 TU ; test réel validé en local par le concepteur)*
@@ -59,12 +52,25 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
 
 ---
 
-### 6. Logging et journalisation
+### 6. Tests
+
+#### 6.1. Tests unitaires
+- [X] **T5.1.3** : Écrire les tests pour `interroger_ressource` (`tests/unit/test_query.py`). *(Terminé le 13/10/2026 — livrés avec T3.3.x, kanban non tenu à jour)*
+- [X] **T5.1.4** : Écrire les tests pour `telecharger_brut` (`tests/unit/test_download.py`). *(Terminé le 13/10/2026 — livrés avec T3.4.x, kanban non tenu à jour)*
+- [ ] **T5.1.5** : Tester les formats non tabulaires (ZIP, GeoJSON, etc.).
+
+#### 6.2. Tests d'intégration
+- [ ] **T5.2.1** : Tester le flux complet (recherche → inventaire → téléchargement).
+- [ ] **T5.2.2** : Valider la persistance du registre des sources inaccessibles.
+
+---
+
+### 7. Logging et journalisation
 - [X] **T6.2** : Ajouter des logs pour chaque étape du flux. *(Terminé le 14/10/2026 — recherche, inventaire, interroger, télécharger, HTTP, registre couverts (src/core/*.py, src/utils/*.py), plus les événements agentiques de src/agent/ ; kanban non tenu à jour lors de T3.3/T3.4)*
 
 ---
 
-### 7. Améliorations futures (optionnel)
+### 8. Améliorations futures (optionnel)
 - [ ] **T7.1** : Ajouter un mécanisme de réessai intelligent pour les échecs techniques.
 - [ ] **T7.2** : Implémenter un nettoyage automatique des anciennes exécutions.
 - [ ] **T7.3** : Automatiser les tests agentiques.
