@@ -23,6 +23,9 @@ from src.core.resources import lister_ressources
 from src.core.download import telecharger_brut
 from src.core.query import interroger_ressource
 from src.utils.logging import configure_logging
+from src.agent.agent import creer_agent, detruire_agent
+from src.agent.boucle import PLAFOND_DEFAUT, boucle_conversation
+from src.agent.journal import REPERTOIRE_JOURNAUX
 
 app = typer.Typer(help="CLI openDataAgent : acquisition de donnees data.gouv.fr.")
 
@@ -216,6 +219,63 @@ def query(
 
     if reponse["statut"] in ("erreur_parametres", "ressource_introuvable"):
         raise typer.Exit(code=2)
+    if reponse["statut"] != "succes":
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def chat(
+    prompt: List[str] = typer.Argument(..., help="Demande en francais : l'agent conduit recherche, selection et acquisition."),
+    plafond: int = typer.Option(10, "--plafond", min=1, help="Nombre maximum d'invocations d'outils."),
+    id_execution: Optional[str] = typer.Option(None, "--id-execution", help="Identifiant d'execution pour les traces et le journal."),
+    sortie_json: bool = typer.Option(False, "--json", help="Sortie JSON brute de la reponse normalisee."),
+) -> None:
+    """Conversation agentique : cree l'agent, conduit le flux, journalise, detruit l'agent."""
+    texte = " ".join(prompt).strip()
+    if not texte:
+        typer.secho("Le prompt ne peut pas etre vide.", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2)
+    identifiant = id_execution or _id_execution_auto()
+    configure_logging(id_execution=identifiant)
+
+    creation = creer_agent(identifiant)
+    if creation["statut"] != "succes":
+        typer.secho(f"[{creation['statut']}] {creation['message']}", fg=typer.colors.RED, err=True)
+        suggestion = creation.get("donnees", {}).get("suggestion")
+        if suggestion:
+            typer.secho(f"suggestion : {suggestion}", fg=typer.colors.YELLOW, err=True)
+        raise typer.Exit(code=1)
+    agent = creation["donnees"]["agent"]
+
+    try:
+        reponse = boucle_conversation(agent, texte, plafond=plafond, id_execution=identifiant)
+    finally:
+        destruction = detruire_agent(agent)
+
+    chemin_journal = REPERTOIRE_JOURNAUX / identifiant / "conversation.jsonl"
+    if sortie_json:
+        import json
+        charge = dict(reponse)
+        charge["donnees"] = dict(reponse.get("donnees", {}), journal=str(chemin_journal))
+        if destruction["statut"] == "succes":
+            charge["donnees"]["agent_detruit"] = destruction["donnees"].get("detruit", False)
+        typer.echo(json.dumps(charge, ensure_ascii=False, indent=2))
+    elif reponse["statut"] == "succes":
+        donnees = reponse["donnees"]
+        typer.echo(f"statut : {reponse['statut']}")
+        if reponse["message"]:
+            typer.echo(reponse["message"])
+        typer.echo(f"invocations d'outils : {donnees['nb_invocations']}/{donnees['plafond']}")
+        if destruction["statut"] != "succes" or not destruction["donnees"].get("detruit", True):
+            typer.secho(f"destruction de l'agent : {destruction['statut']} {destruction['message']}", fg=typer.colors.YELLOW, err=True)
+        typer.echo("")
+        typer.echo(donnees["reponse_agent"])
+        typer.echo("")
+        typer.secho(f"journal de conversation : {chemin_journal}", fg=typer.colors.BLUE)
+    else:
+        typer.secho(f"[{reponse['statut']}] {reponse['message']}", fg=typer.colors.RED, err=True)
+        typer.secho(f"journal de conversation : {chemin_journal}", fg=typer.colors.BLUE, err=True)
+
     if reponse["statut"] != "succes":
         raise typer.Exit(code=1)
 

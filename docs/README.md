@@ -41,6 +41,7 @@ openDataAgent/
 ├── src/                         # Code source
 │   ├── __init__.py
 │   ├── main.py                  # CLI (Typer)
+│   ├── agent/                   # Partie agentique Mistral (agent, boucle, journal, outils)
 │   ├── contracts/               # Schémas Pydantic
 │   ├── core/                    # Logique métier
 │   └── utils/                   # Fonctions utilitaires
@@ -101,10 +102,65 @@ Le projet s'utilise via une **CLI** (Command Line Interface) avec Typer. Voici l
 
 | Commande   | Description                                          | Exemple                                      |
 |------------|------------------------------------------------------|----------------------------------------------|
-| `search`   | Recherche des jeux de données par mots-clés.         | `python src/main.py search "dette publique"` |
-| `list`     | Liste les ressources d'un jeu.                       | `python src/main.py list <id_jeu>`           |
-| `query`    | Interroge une ressource indexée par l'API tabulaire. | `python src/main.py query <id_ressource>`    |
-| `download` | Télécharge une ressource non indexée.                | `python src/main.py download <id_ressource>` |
+| `search`   | Recherche des jeux de données par mots-clés.         | `python -m src.main search "dette publique"` |
+| `list`     | Liste les ressources d'un jeu.                       | `python -m src.main list <id_jeu>`           |
+| `query`    | Interroge une ressource indexée par l'API tabulaire. | `python -m src.main query <id_ressource>`    |
+| `download` | Télécharge une ressource non indexée.                | `python -m src.main download <id_ressource>` |
+| `chat`     | Conversation agentique : un prompt libre, l'agent conduit le flux complet. | `python -m src.main chat "cherche les données de la dette publique"` |
+
+Les quatre premières commandes (`search`, `list`, `query`, `download`) sont le mode manuel : l'utilisateur joue lui-même les étapes de sélection. La commande `chat` est le mode agentique : l'agent Mistral conduit le flux de bout en bout (reformulation, sélection, acquisition) en s'appuyant sur les mêmes fonctions.
+
+### 💬 Commande `chat` (mode agentique)
+
+**Usage** :
+
+```bash
+python -m src.main chat "<demande en français>" [options]
+```
+
+**Paramètres** :
+
+| Paramètre | Description | Défaut |
+|---|---|---|
+| `prompt` (argument) | La demande en français, entre guillemets ou en mots séparés. Obligatoire. | — |
+| `--plafond` | Nombre maximum d'invocations d'outils par conversation. | 10 |
+| `--id-execution` | Identifiant d'exécution (traces et nom du journal). | Horodatage auto |
+| `--json` | Sortie JSON brute (réponse normalisée + journal + statut de destruction). | Désactivé |
+
+**Variables d'environnement** (fichier `.env`) :
+
+| Variable | Rôle | Défaut |
+|---|---|---|
+| `MISTRAL_API_KEY` | Clé API Mistral — **obligatoire** pour `chat`. | — |
+| `MISTRAL_MODELE` | Modèle de l'agent éphémère. | `mistral-small-latest` |
+| `PLAFOND_INVOCATIONS` | Plafond si `--plafond` n'est pas fourni. | 10 |
+| `MISTRAL_AGENT_ID` | (Optionnel) Agent console persistant à réutiliser — uniquement s'il est strictement conforme au dépôt (modèle, prompt, outils), sinon agent éphémère créé. | Non défini |
+
+**Déroulement d'une exécution** :
+
+1. Création d'un agent éphémère sur la console Mistral (visible pendant l'exécution, supprimé à la fin).
+2. L'agent conduit la conversation : il reformule la demande, appelle les outils (`rechercher_jeux`, `lister_ressources`, `interroger_ressource`, `telecharger_brut`), exécute le code local qui dialogue avec data.gouv.fr.
+3. Destruction systématique de l'agent (même en cas d'erreur).
+4. Affichage : statut, nombre d'invocations/plafond, synthèse de l'agent (données acquises avec chemins et licences, sources retenues, sources écartées avec motifs, limites).
+
+**Sortie** (exemple) :
+
+```
+statut : succes
+invocations d'outils : 4/10
+
+Rapport :
+- Données acquises : data/raw/20261014_142233/fichier.csv (licence lov2)
+- Jeu retenu : Comptes des administrations publiques (Insee) — données à jour, organisation officielle
+- Sources écartées : 2 jeux (licence incompatible)
+- Limites : aucune
+
+journal de conversation : journaux/20261014_142233/conversation.jsonl
+```
+
+Le journal JSONL (`journaux/<id_execution>/conversation.jsonl`) conserve la conversation complète : contexte (modèle, prompt, date), messages, raisonnements de l'agent, invocations d'outils avec arguments et résultats. Il sert à l'audit et aux tests agentiques (propriétés TA).
+
+**Codes de sortie** : `0` succès ; `1` échec technique (clé absente, API injoignable, erreur en cours de conversation) ; `2` paramètres invalides.
 
 ---
 

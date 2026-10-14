@@ -283,3 +283,123 @@ def test_download_ressource_introuvable_code_sortie(mock_download):
     }
     resultat = runner.invoke(app, ["download", "inconnu"])
     assert resultat.exit_code == 2
+
+
+REPONSE_CHAT_SUCCES = {
+    "statut": "succes",
+    "message": "",
+    "donnees": {
+        "reponse_agent": "Rapport : 1 jeu retenu, 1 fichier acquis (licence lov2).",
+        "nb_invocations": 4,
+        "plafond": 10,
+    },
+}
+
+AGENT_CHAT = type("AgentFaux", (), {})()
+
+
+@patch("src.main.creer_agent")
+@patch("src.main.boucle_conversation")
+@patch("src.main.detruire_agent")
+def test_chat_succes(mock_destruction, mock_boucle, mock_creation):
+    # Réf. tests/plan_tests.md : Annexe T4.3 — flux complet affiché, destruction systématique
+    mock_creation.return_value = {"statut": "succes", "message": "", "donnees": {"agent": AGENT_CHAT}}
+    mock_boucle.return_value = REPONSE_CHAT_SUCCES
+    mock_destruction.return_value = {"statut": "succes", "message": "", "donnees": {"detruit": True}}
+    resultat = runner.invoke(app, ["chat", "cherche", "la", "dette", "publique"])
+    assert resultat.exit_code == 0
+    args_boucle = mock_boucle.call_args.args
+    kwargs_boucle = mock_boucle.call_args.kwargs
+    assert args_boucle[0] is AGENT_CHAT
+    assert args_boucle[1] == "cherche la dette publique"
+    assert kwargs_boucle["plafond"] == 10
+    assert kwargs_boucle["id_execution"]
+    assert "4/10" in resultat.output
+    assert "Rapport" in resultat.output
+    assert "conversation.jsonl" in resultat.output
+    mock_destruction.assert_called_once_with(AGENT_CHAT)
+
+
+@patch("src.main.creer_agent")
+@patch("src.main.boucle_conversation")
+@patch("src.main.detruire_agent")
+def test_chat_plafond_propage(mock_destruction, mock_boucle, mock_creation):
+    # Réf. tests/plan_tests.md : Annexe T4.3 — --plafond propagé à la boucle
+    mock_creation.return_value = {"statut": "succes", "message": "", "donnees": {"agent": AGENT_CHAT}}
+    mock_boucle.return_value = {
+        "statut": "succes", "message": "", "donnees": {"reponse_agent": "ok", "nb_invocations": 2, "plafond": 3},
+    }
+    mock_destruction.return_value = {"statut": "succes", "message": "", "donnees": {"detruit": True}}
+    resultat = runner.invoke(app, ["chat", "x", "--plafond", "3", "--id-execution", "id_chat"])
+    assert resultat.exit_code == 0
+    assert mock_boucle.call_args.kwargs["plafond"] == 3
+    assert mock_boucle.call_args.kwargs["id_execution"] == "id_chat"
+
+
+@patch("src.main.creer_agent")
+@patch("src.main.boucle_conversation")
+@patch("src.main.detruire_agent")
+def test_chat_sortie_json(mock_destruction, mock_boucle, mock_creation):
+    # Réf. tests/plan_tests.md : Annexe T4.3 — --json : réponse normalisée + journal + agent_detruit
+    mock_creation.return_value = {"statut": "succes", "message": "", "donnees": {"agent": AGENT_CHAT}}
+    mock_boucle.return_value = REPONSE_CHAT_SUCCES
+    mock_destruction.return_value = {"statut": "succes", "message": "", "donnees": {"detruit": True}}
+    resultat = runner.invoke(app, ["chat", "x", "--json"])
+    assert resultat.exit_code == 0
+    charge = json.loads(resultat.output)
+    assert charge["statut"] == "succes"
+    assert charge["donnees"]["nb_invocations"] == 4
+    assert charge["donnees"]["journal"].endswith("conversation.jsonl")
+    assert charge["donnees"]["agent_detruit"] is True
+
+
+@patch("src.main.creer_agent")
+@patch("src.main.detruire_agent")
+def test_chat_echec_creation_agent(mock_destruction, mock_creation):
+    # Réf. tests/plan_tests.md : Annexe T4.3 — clé absente/erreur : code 1, suggestion affichée
+    mock_creation.return_value = {
+        "statut": "echec_technique",
+        "message": "Variable d'environnement MISTRAL_API_KEY absente ou vide.",
+        "donnees": {"suggestion": "definir MISTRAL_API_KEY dans .env"},
+    }
+    resultat = runner.invoke(app, ["chat", "x"])
+    assert resultat.exit_code == 1
+    assert "MISTRAL_API_KEY" in (resultat.output + str(resultat.stderr))
+    assert "suggestion" in (resultat.output + str(resultat.stderr))
+    mock_destruction.assert_not_called()
+
+
+@patch("src.main.creer_agent")
+@patch("src.main.boucle_conversation")
+@patch("src.main.detruire_agent")
+def test_chat_echec_conversation_destruction_malgre_tout(mock_destruction, mock_boucle, mock_creation):
+    # Réf. tests/plan_tests.md : Annexe T4.3 — échec en cours : agent quand même détruit (finally)
+    mock_creation.return_value = {"statut": "succes", "message": "", "donnees": {"agent": AGENT_CHAT}}
+    mock_boucle.return_value = {
+        "statut": "echec_technique", "message": "Echec de l'appel a l'API Mistral : 429", "donnees": {"nb_invocations": 0, "plafond": 10},
+    }
+    mock_destruction.return_value = {"statut": "succes", "message": "", "donnees": {"detruit": True}}
+    resultat = runner.invoke(app, ["chat", "x"])
+    assert resultat.exit_code == 1
+    assert "echec_technique" in (resultat.output + str(resultat.stderr))
+    assert "conversation.jsonl" in (resultat.output + str(resultat.stderr))
+    mock_destruction.assert_called_once_with(AGENT_CHAT)
+
+
+@patch("src.main.creer_agent")
+@patch("src.main.boucle_conversation")
+@patch("src.main.detruire_agent")
+def test_chat_exception_boucle_destruction_quand_meme(mock_destruction, mock_boucle, mock_creation):
+    # Test annexe : exception inattendue dans la boucle — la finally détruit l'agent
+    mock_creation.return_value = {"statut": "succes", "message": "", "donnees": {"agent": AGENT_CHAT}}
+    mock_boucle.side_effect = RuntimeError("bug inattendu")
+    mock_destruction.return_value = {"statut": "succes", "message": "", "donnees": {"detruit": True}}
+    resultat = runner.invoke(app, ["chat", "x"])
+    assert resultat.exit_code != 0
+    mock_destruction.assert_called_once_with(AGENT_CHAT)
+
+
+def test_chat_prompt_vide():
+    # Réf. tests/plan_tests.md : Annexe T4.3 — prompt vide : code 2
+    resultat = runner.invoke(app, ["chat"])
+    assert resultat.exit_code == 2

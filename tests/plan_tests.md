@@ -228,6 +228,20 @@ Implémentation : `tests/unit/test_journal.py` (8 tests). Journaux conservés da
 
 Implémentation : `tests/unit/test_agent.py` (4 tests de contenu ajoutés). Le prompt est une variable d'ajustement des propriétés TA-01..TA-05 : itérations évaluées sur journaux réels (TA-04 : conformité ≥ 90 % ; TA-05 : invocations < plafond).
 
+### Annexes T4.3 — commande CLI `chat` (tests unitaires, SDK simulé, zéro réseau)
+
+| Id | Cas de test | Résultat attendu | Blocage |
+|---|---|---|---|
+| TU-E1 | Flux complet : création, boucle (prompt, plafond, id_execution), destruction systématique, affichage synthèse + invocations + journal | succès, code 0 | Bloquant (CA-2) |
+| TU-E2 | `--plafond` et `--id-execution` propagés à la boucle | valeurs exactes | Avertissement |
+| TU-E3 | `--json` : réponse normalisée + chemin du journal + statut de destruction | champs présents | Avertissement |
+| TU-E4 | Échec de création d'agent (clé absente) | code 1, suggestion affichée, destruction non appelée | Bloquant (CA-2) |
+| TU-E5 | Échec en cours de conversation | code 1, agent détruit malgré tout (finally), journal indiqué | Bloquant (CA-2) |
+| TU-E6 | Exception inattendue dans la boucle | agent détruit (finally), échec propagé | Bloquant (CA-2) |
+| TU-E7 | Prompt vide | code 2 | Avertissement |
+
+Implémentation : `tests/unit/test_cli.py` (7 tests chat). Documentation d'utilisation : `docs/README.md` section Utilisation (commandes, paramètres, variables d'environnement, sortie attendue).
+
 ## 8. Ordre d'exécution et définition de fini
 
 1. À chaque modification de code : TU et TI (sans réseau), TC. Exécution en quelques secondes.
