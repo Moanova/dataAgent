@@ -3,22 +3,18 @@ venv/
 .venv/
 env/
 .env/
-
 # Fichiers de configuration locaux
 .env
 .env.local
 .env*.local
 *.env
 *.env.*
-
 # Fichiers de données (stockage local)
 data/
-
 # Fichiers de logs
 *.log
 logs/
 *.log.*
-
 # Fichiers temporaires
 *.tmp
 *.swp
@@ -26,7 +22,6 @@ logs/
 *.pyc
 __pycache__/
 *.py[co]
-
 # Fichiers spécifiques à l'IDE
 .idea/
 .vscode/
@@ -37,25 +32,21 @@ __pycache__/
 ._*
 .Spotlight-V100
 .Trashes
-
 # Fichiers de test générés
 .pytest_cache/
 .coverage
 htmlcov/
-
 # Fichiers de build
 build/
 dist/
 *.egg-info/
 *.egg
 *.whl
-
 # Fichiers spécifiques à Python
 __pypackages__/
 .mypy_cache/
-
 # Fichiers spécifiques à Poetry (si tu passes à Poetry plus tard)
 poetry.lock
-
 # Fichiers de brouillon ou temporaires
 src/openDataAgentDraft.pyjournaux/
+journaux/
