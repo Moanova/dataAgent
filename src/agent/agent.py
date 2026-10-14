@@ -2,7 +2,7 @@
 # ---------------------------------------------------------------------
 # Application  : openDataAgent
 # Script       : agent.py
-# Version      : 1
+# Version      : 1.1
 # Date         : 14-10-2026
 # Design       : TSC
 # Build        : Mistral Vibe
@@ -39,7 +39,7 @@ from src.utils.logging import configure_logging, log_to_file
 
 load_dotenv()
 
-REPERTOIRE_CONTRATS = Path(__file__).resolve().parents[1] / "contrats"
+REPERTOIRE_CONTRATS = Path(__file__).resolve().parents[2] / "contrats"
 
 MODELE_DEFAUT = "mistral-small-latest"
 

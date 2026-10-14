@@ -12,16 +12,12 @@
 Refs tests/plan_tests.md : Annexes T5.3 (creations agentiques, sans
 reseau). Le SDK mistralai n'est jamais appele : le client est simule.
 Les contrats reels de contrats/*.json sont charges sans mock."""
-import os
-import sys
 from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-
-from scripts.agent import (  # noqa: E402
+from src.agent.agent import (
     Agent,
     PREFIXE_NOM,
     PROMPT_SYSTEME,

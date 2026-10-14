@@ -185,6 +185,23 @@ Non déterministes : vérification par propriétés observables et grille d'éva
 
 Implémentation : `tests/unit/test_agent.py` (18 tests). Test réel de bout en bout (création → conversation → destruction sur la console Mistral) : à exécuter en local avec `MISTRAL_API_KEY`, hors sandbox.
 
+### Annexes T5.3.2 — boucle de conversation et exécution des tool_calls (tests unitaires, SDK simulé, zéro réseau)
+
+| Id | Cas de test | Résultat attendu | Blocage |
+|---|---|---|---|
+| TU-B1 | Dispatch des 4 outils vers les fonctions cœur avec arguments positionnels et options | appel exact de la fonction cœur | Bloquant (CA-3) |
+| TU-B2 | Outil inconnu ou arguments invalides/manquants | erreur_parametres, aucune exception | Bloquant (CA-2) |
+| TU-B3 | Arguments en chaîne JSON (format tool_call) | décodés et transmis | Bloquant (CA-2) |
+| TU-B4 | Conversation simple : 1 tool_call puis réponse finale | succès, compteur d'invocations exact | Bloquant (CA-3) |
+| TU-B5 | Conversation multi-tours : enchaînement de tool_calls, historique {user, assistant, tool} complet transmis à chaque tour | succès, 2 invocations, résultats normalisés renvoyés | Bloquant (CA-3) |
+| TU-B6 | Plafond d'invocations atteint | arrêt propre, synthèse partielle, plafond rapporté | Bloquant (CA-11) |
+| TU-B7 | Statut d'erreur du cœur (ressource_introuvable) | renvoyé tel quel à l'agent dans le message tool | Bloquant (CA-2) |
+| TU-B8 | tool_call illisible (arguments non-JSON) | erreur_parametres renvoyée à l'agent, conversation continue | Bloquant (CA-2) |
+| TU-B9 | Erreur API sur complete (429/500) | echec_technique propre, invocations effectuées rapportées | Bloquant (CA-2) |
+| TU-B10 | PLAFOND_INVOCATIONS dans l'environnement | plafond respecté | Avertissement (CA-11) |
+
+Implémentation : `tests/unit/test_boucle.py` (12 tests). Journalisation sans blocage (TA-02) : chaque invocation est journalisée (outil, arguments, tour, statut résultat) ; la propriété d'ordre se vérifie par rejeu des journaux.
+
 ## 8. Ordre d'exécution et définition de fini
 
 1. À chaque modification de code : TU et TI (sans réseau), TC. Exécution en quelques secondes.
