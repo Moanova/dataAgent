@@ -38,6 +38,7 @@ Ce document suit l'avancement des tâches pour l'implémentation du projet **ope
   - [X] Commande `list` : Appelle `lister_ressources`. *(Livrée le 13/10/2026 — avec T3.2.1)*
   - [X] Commande `query` : Appelle `interroger_ressource`. *(Livrée le 14/10/2026 — avec T4.1/T4.2, gardes CLI filtre/tri)*
   - [X] Commande `download` : Appelle `telecharger_brut`. *(Livrée le 14/10/2026 — avec T4.1/T4.2)*
+  - [ ] **T4.3** : Commande `chat` : point d'entrée agentique grand public — un prompt libre en argument ; crée l'agent (T5.3.1), conduit la conversation (T5.3.2), journalise (T5.3.3), détruit l'agent, affiche la synthèse finale et le chemin du journal. Options : `--plafond`, `--id-execution`, `--json`. Remplace le lanceur de test jetable.
 
 ---
 
