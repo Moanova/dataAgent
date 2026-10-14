@@ -88,9 +88,8 @@ Il est automatiquement chargé à chaque séance, mais **aucune action structura
   2. **Itérer en cas d’échec** :
      - **1ère tentative** : Corriger directement.
      - **2ème tentative** : vérifier les hypothèses et corriger.
-     - **3ème tentative** : relire la documentation, vérifier les hypothèses et corriger.
-     - **4ème tentative** : **Arrêter** et documenter le blocage.
-- **Règle d'arrêt** : Si un test échoue à la quatrième tentative, créer une entrée dans [`BLOCKERS.md`](BLOCKERS.md) et passer à une autre tâche.
+     - **3ème tentative** : **Arrêter** et documenter le blocage.
+- **Règle d'arrêt** : Si un test échoue à la troisième tentative, créer une entrée dans [`BLOCKERS.md`](BLOCKERS.md) et passer à une autre tâche.
 - **Exemple de demande** :
   ```markdown
   Peux-tu lancer les tests pour la tâche T2.1 et corriger les erreurs si nécessaire ?
