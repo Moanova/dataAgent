@@ -5,6 +5,39 @@ Il est mis à jour automatiquement à la fin de chaque session et relu au début
 
 ---
 
+## **Séance du 14/10/2026 (soir) — appropriation du code par le concepteur (séance de questions/réponses)**
+
+### **Contexte**
+- **Objectif** : séance d'appropriation du code généré lors des séances précédentes, par séries de questions/réponses couvrant Python en général (imports absolus, `__init__.py`, callbacks), la bibliothèque Typer, les contrats, l'agent et la logique applicative. Aucune modification de code — les écarts détectés sont formalisés au kanban (nouvelle section 10).
+
+### **Actions réalisées**
+1. **Kanban** : création de la section 10 « Séance d'appropriation du 14/10/2026 (soir) » avec six chantiers (T10.1 à T10.6, voir ci-dessous). Aucune autre modification.
+
+### **Décisions**
+- **T10.2 (inventaire persistant)** : le concepteur conteste le choix du 14/10 (inventaire scopé au processus en mode manuel) — `--id-execution` n'y a qu'un rôle de trace, aucun chaînage manuel n'est possible. Design acté en séance : persistance côté CLI uniquement (`data/executions/<id>/inventaire.json`, sérialisation additive sur l'inventaire, chargement/sauvegarde dans le callback Typer, enrichissement cumulatif), cœur et mode agentique inchangés.
+- **T10.1 (écart au schéma de conception)** : acté comme l'écart le plus structurel — la mise à disposition vers la partie 2 (B7 → P) n'est réalisée que par la voie 2 (téléchargement brut) ; la voie 1 (extraction tabulaire) ne persiste rien ; la normalisation B7 n'existe pas dans le code.
+
+### **Écarts et chantiers identifiés (résumé de la séance)**
+- **T10.1** — Maillon B7 → P du schéma de conception non réalisé (voie 1 sans persistance, pas de normalisation commune).
+- **T10.2** — Inventaire persistant par `id_execution` : design complet acté (voir Décisions).
+- **T10.3** — Bug `id_execution` dans `executer_outil` (`src/agent/outils.py`) : id de la boucle non injecté si l'agent ne le fournit pas ; conflit TypeError s'il le fournit. Correctif : `options.setdefault("id_execution", id_execution)` + retrait des `FILTRES_OPTIONS`.
+- **T10.4** — Validation Pydantic des `tool_calls` déclarée (docstring de `validation_api.py`) mais non branchée au runtime : les modèles ne servent qu'aux tests de cohérence ; validation runtime = lambdas superficielles.
+- **T10.5** — Vocabulaires fermés de `main.py` (`TRIS`, `OPERATEURS_FILTRE`, `ORDRES_TRI`, `FENETRES_MAJ`) à déplacer vers le cœur ; plafond d'aperçu (5 lignes) de `query` à constanter/optionner ; `help` de `--id-execution` dupliqué.
+- **T10.6** — (optionnel) Points packaging/portage : paquet générique `src`, `pyproject.toml` manquant, chemins relatifs au CWD (`data/`, `conversations/`, registre), `libmagic` Windows, `.env` explicite.
+
+### **Enseignements Python/typer consignés à l'oral** (pour mémoire)
+- `python -m src.main` vs `py src\main.py` : mode module (racine dans sys.path) vs mode script (répertoire du script) — d'où le `ModuleNotFoundError` en mode script.
+- Les imports « absolus » (`from src.core...`) sont des noms de modules, pas des chemins : compatibles avec pip/PyInstaller (analyse statique) ; le risque réel est le nom de paquet générique `src`.
+- Typer : dérivation de l'interface depuis les annotations ; `@app.callback()` exécuté avant chaque commande (et requis pour forcer le mode multi-commandes) ; portage Streamlit ne coûterait que la couche présentation (`main.py`), le cœur étant agnostique.
+
+### **Tests**
+- Non concerné (aucune modification de code).
+
+### **Blocages**
+- Aucun.
+
+---
+
 ## **Séance du 14/10/2026 — clôture des sections 1 à 7 + réorganisation**
 
 ### **Contexte**

@@ -84,6 +84,19 @@ C'est la raison d'être du projet : l'agent Mistral porte les étapes A1 à A4 d
 
 ---
 
+### 10. Séance d'appropriation du 14/10/2026 (soir) — chantiers identifiés
+
+> Tâches issues de la relecture guidée du code avec le concepteur (questions/réponses sur Python, Typer, contrats, agent et logique applicative). Aucune modification de code effectuée à cette séance ; ces entrées formalisent les écarts et chantiers détectés.
+
+- [ ] **T10.1** : Réaliser la mise à disposition des données vers la partie 2 (maillon B7 → P du schéma de conception, `docs/design/conception.mmd`). **Écart le plus structurel** : en l'état, seule la voie 2 (téléchargement brut) matérialise les données sur disque ; la voie 1 (extraction via API tabulaire) ne persiste rien (exploration conversationnelle uniquement) et aucune normalisation commune B7 n'existe dans le code. Chantiers : persistance des extractions tabulaires (ex. export paginé vers `data/raw/`) et pipeline de normalisation commun aux deux voies. Évolution de contrat probable (v1.2.0, ex. option `destination` sur `interroger_ressource` ou nouvel outil).
+- [ ] **T10.2** : Inventaire persistant par `id_execution` — évolution « inventaire persistant » évoquée le 14/10 mais non créée ; le concepteur juge le choix actuel trop limitatif : `--id-execution` des commandes manuelles n'a qu'un rôle de trace, aucun chaînage manuel (list puis download) n'est possible. Design acté en séance : persistance côté CLI uniquement (`data/executions/<id_execution>/inventaire.json`), méthodes de sérialisation additives sur l'inventaire (`src/core/resources.py`), chargement/sauvegarde dans le callback Typer, enrichissement cumulatif, mode agentique et cœur inchangés (TI-14b reste vert). Précision de la convention 1 du contrat global (« jamais vu par le flux d'exécution courant ») ; réécriture de la section « piège list→download » du README (limite → fonctionnalité). Lié à T7.2.
+- [ ] **T10.3** : Corriger le bug `id_execution` dans `executer_outil` (`src/agent/outils.py`) : le paramètre reçu de la boucle n'est pas injecté dans l'appel au cœur si l'agent ne le fournit pas ; et s'il le fournit, il entre en conflit avec celui de la boucle (`TypeError` → `erreur_parametres`). Correctif : `options.setdefault("id_execution", id_execution)` (et retrait de `id_execution` des `FILTRES_OPTIONS`).
+- [ ] **T10.4** : Brancher la validation Pydantic des arguments d'outil au runtime : les modèles `Input/Output` de `src/contracts/` ne servent aujourd'hui qu'aux tests de cohérence (`valider_coherence_contrat`) ; la validation runtime des `tool_calls` repose sur des lambdas superficielles (`ARGUMENTS_OBLIGATOIRES`). Divergence entre la docstring de `src/contracts/validation_api.py` (« les modèles Pydantic valident la couche sortante ») et le comportement réel. À acter : brancher `*.model_validate(arguments)` dans `executer_outil`, ou assumer la simplification et corriger la docstring.
+- [ ] **T10.5** : Déplacer les vocabulaires fermés de `main.py` vers le cœur (source unique de vérité) : `TRIS`, `OPERATEURS_FILTRE`, `ORDRES_TRI`, `FENETRES_MAJ` (éventuellement en `StrEnum`), importés par la CLI et le cœur ; constante ou option `--apercu N` pour le plafond d'affichage (5 lignes) de `query` ; dédupliquer le `help` de `--id-execution`.
+- [ ] **T10.6** (optionnel, si packaging/portage un jour) : nom de paquet générique `src` (collision/convention), `pyproject.toml` + point d'entrée console, externalisation des chemins relatifs au CWD (`data/`, `conversations/`, registre), `libmagic` sous Windows, chargement du `.env` explicite.
+
+---
+
 ## 🚧 En cours
 
 *(Aucune tâche en cours.)*
