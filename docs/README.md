@@ -105,10 +105,11 @@ Le projet s'utilise via une **CLI** (Command Line Interface) avec Typer. Voici l
 | `search`   | Recherche des jeux de données par mots-clés.         | `python -m src.main search "dette publique"` |
 | `list`     | Liste les ressources d'un jeu.                       | `python -m src.main list <id_jeu>`           |
 | `query`    | Interroge une ressource indexée par l'API tabulaire. | `python -m src.main query <id_ressource>`    |
+| `extract`  | Extrait une ressource indexée vers un CSV local (voie 1 matérialisée). | `python -m src.main extract <id_ressource>` |
 | `download` | Télécharge une ressource non indexée.                | `python -m src.main download <id_ressource>` |
 | `chat`     | Conversation agentique : un prompt libre, l'agent conduit le flux complet. | `python -m src.main chat "cherche les données de la dette publique"` |
 
-Les quatre premières commandes (`search`, `list`, `query`, `download`) sont le mode manuel : l'utilisateur joue lui-même les étapes de sélection. La commande `chat` est le mode agentique : l'agent Mistral conduit le flux de bout en bout (reformulation, sélection, acquisition) en s'appuyant sur les mêmes fonctions.
+Les cinq premières commandes (`search`, `list`, `query`, `extract`, `download`) sont le mode manuel : l'utilisateur joue lui-même les étapes de sélection. La commande `chat` est le mode agentique : l'agent Mistral conduit le flux de bout en bout (reformulation, sélection, acquisition) en s'appuyant sur les mêmes fonctions.
 
 ### ⌨️ Options des commandes
 
@@ -141,6 +142,16 @@ Les quatre premières commandes (`search`, `list`, `query`, `download`) sont le 
 | `--tri-ordre` | `croissant`, `decroissant`. | `croissant` |
 | `--apercu` | Nombre maximum de lignes affichées dans l'aperçu (0 pour tout afficher). | 5 |
 | `--id-execution`, `--json` | Comme ci-dessus. | — |
+
+**`extract` — extraction paginée d'une ressource indexée (voie 1)** :
+| Option | Description | Défaut |
+|---|---|---|
+| `id_ressource` (argument) | Identifiant de la ressource indexée, issu de `list`. | Obligatoire |
+| `--taille-page` | Lignes demandées par page à l'API tabulaire. | 100 |
+| `--plafond-lignes` | Nombre maximum de lignes extraites ; au-delà, succès partiel avec troncature signalée. | `PLAFOND_EXTRACTION` (10000) |
+| `--id-execution`, `--json` | Comme ci-dessus. | — |
+
+La pagination est conduite par la commande : le CSV complet (en-tête + toutes les lignes, ou jusqu'au plafond) est écrit dans `data/raw/<id_execution>/`. En mode `chat`, l'agent dispose du même pouvoir via le 5ᵉ outil `extraire_ressource` — la frontière est : `query` explore sans écrire, `extract` acquiert sur disque.
 
 **`download` — téléchargement brut (voie 2)** :
 | Option | Description | Défaut |

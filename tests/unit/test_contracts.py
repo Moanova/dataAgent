@@ -40,6 +40,8 @@ from src.contracts import (
     RessourceResume,
     StatutEnum,
     TelechargerBrutInput,
+    ExtraireRessourceInput,
+    ExtraireRessourceOutput,
     TelechargerBrutOutput,
     TriColonne,
     TriRecherche,
@@ -50,7 +52,7 @@ from src.contracts import (
 CONTRATS_DIR = Path("contrats")
 MANIFESTE_PATH = CONTRATS_DIR / "manifeste.json"
 
-OUTILS_ATTENDUS = {"rechercher_jeux", "lister_ressources", "interroger_ressource", "telecharger_brut"}
+OUTILS_ATTENDUS = {"rechercher_jeux", "lister_ressources", "interroger_ressource", "telecharger_brut", "extraire_ressource"}
 
 
 # ---------------------------------------------------------------------------
@@ -195,6 +197,7 @@ class TestTC02_ArgumentsExistants:
         ("lister_ressources", ListerRessourcesInput),
         ("interroger_ressource", InterrogerRessourceInput),
         ("telecharger_brut", TelechargerBrutInput),
+        ("extraire_ressource", ExtraireRessourceInput),
     ])
     def test_champs_json_presents_dans_pydantic(self, nom_outil, modele_input):
         contrat = json.loads((CONTRATS_DIR / f"{nom_outil}.json").read_text(encoding="utf-8"))
@@ -211,6 +214,7 @@ class TestTC02_ArgumentsExistants:
         ("lister_ressources", ListerRessourcesOutput),
         ("interroger_ressource", InterrogerRessourceOutput),
         ("telecharger_brut", TelechargerBrutOutput),
+        ("extraire_ressource", ExtraireRessourceOutput),
     ])
     def test_champs_sortie_json_presents_dans_pydantic(self, nom_outil, modele_output):
         contrat = json.loads((CONTRATS_DIR / f"{nom_outil}.json").read_text(encoding="utf-8"))
@@ -236,6 +240,7 @@ class TestTC03_ChampsObligatoires:
         ("lister_ressources", ListerRessourcesInput),
         ("interroger_ressource", InterrogerRessourceInput),
         ("telecharger_brut", TelechargerBrutInput),
+        ("extraire_ressource", ExtraireRessourceInput),
     ])
     def test_champs_obligatoires_requis(self, nom_outil, modele_input):
         contrat = json.loads((CONTRATS_DIR / f"{nom_outil}.json").read_text(encoding="utf-8"))

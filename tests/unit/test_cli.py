@@ -501,3 +501,70 @@ def test_download_sans_inventaire_persiste_restIntrouvable(mock_download, tmp_pa
     resultat = runner.invoke(app, ["download", "introuvable", "--id-execution", "autre-flux"])
     assert resultat.exit_code == 2
     assert not (tmp_path / "data" / "executions" / "autre-flux").exists()
+
+
+# ---------------------------------------------------------------------
+# T10.7/E4 : commande CLI extract
+# ---------------------------------------------------------------------
+
+REPONSE_EXTRACT_SUCCES = {
+    "statut": "succes",
+    "message": "",
+    "donnees": {
+        "chemin_local": "data/raw/flux/r1_donnees.csv",
+        "total_lignes": 150,
+        "lignes_ecrites": 150,
+        "colonnes": ["theme", "valeur"],
+        "tronque": False,
+        "licence": "lov2",
+    },
+}
+
+
+@patch("src.main.extraire_ressource")
+def test_extract_appel_coeur_avec_options(mock_extraction):
+    # Réf. T10.7 — la CLI traduit ses options en appel cœur
+    mock_extraction.return_value = REPONSE_EXTRACT_SUCCES
+    resultat = runner.invoke(app, ["extract", "r1", "--id-execution", "flux", "--taille-page", "50", "--plafond-lignes", "5000"])
+    assert resultat.exit_code == 0
+    kwargs = mock_extraction.call_args.kwargs
+    assert kwargs["id_ressource"] == "r1"
+    assert kwargs["id_execution"] == "flux"
+    assert kwargs["taille_page"] == 50
+    assert kwargs["plafond_lignes"] == 5000
+    assert "data/raw/flux/r1_donnees.csv" in resultat.output
+
+
+@patch("src.main.extraire_ressource")
+def test_extract_affiche_la_troncature(mock_extraction):
+    # Réf. T10.7 — succès partiel : la troncature est signalée à l'utilisateur
+    mock_extraction.return_value = {
+        "statut": "succes",
+        "message": "Extraction tronquée au plafond de 100 lignes (450 lignes au total).",
+        "donnees": dict(REPONSE_EXTRACT_SUCCES["donnees"], lignes_ecrites=100, total_lignes=450, tronque=True),
+    }
+    resultat = runner.invoke(app, ["extract", "r1"])
+    assert resultat.exit_code == 0
+    assert "100 écrite(s) sur 450" in resultat.output
+
+
+@patch("src.main.extraire_ressource")
+def test_extract_ressource_non_indexee_code_sortie(mock_extraction):
+    # Réf. T10.7 — ressource_non_indexee : code 1, suggestion affichée
+    mock_extraction.return_value = {
+        "statut": "ressource_non_indexee",
+        "message": "La ressource 'r1' n'est pas indexée par l'API tabulaire.",
+        "donnees": {"suggestion": "basculer sur telecharger_brut"},
+    }
+    resultat = runner.invoke(app, ["extract", "r1"])
+    assert resultat.exit_code == 1
+    assert "basculer sur telecharger_brut" in (resultat.output + str(resultat.stderr))
+
+
+@patch("src.main.extraire_ressource")
+def test_extract_sortie_json(mock_extraction):
+    # Réf. T10.7 — sortie --json parsable (sans ligne id_execution)
+    mock_extraction.return_value = REPONSE_EXTRACT_SUCCES
+    resultat = runner.invoke(app, ["extract", "r1", "--json"])
+    assert resultat.exit_code == 0
+    assert json.loads(resultat.output)["donnees"]["chemin_local"] == "data/raw/flux/r1_donnees.csv"

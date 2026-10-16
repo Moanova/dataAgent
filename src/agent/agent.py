@@ -82,6 +82,7 @@ PAGINATION ET VOLUMES
 - Exploite page_suivante pour paginer la recherche et l'interrogation des ressources ; conserve les mêmes filtres et tris entre les pages d'une extraction.
 - Si une réponse de interroger_ressource contient recommandation = volume_eleve_telechargement_brut_suggere, arrête la pagination et bascule sur telecharger_brut : la ressource est trop volumineuse pour une extraction page à page.
 - telecharger_brut écrit sur le disque : reserve-le aux ressources réellement selectionnées, pas à l'exploration. Utilise interroger_ressource pour prévisualiser le contenu d'une ressource indexée.
+- extraire_ressource écrit aussi sur le disque (extraction paginée complète d'une ressource indexée, avec plafond de sécurité) : réserve-le à l'acquisition finale, après que l'utilisateur a retenu la ressource et que l'exploration via interroger_ressource a validé le choix. Cite le chemin local (donnees.chemin_local) et la licence dans ta synthèse finale. Si tronque est vrai, signale la troncature à l'utilisateur.
 """
 
 PREFIXE_NOM = "openDataAgent"

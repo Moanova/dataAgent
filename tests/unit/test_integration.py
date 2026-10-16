@@ -390,3 +390,54 @@ def test_t522_retetest_echec_technique_non_bloquant(tmp_path, monkeypatch):
     assert len(nouveau_registre.rapport_pour_agent()["sources_inaccessibles"]) == 1
     # Aucune API du registre n'expose de mécanisme de blocage : comportement conforme au contrat
     # (entrée technique re-testable, entrée juridique définitive côté filtrage licence).
+
+
+def url_data(id_ressource: str) -> str:
+    return f"https://tabular-api.data.gouv.fr/api/resources/{id_ressource}/data/"
+
+
+@responses.activate
+def test_t107_flux_complet_voie1_extraction(registre, tmp_path, monkeypatch):
+    # Réf. T10.7 — flux complet voie 1 : recherche -> inventaire -> extraction -> CSV sur disque
+    import src.core.resources as module_resources
+    from src.core.extraction import extraire_ressource
+
+    module_resources._inventaire.clear()
+    monkeypatch.chdir(tmp_path)
+
+    responses.add(responses.GET, URL_RECHERCHE, json={
+        "data": [_jeu("jeu-ouvert", "Jeu Ouvert", "lov2", "Insee")],
+        "total": 1, "page": 1, "next_page": None, "previous_page": None,
+    }, status=200)
+    recherche = rechercher_jeux(["budget"], registre=registre)
+    assert recherche["statut"] == "succes"
+
+    responses.add(responses.GET, ping_tabulaire("res-jeu-ouvert"), json={"links": []}, status=200)
+    responses.add(responses.GET, url_jeu("jeu-ouvert"), json=_jeu("jeu-ouvert", "Jeu Ouvert", "lov2", "Insee"), status=200)
+    inventaire = lister_ressources("jeu-ouvert", registre=registre)
+    assert inventaire["statut"] == "succes"
+
+    # Extraction paginée : deux pages, la ressource est indexée (ping 200).
+    responses.add(responses.GET, url_data("res-jeu-ouvert"),
+                  json={"data": [{"theme": "dette", "valeur": "1"}],
+                        "meta": {"page": 1, "page_size": 1, "total": 2},
+                        "links": {"next": "https://tabular-api.data.gouv.fr/api/resources/res-jeu-ouvert/data/?page=2"}},
+                  status=200)
+    responses.add(responses.GET, url_data("res-jeu-ouvert"),
+                  json={"data": [{"theme": "dette", "valeur": "2"}],
+                        "meta": {"page": 2, "page_size": 1, "total": 2},
+                        "links": {"next": None}},
+                  status=200)
+    extraction = extraire_ressource("res-jeu-ouvert", id_execution="flux-voic1", taille_page=1)
+    assert extraction["statut"] == "succes", extraction
+    donnees = extraction["donnees"]
+    assert donnees["total_lignes"] == 2
+    assert donnees["lignes_ecrites"] == 2
+    assert donnees["tronque"] is False
+    assert donnees["licence"] == "lov2"
+
+    chemin = Path(donnees["chemin_local"])
+    assert chemin.exists()
+    contenu = chemin.read_text(encoding="utf-8")
+    assert "theme" in contenu.splitlines()[0]
+    assert contenu.count("\n") == 3  # en-tête + 2 lignes

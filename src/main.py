@@ -24,6 +24,7 @@ from pathlib import Path
 from src.core.search import rechercher_jeux
 from src.core.resources import charger_inventaire, decharger_inventaire, lister_ressources
 from src.core.download import telecharger_brut
+from src.core.extraction import extraire_ressource
 from src.core.query import interroger_ressource
 from src.utils.logging import configure_logging
 from src.agent.agent import creer_agent, detruire_agent
@@ -207,6 +208,46 @@ def download(
         if reponse["donnees"].get("suggestion"):
             typer.secho(f"suggestion : {reponse['donnees']['suggestion']}", fg=typer.colors.YELLOW, err=True)
 
+    if reponse["statut"] in ("erreur_parametres", "ressource_introuvable"):
+        raise typer.Exit(code=2)
+    if reponse["statut"] != "succes":
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def extract(
+    id_ressource: str = typer.Argument(..., help="Identifiant de la ressource indexée, issu de l'inventaire."),
+    taille_page: int = typer.Option(100, "--taille-page", min=1, help="Lignes demandées par page à l'API tabulaire."),
+    plafond_lignes: Optional[int] = typer.Option(None, "--plafond-lignes", min=1, help="Nombre maximum de lignes extraites (défaut : PLAFOND_EXTRACTION, 10000)."),
+    id_execution: Optional[str] = typer.Option(None, "--id-execution", help=AIDE_ID_EXECUTION),
+    sortie_json: bool = typer.Option(False, "--json", help="Sortie JSON brute de la réponse normalisée."),
+) -> None:
+    """Extrait une ressource indexée vers un CSV local (pagination conduite par la commande)."""
+    identifiant = id_execution or _id_execution_auto()
+    configure_logging(id_execution=identifiant)
+    _charger_inventaire_persiste(identifiant)
+    if not sortie_json:
+        typer.echo(f"id_execution : {identifiant}", err=True)
+    reponse = extraire_ressource(
+        id_ressource=id_ressource,
+        id_execution=identifiant,
+        taille_page=taille_page,
+        plafond_lignes=plafond_lignes,
+    )
+    if sortie_json:
+        import json
+        typer.echo(json.dumps(reponse, ensure_ascii=False, indent=2))
+    elif reponse["statut"] == "succes":
+        donnees = reponse["donnees"]
+        typer.echo(f"statut : {reponse['statut']}")
+        typer.echo(f"fichier : {donnees['chemin_local']}")
+        typer.echo(f"lignes : {donnees['lignes_ecrites']} écrite(s) sur {donnees['total_lignes']}  licence : {donnees['licence'] or 'inconnue'}")
+        if donnees.get("tronque"):
+            typer.secho(f"attention : {reponse['message']}", fg=typer.colors.YELLOW, err=True)
+    else:
+        typer.secho(f"[{reponse['statut']}] {reponse['message']}", fg=typer.colors.RED, err=True)
+        if reponse["donnees"].get("suggestion"):
+            typer.secho(f"suggestion : {reponse['donnees']['suggestion']}", fg=typer.colors.YELLOW, err=True)
     if reponse["statut"] in ("erreur_parametres", "ressource_introuvable"):
         raise typer.Exit(code=2)
     if reponse["statut"] != "succes":

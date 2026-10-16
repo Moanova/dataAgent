@@ -271,3 +271,23 @@ def test_outil_message_erreur_exploitable():
     reponse = executer_outil("lister_ressources", {}, "id")
     assert reponse["statut"] == "erreur_parametres"
     assert "id_jeu" in reponse["message"]
+
+
+# ---------------------------------------------------------------------
+# T10.7/E3 : dispatch du 5e outil extraire_ressource
+# ---------------------------------------------------------------------
+
+@patch.dict(module_outils.TABLE_OUTILS, {"extraire_ressource": MagicMock(return_value={"statut": "succes", "message": "", "donnees": {"chemin_local": "data/raw/x.csv", "tronque": False}})})
+def test_executer_outil_extraire_ressource():
+    # Réf. T10.7 — le tool_call extraire_ressource est routé vers la fonction cœur
+    faux = module_outils.TABLE_OUTILS["extraire_ressource"]
+    reponse = executer_outil("extraire_ressource", {"id_ressource": "r1"}, "id-boucle")
+    assert reponse["statut"] == "succes"
+    faux.assert_called_once_with(id_ressource="r1", id_execution="id-boucle")
+
+
+def test_executer_outil_extraire_ressource_argument_manquant():
+    # Réf. T10.7 — validation Pydantic standard : id_ressource requis
+    reponse = executer_outil("extraire_ressource", {}, "id")
+    assert reponse["statut"] == "erreur_parametres"
+    assert "id_ressource" in reponse["message"]

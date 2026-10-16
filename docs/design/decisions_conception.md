@@ -163,3 +163,38 @@ Les décisions suivantes sont reportées à des itérations ultérieures :
 - **Support pour d'autres sources de données** : Intégration de plateformes comme Eurostat ou INSEE.
 - **Nettoyage automatique** : Suppression des anciennes exécutions (ex : dossiers vieux de plus de 30 jours).
 - **Automatisation des tests agentiques** : Automatisation des tests TA avec des scénarios prédéfinis.
+
+---
+
+## Décisions prises le **15 octobre 2026** (T10.7 — persistance de la voie 1)
+
+### 1. Symétrie mode manuel / mode agentique pour l'acquisition
+
+#### Décision
+L'extraction paginée d'une ressource indexée existe sous forme d'une **fonction cœur unique** (`extraire_ressource`, `src/core/extraction.py`) exposée par **deux portes d'entrée** : la commande CLI `extract` (mode manuel) et le 5ᵉ outil agent `extraire_ressource` (contrat v1.2.0, manifeste 1.1). Exigence du concepteur : les données doivent être récupérables dans les deux modes.
+
+### Justification
+- **Cohérence architecturale** : chaque pouvoir du mode manuel a déjà son miroir agentique (search/list/query/download) ; l'extraction honore ce principe.
+- **Écart structurel levé** : la voie 1 restait conversationnelle — aucune donnée indexée n'était jamais matérialisée sur disque.
+
+### 2. Frontière exploration / acquisition
+
+#### Décision
+`interroger_ressource` n'écrit jamais rien (exploration page à page) ; `extraire_ressource` et `telecharger_brut` écrivent sur disque (acquisition). Le prompt système impose à l'agent de réserver l'extraction à l'acquisition finale et de citer `chemin_local` + licence dans la synthèse.
+
+### 3. Plafond de sécurité : succès partiel explicite
+
+#### Décision
+Plafond de lignes extraites (`PLAFOND_EXTRACTION`, défaut 10 000) ; l'atteinte produit un **succès** avec `tronque: true` et un message signalant la troncature — jamais un échec silencieux, jamais une perte cachée.
+
+### Justification
+- L'export massif non maîtrisé est un risque opérationnel (disque, temps, quota API) ; le statut « succès partiel signalé » laisse l'utilisateur décider d'un éventuel `telecharger_brut`.
+
+### 4. Format pivot CSV, stockage commun `data/raw/`
+
+#### Décision
+L'extraction écrit un CSV UTF-8 dans `data/raw/<id_execution>/` (même racine que la voie 2, gestion de collision par suffixe). Le CSV est un pivot : la normalisation B7 (T10.1) pourra le transformer ensuite.
+
+### Justification
+- **Lisibilité et universalité** : le CSV est directement consommable par la partie 2 (pandas) et par l'humain.
+- **Simplicité** : l'agrégation de lignes JSON en CSV via `csv.DictWriter` est déterministe et sans dépendance.

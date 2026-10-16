@@ -39,7 +39,7 @@ def test_charger_outils_charge_les_quatres_contrats():
     # Réf. tests/plan_tests.md : Annexe T5.3 — les 4 outils du manifeste
     outils = charger_outils()
     noms = {o["function"]["name"] for o in outils}
-    assert noms == {"rechercher_jeux", "lister_ressources", "interroger_ressource", "telecharger_brut"}
+    assert noms == {"rechercher_jeux", "lister_ressources", "interroger_ressource", "telecharger_brut", "extraire_ressource"}
 
 
 def test_charger_outils_refuse_fichier_divergent(tmp_path):
@@ -104,7 +104,7 @@ def test_creer_agent_succes_cree_agent_ephemere(monkeypatch):
     assert kwargs["model"] == "mistral-small-latest"
     assert kwargs["name"].startswith(PREFIXE_NOM)
     assert kwargs["instructions"] == PROMPT_SYSTEME
-    assert len(kwargs["tools"]) == 4
+    assert len(kwargs["tools"]) == 5
     assert kwargs["metadata"]["id_execution"] == "20261014_120000"
 
 
@@ -148,7 +148,7 @@ def test_creer_agent_reutilise_agent_persistant_conforme(monkeypatch):
     agent_console.instructions = PROMPT_SYSTEME
     agent_console.tools = [
         {"type": "function", "function": {"name": nom}}
-        for nom in ("rechercher_jeux", "lister_ressources", "interroger_ressource", "telecharger_brut")
+        for nom in ("rechercher_jeux", "lister_ressources", "interroger_ressource", "telecharger_brut", "extraire_ressource")
     ]
     client.beta.agents.get.return_value = agent_console
     reponse = creer_agent("id", client=client)

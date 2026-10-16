@@ -5,6 +5,35 @@ Il est mis à jour automatiquement à la fin de chaque session et relu au début
 
 ---
 
+## **Séance du 15/10/2026 — implémentation de la section 10 du kanban (T10.3, T10.5, T10.4, T10.2, T10.7)**
+
+### **Contexte**
+- **Objectif** : implémenter les chantiers de la section 10 par complexité croissante, avec validation du concepteur à chaque étape (plan détaillé pour les tâches moyennes).
+
+### **Actions réalisées**
+1. **T10.3 (bug `id_execution`)** : correctif dans `executer_outil` — `options.setdefault("id_execution", id_execution)` après filtrage, retrait d'`id_execution` des `FILTRES_OPTIONS` ; TU-B1/TU-B3 mis à jour + 2 nouveaux tests.
+2. **Correctifs d'accents** (commits TSC du 14/10) : clé `"opérateur"` → `"operateur"` dans `main.py` (cassait le contrat Pydantic du filtre), faute `plafoné` → `plafonné` dans le prompt, TU-D1/D2 alignés sur le prompt accentué. Convention actée : conversationnel accentué, identifiants techniques sans accents.
+3. **T10.5 (vocabulaires)** : nouveau module `src/core/vocabulaires.py` (4 StrEnum + `APERCU_DEFAUT`), contrats et CLI branchés dessus (identité de classe préservée), option `--apercu N` sur `query`, aide `--id-execution` dédupliquée.
+4. **T10.4 (validation Pydantic runtime)** : option A actée — `MODELES_INPUT` remplace lambdas et `FILTRES_OPTIONS`, `model_validate` → `erreur_parametres` avec champ fautif, `model_dump(exclude_unset=True)`, `extra="ignore"` sur les 4 `*Input`, `id_execution` injecté après validation, docstring de `validation_api.py` rendue exacte.
+5. **T10.2 (inventaire persistant)** : `decharger/charger_inventaire` additifs dans `resources.py`, persistance CLI `data/executions/<id>/inventaire.json`, chargement dans les 5 commandes, persistance après `list` réussi, **affichage de l'id d'exécution** (ajout concepteur pour rejouer l'id auto) ; convention 1 du contrat global précisée, section README « piége list→download » réécrite en chaînage ; le chaînage manuel `list` → `download`/`extract` fonctionne.
+6. **T10.7 (créée, issue du chantier 1 de T10.1)** : persistance de la voie 1 en six sous-tâches E1..E6 — fonction cœur `extraire_ressource` (`src/core/extraction.py`, pagination conduite par le code, plafond `PLAFOND_EXTRACTION` en succès partiel explicite, CSV pivot dans `data/raw/`), contrat v1.2.0 (5ᵉ outil `extraire_ressource`, manifeste 1.0 → 1.1), dispatch agent + consignes du prompt (5 outils, frontière exploration/acquisition), commande CLI `extract`, 14 nouveaux tests dont TI-16 (flux complet voie 1), documentation complète (contrat d'architecture, README, decisions_conception, plan_tests).
+
+### **Décisions**
+- **T10.4** : brancher Pydantic plutôt qu'assumer la simplification — les modèles existent déjà, valident bornes/enums/sous-modèles, et les messages d'erreur par champ arment l'auto-correction de l'agent.
+- **Validation sortante (question soulevée)** : statu quo acté — les `*Output` restent des specs de test (le producteur est maîtrisé, la donnée externe est déjà validée en entrée par jsonschema).
+- **T10.2** : fichier par exécution, écriture simple sans verrou, affichage de l'id auto ; réutiliser un id = continuation du même flux logique (fusion/append, jamais d'écrasement).
+- **T10.7** : symétrie manuel/agent validée (fonction cœur unique, deux portes d'entrée, contrat v1.2.0) ; CSV pivot dans `data/raw/` commun aux deux voies ; plafond = succès partiel signalé.
+
+### **État en fin de séance**
+- **285 tests verts** (267 avant T10.7 ; 253 à l'ouverture de la section 10).
+- Terminé : T10.3, T10.4, T10.5, T10.2. En cours : **T10.7** (implémentée E1..E6, validation locale du concepteur en attente), **T10.1** (chantier 2 : normalisation B7, séquencé après T10.7). À faire : T10.6 (optionnel).
+- Validation locale du concepteur : test du mode chat concluant (recherche + évaluation des volumes), relecture du code en cours.
+
+### **Blocages**
+- Aucun.
+
+---
+
 ## **Séance du 14/10/2026 (soir) — appropriation du code par le concepteur (séance de questions/réponses)**
 
 ### **Contexte**

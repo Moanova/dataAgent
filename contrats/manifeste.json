@@ -1,5 +1,5 @@
 {
-  "manifeste_version": "1.0",
+  "manifeste_version": "1.1",
   "compatibilite_api_mistral": "function-calling-v1",
   "outils": [
     {
@@ -25,6 +25,12 @@
       "fichier": "telecharger_brut.json",
       "version": "1.0.0",
       "changelog": "Version initiale du contrat."
+    },
+    {
+      "nom": "extraire_ressource",
+      "fichier": "extraire_ressource.json",
+      "version": "1.0.0",
+      "changelog": "T10.7 : extraction paginée d'une ressource indexée vers data/raw/ (voie 1 matérialisée) ; succès partiel tronqué au plafond de sécurité. Version initiale du contrat, livrée avec le manifeste 1.1."
     }
   ]
 }

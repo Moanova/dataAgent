@@ -257,6 +257,24 @@ Implémentation : `tests/unit/test_agent.py` (4 tests de contenu ajoutés). Le p
 
 Implémentation : `tests/unit/test_cli.py` (7 tests chat). Documentation d'utilisation : `docs/README.md` section Utilisation (commandes, paramètres, variables d'environnement, sortie attendue).
 
+### Section 10.7 — persistance des extractions de la voie 1 (T10.7, tests unitaires et d'intégration, zéro réseau)
+
+| ID | Description | Critère d'acceptabilité | Priorité |
+|---|---|---|---|
+| TU-47 | Extraction multi-pages (3 pages mockées) : agrégation complète en un CSV | lignes ordonnées a,b,c,d,e ; total_lignes=5, lignes_ecrites=5, tronque=false | Bloquant (CA-2) |
+| TU-48 | Ressource jamais vue par l'inventaire | ressource_introuvable, suggestion reprendre par l'inventaire | Bloquant (CA-3) |
+| TU-49 | Ressource non indexée par l'API tabulaire | ressource_non_indexee, suggestion basculer sur telecharger_brut | Bloquant (CA-3) |
+| TU-50 | Plafond atteint (plafond_lignes=150, total 450) | succes partiel : tronque=true, lignes_ecrites=150, message signale la troncature | Bloquant (CA-2) |
+| TU-51 | Plafond par défaut via PLAFOND_EXTRACTION | troncature au seuil environnemental | Bloquant (CA-2) |
+| TU-52 | Ré-extraction dans la même exécution | suffixe de collision, jamais d'écrasement, deux fichiers distincts | Bloquant (CA-2) |
+| TU-53 | Échec HTTP en page 2 | statut de l'échec propagé, aucune écriture disque | Bloquant (CA-2) |
+| TU-B11 | Dispatch du 5e outil extraire_ressource | tool_call routé vers la fonction cœur, id_execution de la boucle injecté | Bloquant (CA-2) |
+| TU-B12 | Validation Pydantic d'extraire_ressource | id_ressource manquant -> erreur_parametres avec champ fautif | Bloquant (CA-2) |
+| TU-E8..E11 | Commande CLI extract : appel cœur avec options, troncature affichée, code sortie ressource_non_indexee, sortie --json | kwargs exacts, message jaune, code 1, JSON parsable | Bloquant (CA-2) |
+| TI-16 | Flux complet voie 1 : recherche -> inventaire -> extraction paginée (2 pages) | CSV sur disque avec en-tête + 2 lignes, licence lov2, tronque=false | Bloquant (CA-2, CA-3) |
+
+Implémentation : `tests/unit/test_extraction.py` (7 tests TU-47..53), `tests/unit/test_boucle.py` (TU-B11/B12), `tests/unit/test_cli.py` (TU-E8..E11), `tests/unit/test_integration.py` (TI-16).
+
 ## 8. Ordre d'exécution et définition de fini
 
 1. À chaque modification de code : TU et TI (sans réseau), TC. Exécution en quelques secondes.
