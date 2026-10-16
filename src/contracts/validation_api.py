@@ -14,7 +14,8 @@ brutes retourn"es par l'API data.gouv.fr, avant tout traitement, contre
 les schemas JSON stockés dans `contrats/schemas_api/`. Les schémas des
 outils (`contrats/<outil>.json`) restent la source de verite pour le
 function calling Mistral ; les modèles Pydantic (`src/contracts/`)
-valident la couche sortante.
+valident les tool_calls au runtime (`executer_outil`, src/agent/outils.py)
+et la couche sortante en tests de cohérence.
 
 Tout "cart de sch"ma doit produire un échec propre (`echec_technique`),
 jamais une exception non gérée.

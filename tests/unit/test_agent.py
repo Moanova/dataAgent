@@ -282,7 +282,7 @@ def test_empreinte_differencie_prompts():
 
 def test_prompt_sections_structurantes():
     # Réf. tests/plan_tests.md : Annexe T5.3.4 — présence des sections A1..A4
-    for marqueur in ("A1 - REFORMULATION", "A2 - SELECTION", "A3 - TRANCHAGE", "A4 - SYNTHESE"):
+    for marqueur in ("A1 - REFORMULATION", "A2 - SÉLECTION", "A3 - RÉSOLUTION DES INDETERMINATIONS", "A4 - SYNTHÈSE DU REGISTRE"):
         assert marqueur in PROMPT_SYSTEME
 
 
@@ -301,7 +301,7 @@ def test_prompt_consignes_transversales():
 def test_prompt_pagination_plafond_licence():
     # Réf. tests/plan_tests.md : Annexe T5.3.4 — pagination, plafond, licence, volumes
     assert "page_suivante" in PROMPT_SYSTEME
-    assert "plafonne" in PROMPT_SYSTEME
+    assert "plafonné" in PROMPT_SYSTEME
     assert "licence" in PROMPT_SYSTEME.lower()
     assert "volume_eleve_telechargement_brut_suggere" in PROMPT_SYSTEME
     assert "fichier_heberge_exterieurement" in PROMPT_SYSTEME

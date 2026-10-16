@@ -15,7 +15,7 @@ Miroir du fichier JSON `contrats/lister_ressources.json` et de la documentation
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from src.contracts.base import ClasseRessource, RessourceResume
 
@@ -27,6 +27,7 @@ __all__ = ["ClasseRessource", "ListerRessourcesInput", "ListerRessourcesOutput"]
 # ---------------------------------------------------------------------------
 
 class ListerRessourcesInput(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     """Paramètres d'entrée de l'outil `lister_ressources`."""
 
     id_jeu: str = Field(

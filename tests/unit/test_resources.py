@@ -199,3 +199,43 @@ def test_reponse_invalide_echec_propre(registre):
     reponse = lister_ressources("67660551c8588734a16a6a60", registre=registre)
 
     assert reponse["statut"] == "echec_technique"
+
+
+# ---------------------------------------------------------------------
+# T10.2 : sérialisation additive de l'inventaire (persistance CLI)
+# ---------------------------------------------------------------------
+
+@responses.activate
+@patch("src.core.resources.est_indexee_api_tabulaire", return_value=False)
+def test_decharger_charger_round_trip(mock_indexee, fixture_ressources, registre):
+    # Réf. T10.2 — dump/rechargement sans perte, métadonnées complètes
+    import src.core.resources as module
+    module._inventaire.clear()
+    responses.add(responses.GET, URL_JEU, json=fixture_ressources, status=200)
+    lister_ressources("67660551c8588734a16a6a60", registre=registre)
+
+    dump = module.decharger_inventaire()
+    assert set(dump.keys()) == set(module.inventaire().keys())
+    premiere_id = fixture_ressources["resources"][0]["id"]
+    assert dump[premiere_id]["licence"] == fixture_ressources["license"]
+    assert dump[premiere_id]["id_jeu"] == "67660551c8588734a16a6a60"
+
+    module._inventaire.clear()
+    assert module.inventaire() == {}
+    module.charger_inventaire(dump)
+    assert module.inventaire() == dump
+
+
+def test_charger_inventaire_enrichissement_cumulatif():
+    # Réf. T10.2 — la fusion n'écrase pas les entrées existantes
+    import src.core.resources as module
+    module._inventaire.clear()
+    module._inventaire["r1"] = {"id": "r1", "licence": "lov2"}
+    ajoutees = module.charger_inventaire({
+        "r1": {"id": "r1", "licence": "ecrasee"},
+        "r2": {"id": "r2", "licence": "cc-by"},
+    })
+    assert ajoutees == 1
+    assert module.inventaire()["r1"]["licence"] == "lov2"
+    assert module.inventaire()["r2"]["licence"] == "cc-by"
+    module._inventaire.clear()

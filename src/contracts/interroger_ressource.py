@@ -15,33 +15,16 @@ Miroir du fichier JSON `contrats/interroger_ressource.json` et de la documentati
 
 from __future__ import annotations
 
-from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, Field
+from src.core.vocabulaires import OperateurFiltre, OrdreTri
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-class OperateurFiltre(str, Enum):
-    """Opérateurs de filtrage disponibles pour une colonne."""
-
-    EXACT = "exact"
-    CONTIENT = "contient"
-    INFERIEUR = "inferieur"
-    SUPERIEUR = "superieur"
-    STRICTEMENT_INFERIEUR = "strictement_inferieur"
-    STRICTEMENT_SUPERIEUR = "strictement_superieur"
-
-
-class OrdreTri(str, Enum):
-    """Ordre de tri pour une colonne."""
-
-    CROISSANT = "croissant"
-    DECROISSANT = "decroissant"
-
 
 # ---------------------------------------------------------------------------
 # Sous-modèles
@@ -70,6 +53,7 @@ class TriColonne(BaseModel):
 # ---------------------------------------------------------------------------
 
 class InterrogerRessourceInput(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     """Parametres d'entrée de l'outil `interroger_ressource`."""
 
     id_ressource: str = Field(

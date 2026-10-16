@@ -403,3 +403,101 @@ def test_chat_prompt_vide():
     # Réf. tests/plan_tests.md : Annexe T4.3 — prompt vide : code 2
     resultat = runner.invoke(app, ["chat"])
     assert resultat.exit_code == 2
+
+
+# ---------------------------------------------------------------------
+# T10.5 : vocabulaires au coeur + option --apercu
+# ---------------------------------------------------------------------
+
+def test_vocabulaires_source_unique():
+    # Réf. T10.5 — le coeur (src/core/vocabulaires.py) est la source des vocabulaires fermés
+    from src.core.vocabulaires import APERCU_DEFAUT, FenetreMaj, OperateurFiltre, OrdreTri, TriRecherche
+
+    assert {e.value for e in TriRecherche} == {"pertinence", "recent", "vues", "reutilisations"}
+    assert {e.value for e in FenetreMaj} == {"toutes", "30_jours", "12_mois", "3_ans"}
+    assert {e.value for e in OperateurFiltre} == {
+        "exact", "contient", "inferieur", "superieur", "strictement_inferieur", "strictement_superieur"
+    }
+    assert {e.value for e in OrdreTri} == {"croissant", "decroissant"}
+    assert APERCU_DEFAUT == 5
+
+
+def test_vocabulaires_partages_avec_les_contrats():
+    # Réf. T10.5 — les contrats importent les mêmes StrEnum que la CLI (zéro divergence possible)
+    from src.contracts.interroger_ressource import OperateurFiltre as OperateurContrat
+    from src.contracts.interroger_ressource import OrdreTri as OrdreContrat
+    from src.contracts.rechercher_jeux import FenetreMaj as FenetreContrat
+    from src.contracts.rechercher_jeux import TriRecherche as TriContrat
+    from src.core.vocabulaires import FenetreMaj, OperateurFiltre, OrdreTri, TriRecherche
+
+    assert TriContrat is TriRecherche
+    assert FenetreContrat is FenetreMaj
+    assert OperateurContrat is OperateurFiltre
+    assert OrdreContrat is OrdreTri
+
+
+@patch("src.main.interroger_ressource")
+def test_query_apercu_limite_lignes_affichees(mock_query):
+    # Réf. T10.5 — --apercu borne l'affichage des lignes (défaut APERCU_DEFAUT = 5)
+    lignes = [{"n": i} for i in range(8)]
+    mock_query.return_value = {
+        "statut": "succes",
+        "message": "",
+        "donnees": {"total_lignes": 8, "colonnes": ["n"], "lignes": lignes},
+    }
+    resultat = runner.invoke(app, ["query", "e322fb3f", "--taille-page", "50"])
+    assert resultat.exit_code == 0
+    assert resultat.output.count("- {") == 5
+    assert "3 ligne(s) supplémentaires" in resultat.output
+
+    resultat_2 = runner.invoke(app, ["query", "e322fb3f", "--taille-page", "50", "--apercu", "2"])
+    assert resultat_2.exit_code == 0
+    assert resultat_2.output.count("- {") == 2
+    assert "6 ligne(s) supplémentaires" in resultat_2.output
+
+
+# ---------------------------------------------------------------------
+# T10.2 : chaînage list -> download via l'inventaire persistant
+# ---------------------------------------------------------------------
+
+@patch("src.main.telecharger_brut")
+@patch("src.main.lister_ressources")
+def test_chainage_list_download_inventaire_persiste(mock_liste, mock_download, tmp_path, monkeypatch):
+    # Réf. T10.2 — même --id-execution : download retrouve l'inventaire de list (nouveau contexte)
+    monkeypatch.chdir(tmp_path)
+    mock_liste.return_value = {
+        "statut": "succes",
+        "message": "",
+        "donnees": {"ressources": [{"id": "71ff1335", "titre": "Dette", "classe": "fichier_tabulaire",
+                                      "format": "csv", "taille_octets": 1024, "url": "https://example.fr/d.csv"}],
+                     "indetermination": []},
+    }
+    resultat_list = runner.invoke(app, ["list", "abc", "--id-execution", "flux-dette"])
+    assert resultat_list.exit_code == 0
+    chemin = tmp_path / "data" / "executions" / "flux-dette" / "inventaire.json"
+    assert chemin.exists()
+
+    import src.core.resources as module
+    module._inventaire.clear()
+
+    mock_download.return_value = REPONSE_DOWNLOAD_SUCCES
+    resultat_download = runner.invoke(app, ["download", "71ff1335", "--id-execution", "flux-dette"])
+    assert resultat_download.exit_code == 0
+    mock_download.assert_called_once()
+    assert "id_execution : flux-dette" in (resultat_download.output + str(resultat_download.stderr))
+
+
+@patch("src.main.telecharger_brut")
+def test_download_sans_inventaire_persiste_restIntrouvable(mock_download, tmp_path, monkeypatch):
+    # Réf. T10.2 — sans inventaire persisté pour cet id : ressource_introuvable (convention 1)
+    monkeypatch.chdir(tmp_path)
+    import src.core.resources as module
+    module._inventaire.clear()
+    mock_download.return_value = {
+        "statut": "ressource_introuvable",
+        "message": "Ressource jamais vue par l'inventaire.",
+        "donnees": {},
+    }
+    resultat = runner.invoke(app, ["download", "introuvable", "--id-execution", "autre-flux"])
+    assert resultat.exit_code == 2
+    assert not (tmp_path / "data" / "executions" / "autre-flux").exists()

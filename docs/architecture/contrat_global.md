@@ -56,7 +56,7 @@ Aucune fonction ne lève d'exception vers l'agent. Toute défaillance est exprim
 
 ## Conventions transversales
 
-1. Identifiants. Les fonctions s'échangent des identifiants, jamais des contenus bruts. Un identifiant de jeu provient de `rechercher_jeux` ; un identifiant de ressource provient de `lister_ressources`. Un identifiant jamais délivré par la chaîne est refusé.
+1. Identifiants. Les fonctions s'échangent des identifiants, jamais des contenus bruts. Un identifiant de jeu provient de `rechercher_jeux` ; un identifiant de ressource provient de `lister_ressources`. Un identifiant jamais délivré par la chaîne est refusé ; en mode CLI, la chaîne s'étend aux exécutions antérieures réactivées sous le même `id_execution` (inventaire persistant `data/executions/<id_execution>/inventaire.json`), le mode agentique restant en mémoire seule.
 2. Bornes. Toute fonction limitant le nombre d'éléments retournés applique un défaut (10) et un maximum (20). Il incombe à l'agent de paginer, pas au code d'étendre les bornes.
 3. Licence et attribution. Tout retour de succès inclut la licence du jeu. Les obligations associées (mention de la source pour CC-BY, partage à l'identique pour ODbL) doivent être conservées jusqu'à la partie visualisation.
 4. Journalisation. Les appels réels transitent par le code et sont journalisés localement avec leurs arguments et résultats. Le rejeu d'un flux algorithmique est déterministe ; les étapes agentiques sont journalisées séparément.

@@ -139,6 +139,7 @@ Les quatre premières commandes (`search`, `list`, `query`, `download`) sont le 
 | `--filtre-operateur` | `exact`, `contient`, `inferieur`, `superieur`, `strictement_inferieur`, `strictement_superieur`. | `exact` |
 | `--tri-colonne` | Colonne du tri. | — |
 | `--tri-ordre` | `croissant`, `decroissant`. | `croissant` |
+| `--apercu` | Nombre maximum de lignes affichées dans l'aperçu (0 pour tout afficher). | 5 |
 | `--id-execution`, `--json` | Comme ci-dessus. | — |
 
 **`download` — téléchargement brut (voie 2)** :
@@ -147,12 +148,21 @@ Les quatre premières commandes (`search`, `list`, `query`, `download`) sont le 
 | `id_ressource` (argument) | Identifiant de la ressource, issu de `list`. | Obligatoire |
 | `--id-execution`, `--json` | Comme ci-dessus. | — |
 
-### ⚠️ Important : mode manuel et inventaire
+### 🔗 Chaînage des commandes : inventaire persistant par `id_execution`
 
-Chaque commande de la CLI manuelle est un **processus et un flux indépendants**. L'inventaire des ressources peuplé par `list` ne survit pas à la fin de la commande : un `download <id_ressource>` lancé dans une commande suivante répondra `ressource_introuvable` (« identifiant jamais vu au cours du flux courant »).
+Chaque commande de la CLI manuelle est un **processus indépendant**, mais l'inventaire des ressources **survit aux commandes** grâce à `--id-execution` : la commande `list` persiste l'inventaire dans `data/executions/<id_execution>/inventaire.json`, et toute commande suivante portant le même identifiant le recharge automatiquement.
 
-- Pour conduire un flux complet en une seule fois, utilisez `chat` (mode agentique) — un seul processus conduit recherche, inventaire et acquisition.
-- Le paramètre `--id-execution` permet de **tracer** plusieurs commandes avec le même identifiant (logs et conversations regroupés) ; en l'état, il ne partage pas l'inventaire entre les commandes (évolution prévue : persistance de l'inventaire par id d'exécution).
+```bash
+python -m src.main list <id_jeu> --id-execution dette-publique
+python -m src.main download <id_ressource> --id-execution dette-publique   # fonctionne : ressource vue par le list
+python -m src.main query <id_ressource> --id-execution dette-publique --page 2
+```
+
+- **Sans `--id-execution`** : un identifiant est généré automatiquement (horodatage) et **affiché dans la sortie de chaque commande** (`id_execution : ...`) — relevez-le pour le reprendre sur la commande suivante et retrouver vos artefacts (logs, inventaire).
+- **Avec `--id-execution`** : vous choisissez le nom du flux ; utile pour conduire un travail de fond nommé, isoler deux investigations parallèles (deux ids = deux inventaires isolés) ou reprendre un flux interrompu (même id, seul l'inventaire est conservé).
+- **Enrichissement cumulatif** : plusieurs `list` sur des jeux différents sous le même id enrichissent le même inventaire ; les entrées existantes ne sont jamais écrasées.
+- **Mode `chat` inchangé** : l'agent tient l'inventaire en mémoire dans son processus unique, l'inventaire n'y est pas persisté.
+- Un `download` sans inventaire correspondant (id jamais utilisé par un `list`) répond toujours `ressource_introuvable` (« identifiant jamais vu par le flux courant ni par une exécution antérieure réactivée sous le même id ») — convention 1 du contrat global.
 
 ### 💬 Commande `chat` (mode agentique)
 

@@ -15,40 +15,23 @@ Miroir du fichier JSON `contrats/rechercher_jeux.json` et de la documentation
 
 from __future__ import annotations
 
-from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from src.contracts.base import JeuResume
+from src.core.vocabulaires import FenetreMaj, TriRecherche
 
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
 
-class TriRecherche(str, Enum):
-    """Ordre de tri des résultats."""
-
-    PERTINENCE = "pertinence"
-    RECENT = "recent"
-    VUES = "vues"
-    REUTILISATIONS = "reutilisations"
-
-
-class FenetreMaj(str, Enum):
-    """Restriction temporelle sur la dernière mise à jour."""
-
-    TOUTES = "toutes"
-    TRENTE_JOURS = "30_jours"
-    DOUZE_MOIS = "12_mois"
-    TROIS_ANS = "3_ans"
-
-
 # ---------------------------------------------------------------------------
 # Entrée
 # ---------------------------------------------------------------------------
 
 class RechercherJeuxInput(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     """Paramètres d'entrée de l'outil `rechercher_jeux`.
 
     La recherche applique une logique ET sur les mots-clés.

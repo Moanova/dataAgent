@@ -2,55 +2,51 @@
 # ---------------------------------------------------------------------
 # Application  : openDataAgent
 # Script       : outils.py
-# Version      : 1
-# Date         : 14-10-2026
+# Version      : 2
+# Date         : 15-10-2026
 # Design       : Mistral Vibe
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
-"""Exécution des tool_calls vers les fonctions du coeur (T5.3.2).
+"""Exécution des tool_calls vers les fonctions du coeur (T5.3.2, T10.4).
 
-L'API Mistral n'éxécute jamais les fonctions : ce module reçoit le
-nom d'un outil et ses arguments, valide les arguments contre les
-modèles Pydantic des contrats, éxécute la fonction du coeur
+L'API Mistral n'exécute jamais les fonctions : ce module reçoit le
+nom d'un outil et ses arguments, les valide contre les modèles Pydantic
+des contrats (src/contracts/), exécute la fonction du coeur
 correspondante et retourne la réponse normalisée {statut, message,
-donnees}. Aucune exception ne remonte vers l'agent."""
+donnees}. Aucune exception ne remonte vers l'agent.
+
+Les modèles *Input sont la source unique de vérité des arguments :
+les champs inconnus sont ignorés (extra="ignore") et id_execution,
+identifiant de flux interne fourni par la boucle, est injecté après
+validation — jamais lu depuis les arguments de l'agent."""
 from __future__ import annotations
 
 import json
-from typing import Any, Callable, Dict
+from typing import Any, Dict
 
+from pydantic import BaseModel, ValidationError
+
+from src.contracts.interroger_ressource import InterrogerRessourceInput
+from src.contracts.lister_ressources import ListerRessourcesInput
+from src.contracts.rechercher_jeux import RechercherJeuxInput
+from src.contracts.telecharger_brut import TelechargerBrutInput
 from src.core.download import telecharger_brut
 from src.core.query import interroger_ressource
 from src.core.resources import lister_ressources
 from src.core.search import rechercher_jeux
 
-TABLE_OUTILS: Dict[str, Callable[..., Dict[str, Any]]] = {
+TABLE_OUTILS: Dict[str, Any] = {
     "rechercher_jeux": rechercher_jeux,
     "lister_ressources": lister_ressources,
     "interroger_ressource": interroger_ressource,
     "telecharger_brut": telecharger_brut,
 }
 
-ARGUMENTS_OBLIGATOIRES: Dict[str, Dict[str, Callable[[Dict[str, Any]], bool]]] = {
-    "rechercher_jeux": {"mots_cles": lambda a: isinstance(a.get("mots_cles"), list) and bool(a["mots_cles"])},
-    "lister_ressources": {"id_jeu": lambda a: isinstance(a.get("id_jeu"), str) and bool(a["id_jeu"])},
-    "interroger_ressource": {"id_ressource": lambda a: isinstance(a.get("id_ressource"), str) and bool(a["id_ressource"])},
-    "telecharger_brut": {"id_ressource": lambda a: isinstance(a.get("id_ressource"), str) and bool(a["id_ressource"])},
-}
-
-FILTRES_OPTIONS: Dict[str, Callable[[Dict[str, Any]], Dict[str, Any]]] = {
-    "rechercher_jeux": lambda a: {
-        k: a[k] for k in ("tri", "fenetre_maj", "limite", "page", "id_execution") if a.get(k) is not None
-    },
-    "lister_ressources": lambda a: {
-        k: a[k] for k in ("id_execution",) if a.get(k) is not None
-    },
-    "interroger_ressource": lambda a: {
-        k: a[k] for k in ("page", "taille_page", "filtre", "tri", "id_execution") if a.get(k) is not None
-    },
-    "telecharger_brut": lambda a: {
-        k: a[k] for k in ("id_execution",) if a.get(k) is not None
-    },
+MODELES_INPUT: Dict[str, type[BaseModel]] = {
+    "rechercher_jeux": RechercherJeuxInput,
+    "lister_ressources": ListerRessourcesInput,
+    "interroger_ressource": InterrogerRessourceInput,
+    "telecharger_brut": TelechargerBrutInput,
 }
 
 
@@ -60,7 +56,7 @@ def executer_outil(nom: str, arguments: Any, id_execution: str) -> Dict[str, Any
     Args:
         nom : nom de l'outil appelé par l'agent.
         arguments : arguments de l'appel (dictionnaire ou chaene JSON).
-        id_execution : identifiant d'exécution lie au flux.
+        id_execution : identifiant d'exécution lié au flux.
 
     Returns:
         Réponse normalisée {statut, message, donnees}. Toute
@@ -81,16 +77,23 @@ def executer_outil(nom: str, arguments: Any, id_execution: str) -> Dict[str, Any
             "message": "Arguments du tool_call invalides : objet JSON attendu.",
             "donnees": {},
         }
-    erreur = _valider_arguments(nom, arguments_dict)
-    if erreur:
-        return {"statut": "erreur_parametres", "message": erreur, "donnees": {}}
-    options = FILTRES_OPTIONS[nom](arguments_dict)
+    modele = MODELES_INPUT[nom]
     try:
-        return fonction(**dict(_arguments_positionnels(nom, arguments_dict), **options))
+        valide = modele.model_validate(arguments_dict)
+    except ValidationError as erreur_validation:
+        return {
+            "statut": "erreur_parametres",
+            "message": f"Arguments invalides pour '{nom}' : {_resume_erreurs(erreur_validation)}",
+            "donnees": {},
+        }
+    options = valide.model_dump(exclude_unset=True)
+    options.setdefault("id_execution", id_execution)
+    try:
+        return fonction(**options)
     except TypeError as erreur_type:
         return {
             "statut": "erreur_parametres",
-            "message": f"Arguments refuses par '{nom}' : {erreur_type}",
+            "message": f"Arguments refusés par '{nom}' : {erreur_type}",
             "donnees": {},
         }
     except Exception as erreur_coeur:
@@ -114,18 +117,8 @@ def _decoder_arguments(arguments: Any) -> Any:
     return None
 
 
-def _valider_arguments(nom: str, arguments: Dict[str, Any]) -> str:
-    """Valide les arguments obligatoires d'un outil ; retourne '' si valides."""
-    for champ, valide in ARGUMENTS_OBLIGATOIRES[nom].items():
-        if not valide(arguments):
-            return f"Argument obligatoire manquant ou invalide pour '{nom}' : '{champ}'."
-    return ""
-
-
-def _arguments_positionnels(nom: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
-    """Extrait les arguments obligatoires pour l'appel de la fonction coeur."""
-    if nom == "rechercher_jeux":
-        return {"mots_cles": arguments["mots_cles"]}
-    if nom == "lister_ressources":
-        return {"id_jeu": arguments["id_jeu"]}
-    return {"id_ressource": arguments["id_ressource"]}
+def _resume_erreurs(erreur: ValidationError) -> str:
+    """Condense une ValidationError Pydantic en message lisible pour l'agent."""
+    return " ; ".join(
+        f"{e['loc'][0] if e['loc'] else '?'} — {e['msg']}" for e in erreur.errors()
+    )

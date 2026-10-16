@@ -40,6 +40,31 @@ def inventaire() -> Dict[str, Dict[str, Any]]:
     return dict(_inventaire)
 
 
+def decharger_inventaire() -> Dict[str, Dict[str, Any]]:
+    """Retourne une copie sérialisable de l'inventaire (persistance T10.2).
+
+    Les métadonnées de jeu (id_jeu, organisation, licence) sont
+    dénormalisées dans chaque ressource : ce dump suffit à armer
+    telecharger_brut et interroger_ressource lors d'un rechargement.
+    """
+    return {id_ressource: dict(metadonnees) for id_ressource, metadonnees in _inventaire.items()}
+
+
+def charger_inventaire(donnees: Dict[str, Dict[str, Any]]) -> int:
+    """Fusionne un inventaire sérialisé dans l'inventaire en mémoire.
+
+    Enrichissement cumulatif : les entrées existantes ne sont pas
+    écrasées, les nouvelles sont ajoutées. Retourne le nombre de
+    ressources ajoutées.
+    """
+    ajoutees = 0
+    for id_ressource, metadonnees in donnees.items():
+        if id_ressource not in _inventaire:
+            _inventaire[id_ressource] = dict(metadonnees)
+            ajoutees += 1
+    return ajoutees
+
+
 def _normaliser_ressource(ressource: Dict[str, Any]) -> Dict[str, Any]:
     """Normalise une ressource v1 vers le format RessourceResume du contrat."""
     classe, _ = classer_ressource(

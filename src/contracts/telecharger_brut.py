@@ -15,7 +15,7 @@ Miroir du fichier JSON `contrats/telecharger_brut.json` et de la documentation
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 # ---------------------------------------------------------------------------
@@ -23,6 +23,7 @@ from pydantic import BaseModel, Field
 # ---------------------------------------------------------------------------
 
 class TelechargerBrutInput(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     """Paramètres d'entrée de l'outil `telecharger_brut`."""
 
     id_ressource: str = Field(

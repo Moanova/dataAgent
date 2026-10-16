@@ -57,16 +57,16 @@ def test_executer_outil_route_chaque_outil(monkeypatch):
         outils[nom] = faux
 
     executer_outil("rechercher_jeux", {"mots_cles": ["dette"]}, "id")
-    outils["rechercher_jeux"].assert_called_once_with(mots_cles=["dette"])
+    outils["rechercher_jeux"].assert_called_once_with(mots_cles=["dette"], id_execution="id")
 
     executer_outil("lister_ressources", {"id_jeu": "abc"}, "id")
-    outils["lister_ressources"].assert_called_once_with(id_jeu="abc")
+    outils["lister_ressources"].assert_called_once_with(id_jeu="abc", id_execution="id")
 
     executer_outil("interroger_ressource", {"id_ressource": "r1", "page": 2, "tri": {"colonne": "v", "ordre": "croissant"}}, "id")
-    outils["interroger_ressource"].assert_called_once_with(id_ressource="r1", page=2, tri={"colonne": "v", "ordre": "croissant"})
+    outils["interroger_ressource"].assert_called_once_with(id_ressource="r1", page=2, tri={"colonne": "v", "ordre": "croissant"}, id_execution="id")
 
     executer_outil("telecharger_brut", {"id_ressource": "r1"}, "id")
-    outils["telecharger_brut"].assert_called_once_with(id_ressource="r1")
+    outils["telecharger_brut"].assert_called_once_with(id_ressource="r1", id_execution="id")
 
 
 def test_executer_outil_inconnu():
@@ -86,13 +86,35 @@ def test_executer_outil_arguments_invalides(monkeypatch):
     assert executer_outil("interroger_ressource", json.dumps({"id_ressource": "r1"}), "id")["statut"] == "succes"
 
 
+def test_executer_outil_id_execution_injecte_si_absent(monkeypatch):
+    # Réf. T10.3 — id_execution de la boucle injecté si l'agent ne le fournit pas
+    faux = MagicMock(return_value={"statut": "succes", "message": "", "donnees": {}})
+    monkeypatch.setitem(module_outils.TABLE_OUTILS, "rechercher_jeux", faux)
+    reponse = executer_outil("rechercher_jeux", {"mots_cles": ["dette"]}, "id-boucle")
+    assert reponse["statut"] == "succes"
+    faux.assert_called_once_with(mots_cles=["dette"], id_execution="id-boucle")
+
+
+def test_executer_outil_id_execution_boucle_prioritaire(monkeypatch):
+    # Réf. T10.3 — id_execution fourni par l'agent : pas de conflit, celui de la boucle prime
+    faux = MagicMock(return_value={"statut": "succes", "message": "", "donnees": {}})
+    monkeypatch.setitem(module_outils.TABLE_OUTILS, "rechercher_jeux", faux)
+    reponse = executer_outil(
+        "rechercher_jeux",
+        {"mots_cles": ["dette"], "id_execution": "id-agent"},
+        "id-boucle",
+    )
+    assert reponse["statut"] == "succes"
+    faux.assert_called_once_with(mots_cles=["dette"], id_execution="id-boucle")
+
+
 def test_executer_outil_arguments_json(monkeypatch):
     # Réf. tests/plan_tests.md : TU-B3 — arguments en chaîne JSON acceptés
     faux = MagicMock(return_value={"statut": "succes", "message": "", "donnees": {}})
     monkeypatch.setitem(module_outils.TABLE_OUTILS, "rechercher_jeux", faux)
     reponse = executer_outil("rechercher_jeux", json.dumps({"mots_cles": ["insee"]}), "id")
     assert reponse["statut"] == "succes"
-    faux.assert_called_once_with(mots_cles=["insee"])
+    faux.assert_called_once_with(mots_cles=["insee"], id_execution="id")
 
 
 # ---------------------------------------------------------------------
@@ -198,3 +220,54 @@ def test_boucle_plafond_configure_par_env(monkeypatch):
     agent = _agent([])
     reponse = boucle_conversation(agent, "bonjour", id_execution="id")
     assert reponse["donnees"]["plafond"] == 2
+
+
+# ---------------------------------------------------------------------
+# T10.4 : validation Pydantic des arguments au runtime
+# ---------------------------------------------------------------------
+
+@patch.dict(module_outils.TABLE_OUTILS, {"rechercher_jeux": MagicMock(return_value={"statut": "succes", "message": "", "donnees": {}})})
+def test_outil_valide_bornes_numeriques_pydantic():
+    # Réf. T10.4 — limite/page hors bornes du modèle Input → erreur_parametres
+    reponse = executer_outil("rechercher_jeux", {"mots_cles": ["dette"], "limite": -5}, "id")
+    assert reponse["statut"] == "erreur_parametres"
+    assert "limite" in reponse["message"]
+    reponse_2 = executer_outil("rechercher_jeux", {"mots_cles": ["dette"], "page": 0}, "id")
+    assert reponse_2["statut"] == "erreur_parametres"
+    assert "page" in reponse_2["message"]
+
+
+@patch.dict(module_outils.TABLE_OUTILS, {"interroger_ressource": MagicMock(return_value={"statut": "succes", "message": "", "donnees": {}})})
+def test_outil_valide_sous_modeles_filtre_tri():
+    # Réf. T10.4 — tri avec ordre hors vocabulaire → erreur_parametres avec champ fautif
+    reponse = executer_outil("interroger_ressource", {"id_ressource": "r1", "tri": {"colonne": "v", "ordre": "ascendant"}}, "id")
+    assert reponse["statut"] == "erreur_parametres"
+    assert "tri" in reponse["message"]
+    module_outils.TABLE_OUTILS["interroger_ressource"].assert_not_called()
+
+
+@patch.dict(module_outils.TABLE_OUTILS, {"rechercher_jeux": MagicMock(return_value={"statut": "succes", "message": "", "donnees": {}})})
+def test_outil_ignore_champs_superflus():
+    # Réf. T10.4 — extra="ignore" : champ inconnu de l'agent ignoré silencieusement
+    faux = module_outils.TABLE_OUTILS["rechercher_jeux"]
+    reponse = executer_outil("rechercher_jeux", {"mots_cles": ["dette"], "champ_inconnu": 1}, "id")
+    assert reponse["statut"] == "succes"
+    kwargs = faux.call_args.kwargs
+    assert "champ_inconnu" not in kwargs
+    assert kwargs["mots_cles"] == ["dette"]
+
+
+@patch.dict(module_outils.TABLE_OUTILS, {"telecharger_brut": MagicMock(return_value={"statut": "succes", "message": "", "donnees": {}})})
+def test_outil_champs_absents_non_transmis():
+    # Réf. T10.4 — seuls les champs fournis par l'agent sont transmis (exclude_unset)
+    faux = module_outils.TABLE_OUTILS["telecharger_brut"]
+    executer_outil("telecharger_brut", {"id_ressource": "r1"}, "id")
+    kwargs = faux.call_args.kwargs
+    assert kwargs == {"id_ressource": "r1", "id_execution": "id"}
+
+
+def test_outil_message_erreur_exploitable():
+    # Réf. T10.4 — le message d'erreur cite le champ fautif (auto-correction de l'agent)
+    reponse = executer_outil("lister_ressources", {}, "id")
+    assert reponse["statut"] == "erreur_parametres"
+    assert "id_jeu" in reponse["message"]
